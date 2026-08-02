@@ -280,3 +280,281 @@ details > .event-block:first-of-type {
     border-color: var(--lions-gray-border);
     color: var(--lions-gray-text);
 }
+
+/* ============================================================================
+   Assignment surface, /signup for an administrator
+   ----------------------------------------------------------------------------
+   Appended here rather than given its own stylesheet because it only ever
+   renders on the page this file already serves, and signup/admin.js is loaded
+   only for an account that can open the dashboard system. A second file would
+   be a second request for every volunteer, to style markup they never receive.
+
+   Flat surfaces only, every value from a token, in the same two-tier sense as
+   the rest of this file: the chrome above is a port and nothing here touches
+   it.
+   ============================================================================ */
+
+.admin-picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lions-space-2);
+}
+
+/* A whole row is the hit target. Assignment is done at a desk, but the same
+   minimum height as the volunteer controls keeps one rule for the property. */
+.admin-pick {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: var(--lions-space-1) var(--lions-space-4);
+    align-items: baseline;
+    width: 100%;
+    min-height: var(--lions-tap-target);
+    padding: var(--lions-space-3) var(--lions-space-4);
+    text-align: left;
+    background: var(--lions-white);
+    border: 1px solid var(--lions-gray-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--lions-radius-sm);
+    cursor: pointer;
+    font-family: var(--lions-font-body);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.admin-pick:hover {
+    background: var(--lions-blue-wash);
+    border-color: var(--lions-blue-edge);
+}
+
+.admin-pick:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+
+.admin-pick[aria-current="true"] {
+    background: var(--lions-blue-wash);
+    border-left-color: var(--lions-blue);
+}
+
+/* Inside the assignment lead time with people waiting on a decision. Gold
+   rather than red: this is the week's work, not a fault. */
+.admin-pick.is-due {
+    border-left-color: var(--lions-gold);
+}
+
+.admin-pick-when {
+    font-family: var(--lions-font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+}
+
+.admin-pick-name {
+    font-family: var(--lions-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+}
+
+.admin-pick-count {
+    grid-column: 2;
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+@media (max-width: 620px) {
+    .admin-pick { grid-template-columns: 1fr; }
+    .admin-pick-count { grid-column: 1; }
+}
+
+/* -- The panel -------------------------------------------------------------- */
+
+.admin-panel-head h2 {
+    font-family: var(--lions-font-heading);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin: 0;
+}
+
+.admin-panel-head p {
+    margin: var(--lions-space-2) 0 0;
+    font-size: 0.9375rem;
+    color: var(--lions-gray-text);
+}
+
+.admin-shift {
+    margin-top: var(--lions-space-6);
+    padding-top: var(--lions-space-4);
+    border-top: 1px solid var(--lions-gray-light);
+}
+
+.admin-shift-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-3);
+    flex-wrap: wrap;
+    font-family: var(--lions-font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin: 0;
+}
+
+.admin-shift-total {
+    margin-left: auto;
+    font-family: var(--lions-font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--lions-gray-text);
+}
+
+/* -- One group -------------------------------------------------------------- */
+
+.admin-group {
+    margin-top: var(--lions-space-4);
+}
+
+.admin-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-3);
+    flex-wrap: wrap;
+    font-family: var(--lions-font-heading);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+    margin: 0 0 var(--lions-space-2);
+}
+
+.admin-count {
+    font-family: var(--lions-font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--lions-gray-text);
+}
+
+/* Over the target is information, not an error. Capacity is a target on this
+   screen and is never enforced against a volunteer, so this must not read as a
+   validation failure. */
+.admin-count.is-over {
+    color: var(--lions-warning);
+    font-weight: 600;
+}
+
+.admin-warn {
+    margin: var(--lions-space-2) 0 0;
+    padding: var(--lions-space-2) var(--lions-space-3);
+    background: var(--lions-warning-bg);
+    border-left: 3px solid var(--lions-warning);
+    font-size: 0.8125rem;
+    color: var(--lions-warning);
+}
+
+.admin-empty {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+/* -- One person ------------------------------------------------------------- */
+
+.admin-people {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-person {
+    padding: var(--lions-space-3) var(--lions-space-4);
+    border: 1px solid var(--lions-gray-light);
+    border-left: 3px solid transparent;
+    border-radius: var(--lions-radius-sm);
+}
+
+.admin-person + .admin-person {
+    margin-top: var(--lions-space-2);
+}
+
+/* Gold left rule and a gold mark for a stand lead, matching the accent
+   treatment used everywhere else on the property. Flat, no shadow. */
+.admin-person.is-lead {
+    border-left-color: var(--lions-gold);
+}
+
+.admin-person-head {
+    display: flex;
+    align-items: center;
+    gap: var(--lions-space-2);
+    flex-wrap: wrap;
+}
+
+.admin-person-name {
+    font-family: var(--lions-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin-right: var(--lions-space-1);
+}
+
+.admin-lead-mark {
+    font-family: var(--lions-font-heading);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lions-gold);
+}
+
+.admin-person-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-4);
+    flex-wrap: wrap;
+    margin-top: var(--lions-space-1);
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+.admin-person-meta a { color: var(--lions-blue); }
+
+.admin-tier {
+    font-family: var(--lions-font-heading);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lions-gray-text);
+}
+
+.admin-person-actions {
+    display: flex;
+    gap: var(--lions-space-2);
+    flex-wrap: wrap;
+    margin-top: var(--lions-space-1);
+}
+
+/* -- Outcome fallback ------------------------------------------------------- */
+
+.admin-note {
+    margin-top: var(--lions-space-3);
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+.admin-outcome {
+    margin-top: var(--lions-space-3);
+    padding: var(--lions-space-3);
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: var(--lions-font-mono);
+    font-size: 0.8125rem;
+    background: var(--lions-blue-wash);
+    border: 1px solid var(--lions-blue-edge);
+}

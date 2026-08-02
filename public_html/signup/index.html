@@ -656,6 +656,19 @@ async function start() {
     renderSeason();
     show('season');
 
+    // Administrator surface. Imported only when this account can open the
+    // dashboard system, so the other 114 people on the roster never fetch it.
+    // The security rules are the real gate; this is bandwidth, and it keeps a
+    // volunteer's page free of markup they have no business seeing.
+    if (lionsAuth.canAccess('dashboard')) {
+        try {
+            const { mountAdmin } = await import('/signup/admin.js?v=1');
+            await mountAdmin({ db: db, events: events, season: season, admin: me });
+        } catch (error) {
+            log.error('Administrator surface failed to load.', error);
+        }
+    }
+
     log.log('Signup page ready, ' + events.length + ' events, ' + mySignups.size + ' existing declarations.');
 }
 
