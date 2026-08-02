@@ -1,0 +1,3620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Football - Digital Program</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --title-font: 'Arial', sans-serif;
+            --body-font: 'Arial', sans-serif;
+            --primary-color: #FFD700;
+            --secondary-color: #1e3c72;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background: linear-gradient(135deg, var(--secondary-color), #2a5298, var(--secondary-color));
+            min-height: 100vh;
+            color: white;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .program-container {
+            width: 700vw;
+            height: 100vh;
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+
+        .program-page {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .page-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            font-family: var(--title-font);
+            background: linear-gradient(45deg, var(--primary-color), #FFA500, var(--primary-color));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .page-subtitle {
+            text-align: center;
+            margin-top: 10px;
+            opacity: 0.8;
+            font-size: 1.1rem;
+            font-family: var(--body-font);
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Admin Panel Styles */
+        .admin-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: rgba(255, 215, 0, 0.9);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: var(--body-font);
+            transition: all 0.3s ease;
+        }
+
+        .admin-toggle:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .admin-toggle.authenticated {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .admin-mode-indicator {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            z-index: 2000;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.9;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .admin-mode-indicator.active {
+            display: block;
+        }
+
+        /* Pending Changes Indicator */
+        .pending-changes-indicator {
+            position: fixed;
+            top: 110px;
+            right: 20px;
+            background: rgba(255, 165, 0, 0.9);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            z-index: 2000;
+            display: none;
+        }
+
+        .pending-changes-indicator.active {
+            display: block;
+        }
+
+        /* Auth Modal Styles */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            display: none;
+        }
+
+        .auth-modal.active {
+            display: flex;
+        }
+
+        .auth-container {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #FFD700;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .auth-title {
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .auth-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .auth-error {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid #FFD700;
+            z-index: 1500;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .admin-panel.open {
+            right: 0;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 20px;
+        }
+
+        .admin-header h2 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .admin-section h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .admin-section h3:hover {
+            opacity: 0.8;
+        }
+
+        .admin-section.collapsed .section-content {
+            display: none;
+        }
+
+        .section-content {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #FFD700;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+            font-family: var(--body-font);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1e3c72;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .player-item h4 {
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Navigation Controls */
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            color: #1e3c72;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-indicators {
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-dot.active {
+            background: #FFD700;
+            transform: scale(1.3);
+        }
+
+        .page-info {
+            color: #FFD700;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Touch indicators */
+        .swipe-hint {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #1e3c72;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            animation: swipeHint 3s ease-in-out infinite;
+            z-index: 1000;
+        }
+
+        @keyframes swipeHint {
+
+            0%,
+            100% {
+                opacity: 0.7;
+                transform: translateX(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(-10px);
+            }
+        }
+
+        /* Page 1 - Cover */
+        .cover-page {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 165, 0, 0.1) 0%, transparent 50%);
+        }
+
+        .team-logo {
+            width: var(--logo-size, 120px);
+            height: var(--logo-size, 120px);
+            background: var(--logo-background);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(var(--logo-size, 120px) * 0.5);
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .team-logo img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+            border-radius: 45%;
+        }
+
+        .cover-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: var(--title-font);
+        }
+
+        .cover-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            font-family: var(--body-font);
+        }
+
+        .season-info {
+            font-size: 2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 40px;
+            font-family: var(--title-font);
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* Page 2 - Schedule */
+        .schedule-grid {
+            display: grid;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .game-date {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .game-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .game-status.won {
+            background: #28a745;
+            color: white;
+        }
+
+        .game-status.lost {
+            background: #dc3545;
+            color: white;
+        }
+
+        .game-status.upcoming {
+            background: #FFD700;
+            color: #1e3c72;
+        }
+
+        .game-matchup {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-details {
+            display: flex;
+            justify-content: space-between;
+            opacity: 0.8;
+        }
+
+        /* Roster Page Styles */
+        .roster-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .position-section {
+            margin-bottom: 40px;
+        }
+
+        .position-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .position-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+        }
+
+        .players-grid,
+        .coaches-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 20px 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .player-card,
+        .coach-card {
+            perspective: 1000px;
+            height: 400px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s ease-in-out;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transform-origin: center center;
+            transform: rotateY(0deg);
+        }
+
+        .player-card:hover .card-inner,
+        .coach-card:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .player-card .card-inner,
+        .coach-card .card-inner {
+            transform: rotateY(0deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            top: 0;
+            left: 0;
+        }
+
+        .player-card .card-front {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            border: 2px solid #FFD700;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            transform: rotateY(0deg);
+        }
+
+        .coach-card .card-front {
+            background: linear-gradient(135deg, #8e9aaf, #6c757d);
+            border: 2px solid #c0c0c0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            transform: rotateY(0deg);
+        }
+
+        .headshot-container {
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .headshot-placeholder {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .placeholder-text {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+
+        .headshot-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(30, 60, 114, 0.95));
+            padding: 15px;
+            color: white;
+        }
+
+        .front-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .player-card .card-back {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1e3c72;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+            border: 2px solid #1e3c72;
+        }
+
+        .coach-card .card-back {
+            background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+            color: #2c3e50;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+            border: 2px solid #6c757d;
+        }
+
+        .action-container {
+            width: 100%;
+            height: 240px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-placeholder {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        .back-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .jersey-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .player-name,
+        .coach-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+        }
+
+        .player-position,
+        .coach-position {
+            font-size: 1rem;
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .coach-card .coach-position {
+            color: #c0c0c0;
+        }
+
+        .player-info,
+        .coach-info {
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .stats-grid,
+        .experience-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .stat-item,
+        .experience-item {
+            background: rgba(30, 60, 114, 0.8);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+
+        .coach-card .experience-item {
+            background: rgba(108, 117, 125, 0.8);
+        }
+
+        .stat-value,
+        .experience-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .coach-card .experience-value {
+            color: #c0c0c0;
+        }
+
+        .stat-label,
+        .experience-label {
+            font-size: 0.6rem;
+            opacity: 0.9;
+            color: white;
+        }
+
+        /* Stats Page */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-card h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .big-stat {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        /* Sponsors Page - Fixed Flipping Cards */
+        .sponsors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .sponsor-card {
+            perspective: 1000px;
+            height: 300px;
+            cursor: pointer;
+        }
+
+        .sponsor-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s ease-in-out;
+            transform-style: preserve-3d;
+            transform: rotateY(0deg);
+        }
+
+        .sponsor-card:hover .sponsor-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .sponsor-card-front,
+        .sponsor-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            top: 0;
+            left: 0;
+        }
+
+        .sponsor-card-front {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--secondary-color);
+            transform: rotateY(0deg);
+        }
+
+        .sponsor-card-back {
+            background: linear-gradient(135deg, var(--primary-color), #FFA500);
+            color: var(--secondary-color);
+            transform: rotateY(180deg);
+            text-align: left;
+            justify-content: flex-start;
+        }
+
+        .sponsor-logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sponsor-logo img {
+            max-width: 100%;
+            max-height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .sponsor-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: var(--title-font);
+        }
+
+        .sponsor-type {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            font-family: var(--body-font);
+        }
+
+        .sponsor-back-content {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            font-family: var(--body-font);
+        }
+
+        .sponsor-contact {
+            margin-top: auto;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .sponsor-contact a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .sponsor-contact a:hover {
+            text-decoration: underline;
+        }
+
+        /* Store page styles */
+        .store-iframe-container {
+            width: 100%;
+            height: calc(100vh - 120px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .store-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+        }
+
+        .store-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FFD700;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .admin-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .cover-title {
+                font-size: 2.5rem;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .players-grid,
+            .coaches-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .player-card,
+            .coach-card {
+                height: 350px;
+                max-width: 350px;
+                margin: 0 auto;
+            }
+
+            .headshot-container {
+                height: 200px;
+            }
+
+            .action-container {
+                height: 180px;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .swipe-hint {
+                display: block;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .swipe-hint {
+                display: none;
+            }
+        }
+
+        /* Overlay for admin mode */
+        .admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1400;
+            display: none;
+        }
+
+        .admin-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Admin Toggle Button -->
+    <button class="admin-toggle" id="adminToggle" onclick="requestAdminAccess()">🔒 Admin</button>
+
+    <!-- Admin Mode Indicator -->
+    <div class="admin-mode-indicator" id="adminModeIndicator">
+        🛠️ Admin Mode Active
+    </div>
+
+    <!-- Pending Changes Indicator -->
+    <div class="pending-changes-indicator" id="pendingChangesIndicator">
+        ⚠️ Unsaved changes on this page
+    </div>
+
+    <!-- Authentication Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-container">
+            <h2 class="auth-title">🔐 Admin Access</h2>
+            <div id="authError" class="auth-error" style="display: none;"></div>
+            <input
+                type="password"
+                id="authPassword"
+                class="auth-input"
+                placeholder="Enter admin password"
+                onkeypress="handleAuthKeypress(event)"
+            >
+            <div class="auth-buttons">
+                <button class="btn" onclick="authenticateAdmin()">Login</button>
+                <button class="btn" onclick="closeAuthModal()">Cancel</button>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.8rem; opacity: 0.7;">
+                Default password: <code>password</code><br>
+                (Change this in Admin Settings)
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin Overlay -->
+    <div class="admin-overlay" id="adminOverlay" onclick="closeAdmin()"></div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h2>🛠️ Admin Panel</h2>
+            <p id="currentPageDisplay">Editing: Cover Page</p>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                <button class="btn btn-small btn-success" onclick="applyToCurrentPage()">Apply to Current Page</button>
+                <button class="btn btn-small" onclick="saveAllChanges()">Save All Changes</button>
+                <button class="btn btn-small" onclick="closeAdmin()">Close</button>
+            </div>
+        </div>
+
+        <!-- Dynamic admin content will be populated here -->
+        <div id="adminContent"></div>
+
+        <!-- Global Settings (always visible) -->
+        <div class="admin-section">
+            <h3 onclick="toggleSection(this)">🔐 Security Settings ▼</h3>
+            <div class="section-content">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                </div>
+                <button class="btn" onclick="changeAdminPassword()">Change Password</button>
+
+                <hr style="margin: 20px 0; border-color: rgba(255, 215, 0, 0.3);">
+
+                <div class="form-group">
+                    <label>Session Timeout (minutes)</label>
+                    <input type="number" id="sessionTimeout" value="30" min="5" max="120">
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="requireAuth" checked>
+                        Require password for admin access
+                    </label>
+                </div>
+                <button class="btn" onclick="updateSecuritySettings()">Update Settings</button>
+
+                <div
+                    style="margin-top: 20px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px; border: 1px solid rgba(255, 215, 0, 0.3);">
+                    <h4 style="color: #FFD700; margin-bottom: 10px;">🛡️ Security Status</h4>
+                    <p style="font-size: 0.9rem;">
+                        Session: <span id="sessionStatus">Active</span><br>
+                        Auto-logout: <span id="timeoutStatus">30 minutes</span><br>
+                        Last login: <span id="lastLogin">Just now</span>
+                    </p>
+                    <button class="btn btn-small btn-danger" onclick="forceLogout()" style="margin-top: 10px;">Force Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="admin-section">
+            <h3 onclick="toggleSection(this)">💾 Data Management ▼</h3>
+            <div class="section-content">
+                <h4 style="color: #FFD700; margin-bottom: 10px;">📤 Export Data</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-small" onclick="exportPlayersCSV()">📋 Players CSV</button>
+                    <button class="btn btn-small" onclick="exportScheduleCSV()">📅 Schedule CSV</button>
+                    <button class="btn btn-small" onclick="exportSponsorsCSV()">🤝 Sponsors CSV</button>
+                    <button class="btn btn-small" onclick="exportStatsCSV()">📊 Stats CSV</button>
+                </div>
+                <button class="btn" onclick="exportAllJSON()">📦 Complete Backup (JSON)</button>
+
+                <h4 style="color: #FFD700; margin: 20px 0 10px 0;">📥 Import Data</h4>
+                <div class="form-group">
+                    <label>Import Players (CSV)</label>
+                    <input type="file" id="importPlayersCSV" accept=".csv">
+                    <button class="btn btn-small" onclick="importPlayersCSV()">Import Players</button>
+                </div>
+                <div class="form-group">
+                    <label>Import Schedule (CSV)</label>
+                    <input type="file" id="importScheduleCSV" accept=".csv">
+                    <button class="btn btn-small" onclick="importScheduleCSV()">Import Schedule</button>
+                </div>
+                <div class="form-group">
+                    <label>Import Sponsors (CSV)</label>
+                    <input type="file" id="importSponsorsCSV" accept=".csv">
+                    <button class="btn btn-small" onclick="importSponsorsCSV()">Import Sponsors</button>
+                </div>
+                <div class="form-group">
+                    <label>Complete Restore (JSON)</label>
+                    <input type="file" id="importAllJSON" accept=".json">
+                    <button class="btn btn-small" onclick="importAllJSON()">Restore All</button>
+                </div>
+
+                <button class="btn btn-danger" onclick="resetToDefaults()">🔄 Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="program-container" id="programContainer">
+        <!-- Page 1: Cover -->
+        <div class="program-page cover-page">
+            <div class="team-logo">🦁</div>
+            <h1 class="cover-title" id="coverTitle">LIONS FOOTBALL</h1>
+            <p class="cover-subtitle" id="coverSubtitle">Faith • Family • Football</p>
+            <div class="season-info" id="coverSeason">2025 Season</div>
+
+            <div class="quick-stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="coverRecord">8-2</div>
+                    <div class="stat-label">Season Record</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="coverRank">1st</div>
+                    <div class="stat-label">District Rank</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="coverPlayers">24</div>
+                    <div class="stat-label">Team Players</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Schedule -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Season Schedule</h2>
+                <p class="page-subtitle" id="scheduleSubtitle">2025 Game Results & Upcoming</p>
+            </div>
+            <div class="page-content">
+                <div class="schedule-grid" id="scheduleGrid">
+                    <!-- Games will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Roster -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Team Roster</h2>
+                <p class="page-subtitle" id="rosterSubtitle">2025 Lions Football Team</p>
+            </div>
+            <div class="page-content">
+                <div class="roster-container" id="rosterContainer">
+                    <!-- Roster will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Season Highlights -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Season Highlights</h2>
+                <p class="page-subtitle" id="highlightsSubtitle">2025 Lions Football Best Moments</p>
+            </div>
+            <div class="page-content">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div
+                        style="position: relative; background: #000; border-radius: 15px; overflow: hidden; max-width: 800px; margin: 0 auto;">
+                        <video controls autoplay muted loop style="width: 100%; height: auto; display: block;">
+                            <source
+                                src="https://video-previews.elements.envatousercontent.com/files/5fdc6fcc-4217-4497-994c-99ba6c6b5319/video_preview_h264.mp4"
+                                type="video/mp4">
+                            <div style="padding: 40px; color: white; text-align: center;">
+                                <h3>🎥 Season Highlight Reel</h3>
+                                <p>Video preview unavailable - replace with your highlight video</p>
+                            </div>
+                        </video>
+                        <div
+                            style="position: absolute; bottom: 10px; left: 10px; background: rgba(255, 215, 0, 0.9); color: #1e3c72; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold;">
+                            🎬 <span id="highlightsYear">2025</span> Season Highlights
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-overview">
+                    <div class="stats-card">
+                        <h3>🏆 Top Plays</h3>
+                        <div style="text-align: left; margin-top: 15px;">
+                            <p style="margin-bottom: 10px;">• 68-yard TD pass vs Eagles</p>
+                            <p style="margin-bottom: 10px;">• Goal line stand vs Panthers</p>
+                            <p style="margin-bottom: 10px;">• Pick-six by Jordan Smith</p>
+                            <p style="margin-bottom: 10px;">• Game-winning FG vs Hawks</p>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h3>📊 Season Bests</h3>
+                        <div style="text-align: left; margin-top: 15px;">
+                            <p style="margin-bottom: 10px;">• Most points: 42 vs Tigers</p>
+                            <p style="margin-bottom: 10px;">• Most yards: 587 vs Eagles</p>
+                            <p style="margin-bottom: 10px;">• Best defense: 3 pts allowed</p>
+                            <p style="margin-bottom: 10px;">• Longest play: 82-yard TD</p>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h3>🌟 Player Highlights</h3>
+                        <div style="text-align: left; margin-top: 15px;">
+                            <p style="margin-bottom: 10px;">• Jake: 4 TD passes vs Lions</p>
+                            <p style="margin-bottom: 10px;">• Marcus: 247 rush yards</p>
+                            <p style="margin-bottom: 10px;">• Alex: 15 tackles vs Bears</p>
+                            <p style="margin-bottom: 10px;">• Ryan: 55-yard field goal</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: Team Store -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Lions Team Store</h2>
+                <p class="page-subtitle">Show Your Lions Pride - Order Online</p>
+            </div>
+            <div class="page-content">
+                <div class="store-iframe-container">
+                    <div class="store-loading">
+                        <div>🛒 Loading Team Store...</div>
+                        <small>Please wait while we connect to our online store</small>
+                    </div>
+                    <iframe src="https://teamlocker.squadlocker.com/#/lockers/lions-football-club" class="store-iframe"
+                        title="Lions Football Team Store"
+                        onload="this.previousElementSibling.style.display='none';"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 6: Season Statistics -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Season Statistics</h2>
+                <p class="page-subtitle" id="statsSubtitle">2025 Performance Highlights</p>
+            </div>
+            <div class="page-content">
+                <div class="stats-overview" id="teamStatsContainer">
+                    <!-- Team stats will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 7: Sponsors -->
+        <div class="program-page">
+            <div class="page-header">
+                <h2 class="page-title">Our Sponsors</h2>
+                <p class="page-subtitle">Thank You to Our Community Partners</p>
+            </div>
+            <div class="page-content">
+                <div class="sponsors-grid" id="sponsorsGrid">
+                    <!-- Sponsors will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="previousPage()">‹</button>
+        <div class="page-indicators" id="pageIndicators"></div>
+        <div class="page-info" id="pageInfo">1 / 7</div>
+        <button class="nav-button" id="nextBtn" onclick="nextPage()">›</button>
+    </div>
+
+    <!-- Touch hint for mobile -->
+    <div class="swipe-hint">Swipe to navigate →</div>
+
+    <script>
+        // Global variables
+        let currentPage = 0;
+        const totalPages = 7;
+        let isAdminOpen = false;
+        let isAdminAuthenticated = false;
+        let adminSessionTimeout = null;
+        let pendingChanges = {};
+        let currentPageChanges = null;
+
+        // Page names for tracking
+        const pageNames = ['cover', 'schedule', 'roster', 'highlights', 'store', 'stats', 'sponsors'];
+
+        // Data storage
+        let programData = {
+            adminSettings: {
+                password: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", // Default: "password" (SHA-256)
+                sessionTimeout: 30, // minutes
+                requireAuth: true
+            },
+            brandingSettings: {
+                logoUrl: "",
+                logoEmoji: "🦁",
+                logoSize: 120, // px
+                logoBackground: true,
+                logoBackgroundColor: "#FFD700",
+                logoBackgroundType: "color", // "color", "gradient", "transparent"
+                titleFont: "Arial",
+                bodyFont: "Arial",
+                primaryColor: "#FFD700",
+                secondaryColor: "#1e3c72"
+            },
+            frontPageElements: [
+                {
+                    id: 1,
+                    type: "stat",
+                    title: "Season Record",
+                    value: "8-2",
+                    enabled: true
+                },
+                {
+                    id: 2,
+                    type: "stat",
+                    title: "District Rank",
+                    value: "1st",
+                    enabled: true
+                },
+                {
+                    id: 3,
+                    type: "stat",
+                    title: "Team Players",
+                    value: "24",
+                    enabled: true
+                }
+            ],
+            teamInfo: {
+                name: "LIONS FOOTBALL",
+                motto: "Faith • Family • Football",
+                season: "2025",
+                record: "8-2",
+                rank: "1st",
+                totalPlayers: 24
+            },
+            schedule: [
+                {
+                    id: 1,
+                    date: "Oct 15, 2025",
+                    opponent: "Eagles",
+                    homeAway: "vs",
+                    location: "Lions Stadium",
+                    time: "7:00 PM",
+                    status: "won",
+                    score: "28-14"
+                },
+                {
+                    id: 2,
+                    date: "Oct 22, 2025",
+                    opponent: "Wildcats",
+                    homeAway: "@",
+                    location: "Wildcat Field",
+                    time: "7:30 PM",
+                    status: "upcoming",
+                    score: "THIS WEEK"
+                },
+                {
+                    id: 3,
+                    date: "Oct 29, 2025",
+                    opponent: "Panthers",
+                    homeAway: "vs",
+                    location: "Lions Stadium",
+                    time: "7:00 PM",
+                    status: "upcoming",
+                    score: "UPCOMING"
+                },
+                {
+                    id: 4,
+                    date: "Nov 5, 2025",
+                    opponent: "Bulldogs",
+                    homeAway: "vs",
+                    location: "Lions Stadium",
+                    time: "7:00 PM",
+                    status: "upcoming",
+                    score: "SENIOR NIGHT"
+                }
+            ],
+            players: [
+                {
+                    id: 1,
+                    name: "Jake Thompson",
+                    number: 12,
+                    position: "Quarterback",
+                    group: "Offense",
+                    year: "Senior",
+                    height: "6'2\"",
+                    weight: "185 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "Pass Yds", value: "2,847" },
+                        { label: "TDs", value: "24" },
+                        { label: "Comp %", value: "68%" },
+                        { label: "INTs", value: "8" }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Marcus Williams",
+                    number: 23,
+                    position: "Running Back",
+                    group: "Offense",
+                    year: "Junior",
+                    height: "5'11\"",
+                    weight: "195 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "Rush Yds", value: "1,532" },
+                        { label: "TDs", value: "18" },
+                        { label: "YPC", value: "5.8" },
+                        { label: "Rec Yds", value: "312" }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "Alex Rodriguez",
+                    number: 56,
+                    position: "Linebacker",
+                    group: "Defense",
+                    year: "Senior",
+                    height: "6'1\"",
+                    weight: "205 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "Tackles", value: "124" },
+                        { label: "Sacks", value: "8.5" },
+                        { label: "INTs", value: "3" },
+                        { label: "FF", value: "2" }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "Jordan Smith",
+                    number: 21,
+                    position: "Cornerback",
+                    group: "Defense",
+                    year: "Junior",
+                    height: "5'10\"",
+                    weight: "170 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "INTs", value: "6" },
+                        { label: "PBUs", value: "15" },
+                        { label: "Tackles", value: "47" },
+                        { label: "TDs", value: "2" }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "Ryan Wilson",
+                    number: 4,
+                    position: "Kicker",
+                    group: "Special Teams",
+                    year: "Sophomore",
+                    height: "5'9\"",
+                    weight: "160 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "XP", value: "24/27" },
+                        { label: "FG", value: "8/12" },
+                        { label: "Long FG", value: "48" },
+                        { label: "Accuracy", value: "89%" }
+                    ]
+                },
+                {
+                    id: 6,
+                    name: "Lucas Anderson",
+                    number: 16,
+                    position: "Punter",
+                    group: "Special Teams",
+                    year: "Junior",
+                    height: "6'1\"",
+                    weight: "175 lbs",
+                    headshotUrl: "",
+                    actionUrl: "",
+                    stats: [
+                        { label: "Avg Yds", value: "42.8" },
+                        { label: "Inside 20", value: "18" },
+                        { label: "Long Punt", value: "63" },
+                        { label: "Blocks", value: "2" }
+                    ]
+                }
+            ],
+            coaches: [
+                {
+                    id: 1,
+                    name: "Mike Stevens",
+                    position: "Head Coach",
+                    experience: "15 Years",
+                    stats: [
+                        { label: "State Titles", value: "2" },
+                        { label: "Wins", value: "127" },
+                        { label: "Win Rate", value: "76%" },
+                        { label: "Playoffs", value: "5" }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Tom Richards",
+                    position: "Offensive Coordinator",
+                    experience: "8 Years",
+                    stats: [
+                        { label: "Avg Yards", value: "420" },
+                        { label: "TDs/Game", value: "38" },
+                        { label: "Red Zone", value: "87%" },
+                        { label: "State Rank", value: "#3" }
+                    ]
+                }
+            ],
+            teamStats: [
+                { title: "Total Offense", value: "4,892", description: "yards per game: 489.2" },
+                { title: "Points Scored", value: "287", description: "points per game: 28.7" },
+                { title: "Total Defense", value: "2,134", description: "yards allowed: 213.4" },
+                { title: "Turnovers", value: "+12", description: "turnover margin" },
+                { title: "Passing Offense", value: "2,847", description: "284.7 yards/game" },
+                { title: "Rushing Offense", value: "2,045", description: "204.5 yards/game" },
+                { title: "Red Zone", value: "87%", description: "touchdown efficiency" },
+                { title: "3rd Down", value: "45%", description: "conversion rate" }
+            ],
+            sponsors: [
+                { 
+                    id: 1, 
+                    name: "Main Street Market", 
+                    type: "Gold Sponsor", 
+                    imageUrl: "", 
+                    emoji: "🏪",
+                    backContent: "Supporting Lions Football since 2020. Visit us at 123 Main St for all your grocery needs!",
+                    website: "https://mainstreetmarket.com",
+                    phone: "(555) 123-4567"
+                },
+                { 
+                    id: 2, 
+                    name: "Community Hospital", 
+                    type: "Health Partner", 
+                    imageUrl: "", 
+                    emoji: "🏥",
+                    backContent: "Proud to provide sports medicine and health services to our Lions athletes.",
+                    website: "https://communityhospital.com",
+                    phone: "(555) 234-5678"
+                },
+                { 
+                    id: 3, 
+                    name: "First National Bank", 
+                    type: "Financial Partner", 
+                    imageUrl: "", 
+                    emoji: "🏦",
+                    backContent: "Banking on Lions success! Special rates for team families available.",
+                    website: "https://firstnationalbank.com",
+                    phone: "(555) 345-6789"
+                },
+                { 
+                    id: 4, 
+                    name: "Tony's Pizza", 
+                    type: "Team Meals", 
+                    imageUrl: "", 
+                    emoji: "🍕",
+                    backContent: "Fueling Lions victories one pizza at a time! Team discounts available.",
+                    website: "https://tonyspizza.com",
+                    phone: "(555) 456-7890"
+                },
+                { 
+                    id: 5, 
+                    name: "Sports Zone", 
+                    type: "Equipment Partner", 
+                    imageUrl: "", 
+                    emoji: "⚽",
+                    backContent: "Your one-stop shop for all sporting goods and Lions team gear.",
+                    website: "https://sportszone.com",
+                    phone: "(555) 567-8901"
+                },
+                { 
+                    id: 6, 
+                    name: "City Auto Group", 
+                    type: "Transportation", 
+                    imageUrl: "", 
+                    emoji: "🚗",
+                    backContent: "Keeping Lions families moving! Special financing for team families.",
+                    website: "https://cityautogroup.com",
+                    phone: "(555) 678-9012"
+                }
+            ]
+        };
+
+        // Load data from localStorage if available
+        function loadData() {
+            const saved = localStorage.getItem('lionsFootballData');
+            if (saved) {
+                try {
+                    const savedData = JSON.parse(saved);
+                    
+                    // Ensure all sections exist, add defaults if missing
+                    programData = {
+                        adminSettings: savedData.adminSettings || programData.adminSettings,
+                        brandingSettings: savedData.brandingSettings || programData.brandingSettings,
+                        teamInfo: savedData.teamInfo || programData.teamInfo,
+                        schedule: savedData.schedule || programData.schedule,
+                        players: savedData.players || programData.players,
+                        coaches: savedData.coaches || programData.coaches,
+                        teamStats: savedData.teamStats || programData.teamStats,
+                        sponsors: savedData.sponsors || programData.sponsors,
+                        frontPageElements: savedData.frontPageElements || programData.frontPageElements
+                    };
+                    
+                    console.log('Data loaded from localStorage');
+                } catch (e) {
+                    console.log('Error loading data, using defaults');
+                }
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('lionsFootballData', JSON.stringify(programData));
+            console.log('Data saved to localStorage');
+        }
+
+        // Check for pending changes
+        function hasPendingChanges() {
+            return Object.keys(pendingChanges).length > 0;
+        }
+
+        // Update pending changes indicator
+        function updatePendingChangesIndicator() {
+            const indicator = document.getElementById('pendingChangesIndicator');
+            if (hasPendingChanges()) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        // Apply changes to current page only
+        function applyToCurrentPage() {
+            if (!requireAuth()) return;
+            
+            const pageName = pageNames[currentPage];
+            currentPageChanges = pendingChanges[pageName];
+            
+            if (!currentPageChanges) {
+                alert('No changes to apply on this page');
+                return;
+            }
+            
+            // Apply changes based on current page
+            switch (pageName) {
+                case 'cover':
+                    renderTeamInfo(currentPageChanges);
+                    break;
+                case 'schedule':
+                    renderSchedule(currentPageChanges);
+                    break;
+                case 'roster':
+                    renderRoster(currentPageChanges);
+                    break;
+                case 'stats':
+                    renderTeamStats(currentPageChanges);
+                    break;
+                case 'sponsors':
+                    renderSponsors(currentPageChanges);
+                    break;
+            }
+            
+            alert('Changes applied to current page!');
+        }
+
+        // Save all pending changes globally
+        function saveAllChanges() {
+            if (!requireAuth()) return;
+            
+            if (!hasPendingChanges()) {
+                alert('No pending changes to save');
+                return;
+            }
+            
+            // Apply all pending changes to programData
+            for (const [page, changes] of Object.entries(pendingChanges)) {
+                switch (page) {
+                    case 'cover':
+                        if (changes.teamInfo) programData.teamInfo = changes.teamInfo;
+                        if (changes.frontPageElements) programData.frontPageElements = changes.frontPageElements;
+                        if (changes.brandingSettings) programData.brandingSettings = changes.brandingSettings;
+                        break;
+                    case 'schedule':
+                        if (changes.schedule) programData.schedule = changes.schedule;
+                        break;
+                    case 'roster':
+                        if (changes.players) programData.players = changes.players;
+                        if (changes.coaches) programData.coaches = changes.coaches;
+                        break;
+                    case 'stats':
+                        if (changes.teamStats) programData.teamStats = changes.teamStats;
+                        break;
+                    case 'sponsors':
+                        if (changes.sponsors) programData.sponsors = changes.sponsors;
+                        break;
+                }
+            }
+            
+            saveData();
+            pendingChanges = {};
+            currentPageChanges = null;
+            updatePendingChangesIndicator();
+            renderAll();
+            alert('All changes saved successfully!');
+        }
+
+        // Generate admin content based on current page
+        function generateAdminContent() {
+            const pageName = pageNames[currentPage];
+            const content = document.getElementById('adminContent');
+            const currentPageDisplay = document.getElementById('currentPageDisplay');
+            
+            currentPageDisplay.textContent = `Editing: ${getPageDisplayName(currentPage)}`;
+            
+            content.innerHTML = '';
+            
+            switch (pageName) {
+                case 'cover':
+                    content.innerHTML = getCoverPageAdmin();
+                    break;
+                case 'schedule':
+                    content.innerHTML = getSchedulePageAdmin();
+                    break;
+                case 'roster':
+                    content.innerHTML = getRosterPageAdmin();
+                    break;
+                case 'stats':
+                    content.innerHTML = getStatsPageAdmin();
+                    break;
+                case 'sponsors':
+                    content.innerHTML = getSponsorsPageAdmin();
+                    break;
+                default:
+                    content.innerHTML = '<p style="text-align: center; opacity: 0.7;">No editable content on this page</p>';
+            }
+            
+            // Populate the forms with current data
+            populatePageSpecificForms(pageName);
+        }
+
+        // Get page display name
+        function getPageDisplayName(pageIndex) {
+            const names = ['Cover Page', 'Schedule', 'Team Roster', 'Season Highlights', 'Team Store', 'Statistics', 'Sponsors'];
+            return names[pageIndex] || 'Unknown Page';
+        }
+
+        // Generate admin HTML for each page
+        function getCoverPageAdmin() {
+            return `
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">🏈 Team Information ▼</h3>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <label>Team Name</label>
+                            <input type="text" id="teamName" value="${programData.teamInfo.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Team Motto</label>
+                            <input type="text" id="teamMotto" value="${programData.teamInfo.motto}">
+                        </div>
+                        <div class="form-group">
+                            <label>Season Year</label>
+                            <input type="text" id="seasonYear" value="${programData.teamInfo.season}">
+                        </div>
+                        <button class="btn" onclick="updateTeamInfo()">Update Team Info</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">🎨 Branding & Appearance ▼</h3>
+                    <div class="section-content">
+                        <h4 style="color: #FFD700; margin-bottom: 10px;">🖼️ Team Logo</h4>
+                        <div class="form-group">
+                            <label>Logo Image URL (optional)</label>
+                            <input type="url" id="logoUrl" placeholder="https://example.com/team-logo.png" oninput="previewBrandingLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Logo Emoji (fallback)</label>
+                            <input type="text" id="logoEmoji" value="🦁" maxlength="2" oninput="previewBrandingLive()">
+                        </div>
+                        
+                        <h4 style="color: #FFD700; margin: 20px 0 10px 0;">🎨 Colors</h4>
+                        <div class="two-column">
+                            <div class="form-group">
+                                <label>Primary Color (gold/accent)</label>
+                                <input type="color" id="primaryColor" value="#FFD700" oninput="previewBrandingLive()">
+                            </div>
+                            <div class="form-group">
+                                <label>Secondary Color (blue/dark)</label>
+                                <input type="color" id="secondaryColor" value="#1e3c72" oninput="previewBrandingLive()">
+                            </div>
+                        </div>
+                        
+                        <button class="btn" onclick="updateBranding()">Update Branding</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">📊 Front Page Stats ▼</h3>
+                    <div class="section-content">
+                        <div class="two-column">
+                            <div class="form-group">
+                                <label>Season Record</label>
+                                <input type="text" id="seasonRecord" value="${programData.teamInfo.record}">
+                            </div>
+                            <div class="form-group">
+                                <label>District Rank</label>
+                                <input type="text" id="districtRank" value="${programData.teamInfo.rank}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Players</label>
+                            <input type="number" id="totalPlayers" value="${programData.teamInfo.totalPlayers}">
+                        </div>
+                        <button class="btn" onclick="updateFrontPageStats()">Update Stats</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getSchedulePageAdmin() {
+            return `
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">📅 Schedule Management ▼</h3>
+                    <div class="section-content">
+                        <div id="scheduleList"></div>
+                        <button class="btn" onclick="addGame()">+ Add Game</button>
+                        <button class="btn" onclick="updateSchedule()">Update Schedule</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getRosterPageAdmin() {
+            return `
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">👥 Player Management ▼</h3>
+                    <div class="section-content">
+                        <div id="playersList"></div>
+                        <button class="btn" onclick="addPlayer()">+ Add Player</button>
+                        <button class="btn" onclick="updateRoster()">Update Roster</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatsPageAdmin() {
+            return `
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">📊 Team Statistics ▼</h3>
+                    <div class="section-content">
+                        <div id="teamStatsList"></div>
+                        <button class="btn" onclick="addTeamStat()">+ Add Statistic</button>
+                        <button class="btn" onclick="updateTeamStats()">Update Statistics</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getSponsorsPageAdmin() {
+            return `
+                <div class="admin-section">
+                    <h3 onclick="toggleSection(this)">🤝 Sponsors Management ▼</h3>
+                    <div class="section-content">
+                        <div id="sponsorsList"></div>
+                        <button class="btn" onclick="addSponsor()">+ Add Sponsor</button>
+                        <button class="btn" onclick="updateSponsors()">Update Sponsors</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate page-specific forms
+        function populatePageSpecificForms(pageName) {
+            switch (pageName) {
+                case 'schedule':
+                    populateScheduleAdmin();
+                    break;
+                case 'roster':
+                    populatePlayersAdmin();
+                    break;
+                case 'stats':
+                    populateTeamStatsAdmin();
+                    break;
+                case 'sponsors':
+                    populateSponsorsAdmin();
+                    break;
+            }
+        }
+
+        // Update functions that track pending changes
+        function updateTeamInfo() {
+            if (!requireAuth()) return;
+            
+            const teamInfo = {
+                name: document.getElementById('teamName').value,
+                motto: document.getElementById('teamMotto').value,
+                season: document.getElementById('seasonYear').value,
+                record: programData.teamInfo.record,
+                rank: programData.teamInfo.rank,
+                totalPlayers: programData.teamInfo.totalPlayers
+            };
+            
+            if (!pendingChanges['cover']) pendingChanges['cover'] = {};
+            pendingChanges['cover'].teamInfo = teamInfo;
+            updatePendingChangesIndicator();
+            alert('Team info changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateFrontPageStats() {
+            if (!requireAuth()) return;
+            
+            const teamInfo = programData.teamInfo;
+            teamInfo.record = document.getElementById('seasonRecord').value;
+            teamInfo.rank = document.getElementById('districtRank').value;
+            teamInfo.totalPlayers = parseInt(document.getElementById('totalPlayers').value);
+            
+            if (!pendingChanges['cover']) pendingChanges['cover'] = {};
+            pendingChanges['cover'].teamInfo = teamInfo;
+            updatePendingChangesIndicator();
+            alert('Stats changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateBranding() {
+            if (!requireAuth()) return;
+            
+            const brandingSettings = {
+                logoUrl: document.getElementById('logoUrl').value,
+                logoEmoji: document.getElementById('logoEmoji').value,
+                logoSize: programData.brandingSettings.logoSize,
+                logoBackgroundType: programData.brandingSettings.logoBackgroundType,
+                logoBackgroundColor: programData.brandingSettings.logoBackgroundColor,
+                titleFont: programData.brandingSettings.titleFont,
+                bodyFont: programData.brandingSettings.bodyFont,
+                primaryColor: document.getElementById('primaryColor').value,
+                secondaryColor: document.getElementById('secondaryColor').value
+            };
+            
+            if (!pendingChanges['cover']) pendingChanges['cover'] = {};
+            pendingChanges['cover'].brandingSettings = brandingSettings;
+            updatePendingChangesIndicator();
+            alert('Branding changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateSchedule() {
+            if (!requireAuth()) return;
+            
+            const schedule = [];
+            programData.schedule.forEach(game => {
+                const gameData = {
+                    id: game.id,
+                    date: document.getElementById(`game_${game.id}_date`)?.value || game.date,
+                    opponent: document.getElementById(`game_${game.id}_opponent`)?.value || game.opponent,
+                    homeAway: document.getElementById(`game_${game.id}_homeaway`)?.value || game.homeAway,
+                    time: document.getElementById(`game_${game.id}_time`)?.value || game.time,
+                    location: document.getElementById(`game_${game.id}_location`)?.value || game.location,
+                    status: document.getElementById(`game_${game.id}_status`)?.value || game.status,
+                    score: document.getElementById(`game_${game.id}_score`)?.value || game.score
+                };
+                schedule.push(gameData);
+            });
+            
+            if (!pendingChanges['schedule']) pendingChanges['schedule'] = {};
+            pendingChanges['schedule'].schedule = schedule;
+            updatePendingChangesIndicator();
+            alert('Schedule changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateRoster() {
+            if (!requireAuth()) return;
+            
+            const players = [];
+            programData.players.forEach(player => {
+                const playerData = {
+                    id: player.id,
+                    name: document.getElementById(`player_${player.id}_name`)?.value || player.name,
+                    number: parseInt(document.getElementById(`player_${player.id}_number`)?.value) || player.number,
+                    position: document.getElementById(`player_${player.id}_position`)?.value || player.position,
+                    group: document.getElementById(`player_${player.id}_group`)?.value || player.group,
+                    year: document.getElementById(`player_${player.id}_year`)?.value || player.year,
+                    height: document.getElementById(`player_${player.id}_height`)?.value || player.height,
+                    weight: document.getElementById(`player_${player.id}_weight`)?.value || player.weight,
+                    headshotUrl: document.getElementById(`player_${player.id}_headshotUrl`)?.value || player.headshotUrl,
+                    actionUrl: document.getElementById(`player_${player.id}_actionUrl`)?.value || player.actionUrl,
+                    stats: player.stats // Keep existing stats for now
+                };
+                players.push(playerData);
+            });
+            
+            if (!pendingChanges['roster']) pendingChanges['roster'] = {};
+            pendingChanges['roster'].players = players;
+            updatePendingChangesIndicator();
+            alert('Roster changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateTeamStats() {
+            if (!requireAuth()) return;
+            
+            const teamStats = [];
+            programData.teamStats.forEach((stat, index) => {
+                const statData = {
+                    title: document.getElementById(`stat_${index}_title`)?.value || stat.title,
+                    value: document.getElementById(`stat_${index}_value`)?.value || stat.value,
+                    description: document.getElementById(`stat_${index}_description`)?.value || stat.description
+                };
+                teamStats.push(statData);
+            });
+            
+            if (!pendingChanges['stats']) pendingChanges['stats'] = {};
+            pendingChanges['stats'].teamStats = teamStats;
+            updatePendingChangesIndicator();
+            alert('Stats changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        function updateSponsors() {
+            if (!requireAuth()) return;
+            
+            const sponsors = [];
+            programData.sponsors.forEach(sponsor => {
+                const sponsorData = {
+                    id: sponsor.id,
+                    name: document.getElementById(`sponsor_${sponsor.id}_name`)?.value || sponsor.name,
+                    type: document.getElementById(`sponsor_${sponsor.id}_type`)?.value || sponsor.type,
+                    imageUrl: document.getElementById(`sponsor_${sponsor.id}_imageUrl`)?.value || sponsor.imageUrl,
+                    emoji: document.getElementById(`sponsor_${sponsor.id}_emoji`)?.value || sponsor.emoji,
+                    backContent: document.getElementById(`sponsor_${sponsor.id}_backContent`)?.value || sponsor.backContent,
+                    website: document.getElementById(`sponsor_${sponsor.id}_website`)?.value || sponsor.website,
+                    phone: document.getElementById(`sponsor_${sponsor.id}_phone`)?.value || sponsor.phone
+                };
+                sponsors.push(sponsorData);
+            });
+            
+            if (!pendingChanges['sponsors']) pendingChanges['sponsors'] = {};
+            pendingChanges['sponsors'].sponsors = sponsors;
+            updatePendingChangesIndicator();
+            alert('Sponsor changes pending. Click "Apply to Current Page" to preview or "Save All Changes" to save permanently.');
+        }
+
+        // Live preview and branding management
+        let originalBranding = null; // Store original for revert functionality
+
+        function previewBrandingLive() {
+            const branding = {
+                logoUrl: document.getElementById('logoUrl').value,
+                logoEmoji: document.getElementById('logoEmoji').value,
+                logoSize: programData.brandingSettings.logoSize,
+                logoBackgroundType: programData.brandingSettings.logoBackgroundType,
+                logoBackgroundColor: programData.brandingSettings.logoBackgroundColor,
+                titleFont: programData.brandingSettings.titleFont,
+                bodyFont: programData.brandingSettings.bodyFont,
+                primaryColor: document.getElementById('primaryColor').value,
+                secondaryColor: document.getElementById('secondaryColor').value
+            };
+            
+            // Apply preview immediately
+            applyBrandingPreview(branding);
+        }
+
+        function applyBrandingPreview(branding) {
+            // Update CSS custom properties
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', branding.primaryColor);
+            root.style.setProperty('--secondary-color', branding.secondaryColor);
+            
+            // Update logo
+            const logoElement = document.querySelector('.team-logo');
+            if (logoElement) {
+                if (branding.logoUrl && branding.logoUrl.trim() !== '') {
+                    logoElement.innerHTML = `<img src="${branding.logoUrl}" alt="Team Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: calc(var(--logo-size) * 0.5);">${branding.logoEmoji}</div>`;
+                } else {
+                    logoElement.innerHTML = branding.logoEmoji;
+                    logoElement.style.fontSize = `calc(var(--logo-size) * 0.5)`;
+                }
+            }
+        }
+
+        // Security and Authentication Functions
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function requestAdminAccess() {
+            if (!programData.adminSettings.requireAuth) {
+                // If auth is disabled, go straight to admin
+                isAdminAuthenticated = true;
+                toggleAdmin();
+                return;
+            }
+
+            if (isAdminAuthenticated) {
+                // Already authenticated, toggle admin panel
+                toggleAdmin();
+            } else {
+                // Show authentication modal
+                document.getElementById('authModal').classList.add('active');
+                document.getElementById('authPassword').focus();
+                document.getElementById('authError').style.display = 'none';
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authPassword').value = '';
+            document.getElementById('authError').style.display = 'none';
+        }
+
+        function handleAuthKeypress(event) {
+            if (event.key === 'Enter') {
+                authenticateAdmin();
+            }
+        }
+
+        async function authenticateAdmin() {
+            const password = document.getElementById('authPassword').value;
+            const errorDiv = document.getElementById('authError');
+            
+            if (!password) {
+                errorDiv.textContent = 'Please enter a password';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const hashedInput = await hashPassword(password);
+                
+                if (hashedInput === programData.adminSettings.password) {
+                    // Authentication successful
+                    isAdminAuthenticated = true;
+                    updateAdminButton();
+                    updateAdminModeIndicator();
+                    closeAuthModal();
+                    toggleAdmin();
+                    startSessionTimeout();
+                    updateSecurityDisplay();
+                } else {
+                    // Authentication failed
+                    errorDiv.textContent = 'Incorrect password';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('authPassword').value = '';
+                    document.getElementById('authPassword').focus();
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Authentication error';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function updateAdminButton() {
+            const button = document.getElementById('adminToggle');
+            if (isAdminAuthenticated) {
+                button.textContent = '⚙️ Admin';
+                button.classList.add('authenticated');
+            } else {
+                button.textContent = '🔒 Admin';
+                button.classList.remove('authenticated');
+            }
+        }
+
+        function updateAdminModeIndicator() {
+            const indicator = document.getElementById('adminModeIndicator');
+            if (isAdminAuthenticated && isAdminOpen) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function startSessionTimeout() {
+            clearTimeout(adminSessionTimeout);
+            const timeoutMinutes = programData.adminSettings.sessionTimeout;
+            adminSessionTimeout = setTimeout(() => {
+                forceLogout();
+                alert('Admin session expired due to inactivity.');
+            }, timeoutMinutes * 60 * 1000);
+        }
+
+        function forceLogout() {
+            isAdminAuthenticated = false;
+            isAdminOpen = false;
+            clearTimeout(adminSessionTimeout);
+            updateAdminButton();
+            updateAdminModeIndicator();
+            closeAdmin();
+            alert('Logged out of admin mode.');
+        }
+
+        async function changeAdminPassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match.');
+                return;
+            }
+
+            if (newPassword.length < 4) {
+                alert('Password must be at least 4 characters long.');
+                return;
+            }
+
+            try {
+                const currentHashed = await hashPassword(currentPassword);
+                if (currentHashed !== programData.adminSettings.password) {
+                    alert('Current password is incorrect.');
+                    return;
+                }
+
+                const newHashed = await hashPassword(newPassword);
+                programData.adminSettings.password = newHashed;
+                saveData();
+
+                // Clear form
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+
+                alert('Password changed successfully!');
+            } catch (error) {
+                alert('Error changing password.');
+            }
+        }
+
+        function updateSecuritySettings() {
+            const sessionTimeout = parseInt(document.getElementById('sessionTimeout').value);
+            const requireAuth = document.getElementById('requireAuth').checked;
+
+            if (sessionTimeout < 5 || sessionTimeout > 120) {
+                alert('Session timeout must be between 5 and 120 minutes.');
+                return;
+            }
+
+            programData.adminSettings.sessionTimeout = sessionTimeout;
+            programData.adminSettings.requireAuth = requireAuth;
+            saveData();
+
+            // Restart session timeout if authenticated
+            if (isAdminAuthenticated) {
+                startSessionTimeout();
+            }
+
+            updateSecurityDisplay();
+            alert('Security settings updated!');
+        }
+
+        function updateSecurityDisplay() {
+            document.getElementById('sessionTimeout').value = programData.adminSettings.sessionTimeout;
+            document.getElementById('requireAuth').checked = programData.adminSettings.requireAuth;
+            document.getElementById('sessionStatus').textContent = isAdminAuthenticated ? 'Active' : 'Not logged in';
+            document.getElementById('timeoutStatus').textContent = programData.adminSettings.sessionTimeout + ' minutes';
+            document.getElementById('lastLogin').textContent = isAdminAuthenticated ? 'Just now' : 'Never';
+        }
+
+        // Admin Functions
+        function toggleAdmin() {
+            if (!isAdminAuthenticated && programData.adminSettings.requireAuth) {
+                requestAdminAccess();
+                return;
+            }
+
+            isAdminOpen = !isAdminOpen;
+            const panel = document.getElementById('adminPanel');
+            const overlay = document.getElementById('adminOverlay');
+            
+            if (isAdminOpen) {
+                panel.classList.add('open');
+                overlay.classList.add('active');
+                generateAdminContent();
+                updateSecurityDisplay();
+                if (isAdminAuthenticated) {
+                    startSessionTimeout(); // Reset timeout on activity
+                }
+            } else {
+                panel.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+
+            updateAdminModeIndicator();
+        }
+
+        function closeAdmin() {
+            isAdminOpen = false;
+            document.getElementById('adminPanel').classList.remove('open');
+            document.getElementById('adminOverlay').classList.remove('active');
+            updateAdminModeIndicator();
+        }
+
+        function requireAuth() {
+            if (programData.adminSettings.requireAuth && !isAdminAuthenticated) {
+                alert('Authentication required for this action.');
+                return false;
+            }
+            if (isAdminAuthenticated) {
+                startSessionTimeout(); // Reset timeout on admin activity
+            }
+            return true;
+        }
+
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('collapsed');
+            const arrow = header.textContent.includes('▼') ? '▶' : '▼';
+            header.innerHTML = header.innerHTML.replace(/[▼▶]/, arrow);
+        }
+
+        function populateScheduleAdmin() {
+            const container = document.getElementById('scheduleList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            programData.schedule.forEach((game, index) => {
+                const gameDiv = document.createElement('div');
+                gameDiv.className = 'player-item';
+                gameDiv.innerHTML = `
+                    <h4>Game ${index + 1}</h4>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="text" id="game_${game.id}_date" value="${game.date}">
+                        </div>
+                        <div class="form-group">
+                            <label>Opponent</label>
+                            <input type="text" id="game_${game.id}_opponent" value="${game.opponent}">
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Home/Away</label>
+                            <select id="game_${game.id}_homeaway">
+                                <option value="vs" ${game.homeAway === 'vs' ? 'selected' : ''}>vs (Home)</option>
+                                <option value="@" ${game.homeAway === '@' ? 'selected' : ''}>@ (Away)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="text" id="game_${game.id}_time" value="${game.time}">
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="game_${game.id}_location" value="${game.location}">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="game_${game.id}_status">
+                                <option value="won" ${game.status === 'won' ? 'selected' : ''}>Won</option>
+                                <option value="lost" ${game.status === 'lost' ? 'selected' : ''}>Lost</option>
+                                <option value="upcoming" ${game.status === 'upcoming' ? 'selected' : ''}>Upcoming</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Score/Status Text</label>
+                        <input type="text" id="game_${game.id}_score" value="${game.score}">
+                    </div>
+                    <div class="player-controls">
+                        <button class="btn btn-small btn-danger" onclick="removeGame(${game.id})">Remove</button>
+                    </div>
+                `;
+                container.appendChild(gameDiv);
+            });
+        }
+
+        function populatePlayersAdmin() {
+            const container = document.getElementById('playersList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            programData.players.forEach(player => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-item';
+                playerDiv.innerHTML = `
+                    <h4>${player.name} (#${player.number})</h4>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="player_${player.id}_name" value="${player.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Number</label>
+                            <input type="number" id="player_${player.id}_number" value="${player.number}">
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Position</label>
+                            <input type="text" id="player_${player.id}_position" value="${player.position}">
+                        </div>
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select id="player_${player.id}_group">
+                                <option value="Offense" ${player.group === 'Offense' ? 'selected' : ''}>Offense</option>
+                                <option value="Defense" ${player.group === 'Defense' ? 'selected' : ''}>Defense</option>
+                                <option value="Special Teams" ${player.group === 'Special Teams' ? 'selected' : ''}>Special Teams</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="text" id="player_${player.id}_year" value="${player.year}">
+                        </div>
+                        <div class="form-group">
+                            <label>Height</label>
+                            <input type="text" id="player_${player.id}_height" value="${player.height}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Weight</label>
+                        <input type="text" id="player_${player.id}_weight" value="${player.weight}">
+                    </div>
+                    <div class="form-group">
+                        <label>Headshot Image URL (front of card)</label>
+                        <input type="url" id="player_${player.id}_headshotUrl" value="${player.headshotUrl || ''}" placeholder="https://example.com/headshot.jpg">
+                    </div>
+                    <div class="form-group">
+                        <label>Action Image/Video URL (back of card)</label>
+                        <input type="url" id="player_${player.id}_actionUrl" value="${player.actionUrl || ''}" placeholder="https://example.com/action.mp4 or .jpg">
+                        <small style="color: #ccc; font-size: 0.8rem;">Supports images (.jpg, .png, .gif) and videos (.mp4, .webm, .mov)</small>
+                    </div>
+                    
+                    <div class="player-controls">
+                        <button class="btn btn-small btn-danger" onclick="removePlayer(${player.id})">Remove Player</button>
+                    </div>
+                `;
+                container.appendChild(playerDiv);
+            });
+        }
+
+        function populateTeamStatsAdmin() {
+            const container = document.getElementById('teamStatsList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            programData.teamStats.forEach((stat, index) => {
+                const statDiv = document.createElement('div');
+                statDiv.className = 'player-item';
+                statDiv.innerHTML = `
+                    <h4>${stat.title}</h4>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="stat_${index}_title" value="${stat.title}">
+                    </div>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input type="text" id="stat_${index}_value" value="${stat.value}">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="stat_${index}_description" value="${stat.description}">
+                    </div>
+                `;
+                container.appendChild(statDiv);
+            });
+        }
+
+        function populateSponsorsAdmin() {
+            const container = document.getElementById('sponsorsList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            programData.sponsors.forEach(sponsor => {
+                const sponsorDiv = document.createElement('div');
+                sponsorDiv.className = 'player-item';
+                sponsorDiv.innerHTML = `
+                    <h4>${sponsor.name}</h4>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="sponsor_${sponsor.id}_name" value="${sponsor.name}">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <input type="text" id="sponsor_${sponsor.id}_type" value="${sponsor.type}">
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL (optional)</label>
+                        <input type="url" id="sponsor_${sponsor.id}_imageUrl" value="${sponsor.imageUrl || ''}" placeholder="https://example.com/logo.png">
+                    </div>
+                    <div class="form-group">
+                        <label>Emoji (fallback if no image)</label>
+                        <input type="text" id="sponsor_${sponsor.id}_emoji" value="${sponsor.emoji}">
+                    </div>
+                    <div class="form-group">
+                        <label>Back Content (shows when card is hovered)</label>
+                        <textarea id="sponsor_${sponsor.id}_backContent" rows="3" placeholder="Additional sponsor information...">${sponsor.backContent || ''}</textarea>
+                    </div>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label>Website URL</label>
+                            <input type="url" id="sponsor_${sponsor.id}_website" value="${sponsor.website || ''}" placeholder="https://sponsor.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="sponsor_${sponsor.id}_phone" value="${sponsor.phone || ''}" placeholder="(555) 123-4567">
+                        </div>
+                    </div>
+                    <div class="player-controls">
+                        <button class="btn btn-small btn-danger" onclick="removeSponsor(${sponsor.id})">Remove</button>
+                    </div>
+                `;
+                container.appendChild(sponsorDiv);
+            });
+        }
+
+        function addGame() {
+            if (!requireAuth()) return;
+            
+            const newId = Math.max(...programData.schedule.map(g => g.id)) + 1;
+            programData.schedule.push({
+                id: newId,
+                date: "TBD",
+                opponent: "New Opponent",
+                homeAway: "vs",
+                location: "TBD",
+                time: "TBD",
+                status: "upcoming",
+                score: "UPCOMING"
+            });
+            populateScheduleAdmin();
+        }
+
+        function addPlayer() {
+            if (!requireAuth()) return;
+            
+            const newId = Math.max(...programData.players.map(p => p.id)) + 1;
+            programData.players.push({
+                id: newId,
+                name: "New Player",
+                number: 99,
+                position: "Position",
+                group: "Offense",
+                year: "Freshman",
+                height: "6'0\"",
+                weight: "180 lbs",
+                headshotUrl: "",
+                actionUrl: "",
+                stats: [
+                    { label: "Stat 1", value: "0" },
+                    { label: "Stat 2", value: "0" },
+                    { label: "Stat 3", value: "0" },
+                    { label: "Stat 4", value: "0" }
+                ]
+            });
+            populatePlayersAdmin();
+        }
+
+        function addTeamStat() {
+            if (!requireAuth()) return;
+            
+            programData.teamStats.push({
+                title: "New Stat",
+                value: "0",
+                description: "description"
+            });
+            populateTeamStatsAdmin();
+        }
+
+        function addSponsor() {
+            if (!requireAuth()) return;
+            
+            const newId = Math.max(...programData.sponsors.map(s => s.id)) + 1;
+            programData.sponsors.push({
+                id: newId,
+                name: "New Sponsor",
+                type: "Partner",
+                imageUrl: "",
+                emoji: "🏢",
+                backContent: "",
+                website: "",
+                phone: ""
+            });
+            populateSponsorsAdmin();
+        }
+
+        function removeGame(id) {
+            if (!requireAuth()) return;
+            
+            if (confirm('Remove this game?')) {
+                programData.schedule = programData.schedule.filter(g => g.id !== id);
+                populateScheduleAdmin();
+            }
+        }
+
+        function removePlayer(id) {
+            if (!requireAuth()) return;
+            
+            if (confirm('Remove this player?')) {
+                programData.players = programData.players.filter(p => p.id !== id);
+                populatePlayersAdmin();
+            }
+        }
+
+        function removeSponsor(id) {
+            if (!requireAuth()) return;
+            
+            if (confirm('Remove this sponsor?')) {
+                programData.sponsors = programData.sponsors.filter(s => s.id !== id);
+                populateSponsorsAdmin();
+            }
+        }
+
+        // Utility function to detect if URL is video or image
+        function isVideoUrl(url) {
+            if (!url) return false;
+            const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.m4v'];
+            const urlLower = url.toLowerCase();
+            return videoExtensions.some(ext => urlLower.includes(ext));
+        }
+
+        function isImageUrl(url) {
+            if (!url) return false;
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+            const urlLower = url.toLowerCase();
+            return imageExtensions.some(ext => urlLower.includes(ext));
+        }
+
+        // CSV utility functions
+        function arrayToCSV(data, headers) {
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => {
+                    let cell = row[header] || '';
+                    // Escape commas and quotes in CSV
+                    if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+                        cell = '"' + cell.replace(/"/g, '""') + '"';
+                    }
+                    return cell;
+                }).join(','))
+            ].join('\n');
+            return csvContent;
+        }
+
+        function csvToArray(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) return { headers: [], data: [] };
+            
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            const data = lines.slice(1).map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                return obj;
+            });
+            
+            return { headers, data };
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        // Export functions
+        function exportPlayersCSV() {
+            if (!requireAuth()) return;
+            
+            const headers = ['name', 'number', 'position', 'group', 'year', 'height', 'weight', 'headshotUrl', 'actionUrl'];
+            const data = programData.players.map(player => ({
+                name: player.name,
+                number: player.number,
+                position: player.position,
+                group: player.group,
+                year: player.year,
+                height: player.height,
+                weight: player.weight,
+                headshotUrl: player.headshotUrl || '',
+                actionUrl: player.actionUrl || ''
+            }));
+            
+            const csv = arrayToCSV(data, headers);
+            downloadCSV(csv, `lions-players-${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportScheduleCSV() {
+            if (!requireAuth()) return;
+            
+            const headers = ['date', 'opponent', 'homeAway', 'location', 'time', 'status', 'score'];
+            const csv = arrayToCSV(programData.schedule, headers);
+            downloadCSV(csv, `lions-schedule-${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportSponsorsCSV() {
+            if (!requireAuth()) return;
+            
+            const headers = ['name', 'type', 'imageUrl', 'emoji', 'backContent', 'website', 'phone'];
+            const csv = arrayToCSV(programData.sponsors, headers);
+            downloadCSV(csv, `lions-sponsors-${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportStatsCSV() {
+            if (!requireAuth()) return;
+            
+            const headers = ['title', 'value', 'description'];
+            const csv = arrayToCSV(programData.teamStats, headers);
+            downloadCSV(csv, `lions-stats-${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportAllJSON() {
+            if (!requireAuth()) return;
+            
+            const dataStr = JSON.stringify(programData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lions-football-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Import functions
+        function importPlayersCSV() {
+            if (!requireAuth()) return;
+            
+            const fileInput = document.getElementById('importPlayersCSV');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file to import.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = csvToArray(e.target.result);
+                    const newPlayers = csvData.data.map((row, index) => ({
+                        id: programData.players.length + index + 1,
+                        name: row.name || 'New Player',
+                        number: parseInt(row.number) || 99,
+                        position: row.position || 'Position',
+                        group: row.group || 'Offense',
+                        year: row.year || 'Freshman',
+                        height: row.height || "6'0\"",
+                        weight: row.weight || '180 lbs',
+                        headshotUrl: row.headshotUrl || '',
+                        actionUrl: row.actionUrl || '',
+                        stats: [
+                            { label: "Stat 1", value: "0" },
+                            { label: "Stat 2", value: "0" },
+                            { label: "Stat 3", value: "0" },
+                            { label: "Stat 4", value: "0" }
+                        ]
+                    }));
+                    
+                    if (confirm(`Import ${newPlayers.length} players? This will replace existing players.`)) {
+                        programData.players = newPlayers;
+                        renderRoster();
+                        populatePlayersAdmin();
+                        saveData();
+                        alert('Players imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing CSV. Please check the file format.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importScheduleCSV() {
+            if (!requireAuth()) return;
+            
+            const fileInput = document.getElementById('importScheduleCSV');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file to import.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = csvToArray(e.target.result);
+                    const newSchedule = csvData.data.map((row, index) => ({
+                        id: index + 1,
+                        date: row.date || 'TBD',
+                        opponent: row.opponent || 'TBD',
+                        homeAway: row.homeAway || 'vs',
+                        location: row.location || 'TBD',
+                        time: row.time || 'TBD',
+                        status: row.status || 'upcoming',
+                        score: row.score || 'TBD'
+                    }));
+                    
+                    if (confirm(`Import ${newSchedule.length} games? This will replace the existing schedule.`)) {
+                        programData.schedule = newSchedule;
+                        renderSchedule();
+                        populateScheduleAdmin();
+                        saveData();
+                        alert('Schedule imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing CSV. Please check the file format.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importSponsorsCSV() {
+            if (!requireAuth()) return;
+            
+            const fileInput = document.getElementById('importSponsorsCSV');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file to import.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = csvToArray(e.target.result);
+                    const newSponsors = csvData.data.map((row, index) => ({
+                        id: index + 1,
+                        name: row.name || 'New Sponsor',
+                        type: row.type || 'Partner',
+                        imageUrl: row.imageUrl || '',
+                        emoji: row.emoji || '🏢',
+                        backContent: row.backContent || '',
+                        website: row.website || '',
+                        phone: row.phone || ''
+                    }));
+                    
+                    if (confirm(`Import ${newSponsors.length} sponsors? This will replace existing sponsors.`)) {
+                        programData.sponsors = newSponsors;
+                        renderSponsors();
+                        populateSponsorsAdmin();
+                        saveData();
+                        alert('Sponsors imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing CSV. Please check the file format.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importAllJSON() {
+            if (!requireAuth()) return;
+            
+            const fileInput = document.getElementById('importAllJSON');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a JSON file to import.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (confirm('This will replace all current data. Continue?')) {
+                        // Preserve current admin settings if not in import
+                        if (!importedData.adminSettings) {
+                            importedData.adminSettings = programData.adminSettings;
+                        }
+                        programData = importedData;
+                        saveData();
+                        renderAll();
+                        generateAdminContent();
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing data. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetToDefaults() {
+            if (!requireAuth()) return;
+            
+            if (confirm('This will reset all data to defaults except your admin settings. This cannot be undone. Continue?')) {
+                if (confirm('Are you absolutely sure? This will delete all your current data.')) {
+                    // Preserve admin settings
+                    const currentAdminSettings = programData.adminSettings;
+                    localStorage.removeItem('lionsFootballData');
+                    // Reload will restore defaults but we need to preserve admin settings
+                    setTimeout(() => {
+                        location.reload();
+                    }, 100);
+                }
+            }
+        }
+
+        // Render functions - updated to accept optional data parameter
+        function renderTeamInfo(data = null) {
+            const teamInfo = data?.teamInfo || programData.teamInfo;
+            
+            document.getElementById('coverTitle').textContent = teamInfo.name;
+            document.getElementById('coverSubtitle').textContent = teamInfo.motto;
+            document.getElementById('coverSeason').textContent = teamInfo.season + ' Season';
+            document.getElementById('coverRecord').textContent = teamInfo.record;
+            document.getElementById('coverRank').textContent = teamInfo.rank;
+            document.getElementById('coverPlayers').textContent = teamInfo.totalPlayers;
+            
+            // Update other season references
+            document.getElementById('scheduleSubtitle').textContent = teamInfo.season + ' Game Results & Upcoming';
+            document.getElementById('rosterSubtitle').textContent = teamInfo.season + ' Lions Football Team';
+            document.getElementById('highlightsSubtitle').textContent = teamInfo.season + ' Lions Football Best Moments';
+            document.getElementById('highlightsYear').textContent = teamInfo.season;
+            document.getElementById('statsSubtitle').textContent = teamInfo.season + ' Performance Highlights';
+            
+            // Apply branding if provided
+            if (data?.brandingSettings) {
+                applyBrandingPreview(data.brandingSettings);
+            }
+        }
+
+        function renderSchedule(data = null) {
+            const schedule = data?.schedule || programData.schedule;
+            const container = document.getElementById('scheduleGrid');
+            container.innerHTML = '';
+            
+            schedule.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                
+                const statusClass = game.status === 'won' ? 'won' : 
+                                   game.status === 'lost' ? 'lost' : 'upcoming';
+                
+                gameCard.innerHTML = `
+                    <div class="game-header">
+                        <span class="game-date">${game.date}</span>
+                        <span class="game-status ${statusClass}">${game.score}</span>
+                    </div>
+                    <div class="game-matchup">Lions ${game.homeAway} ${game.opponent}</div>
+                    <div class="game-details">
+                        <span>${game.homeAway === 'vs' ? 'Home' : 'Away'} • ${game.time}</span>
+                        <span>${game.location}</span>
+                    </div>
+                `;
+                container.appendChild(gameCard);
+            });
+        }
+
+        function renderRoster(data = null) {
+            const players = data?.players || programData.players;
+            const coaches = data?.coaches || programData.coaches;
+            const container = document.getElementById('rosterContainer');
+            container.innerHTML = '';
+            
+            // Group players by position group
+            const groups = {};
+            players.forEach(player => {
+                if (!groups[player.group]) {
+                    groups[player.group] = [];
+                }
+                groups[player.group].push(player);
+            });
+            
+            // Render each group
+            Object.keys(groups).forEach(groupName => {
+                const section = document.createElement('div');
+                section.className = 'position-section';
+                
+                section.innerHTML = `
+                    <h3 class="position-title">${groupName}</h3>
+                    <div class="players-grid">
+                        ${groups[groupName].map(player => {
+                            // Generate headshot content (front of card)
+                            const headshotContent = player.headshotUrl && player.headshotUrl.trim() !== ''
+                                ? `<img src="${player.headshotUrl}" alt="${player.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                   <div class="headshot-placeholder" style="display: none;">
+                                       👤
+                                       <div class="placeholder-text">Player Photo</div>
+                                   </div>`
+                                : `<div class="headshot-placeholder">
+                                       👤
+                                       <div class="placeholder-text">Player Photo</div>
+                                   </div>`;
+                            
+                            // Generate action content (back of card)
+                            let actionContent;
+                            if (player.actionUrl && player.actionUrl.trim() !== '') {
+                                if (isVideoUrl(player.actionUrl)) {
+                                    actionContent = `<video controls muted style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <source src="${player.actionUrl}" type="video/mp4">
+                                                     </video>
+                                                     <div class="action-placeholder" style="display: none;">🏈<br><small>Action Video</small></div>`;
+                                } else if (isImageUrl(player.actionUrl)) {
+                                    actionContent = `<img src="${player.actionUrl}" alt="${player.name} action" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                     <div class="action-placeholder" style="display: none;">🏈<br><small>Action Photo</small></div>`;
+                                } else {
+                                    // Try as image first, fallback to placeholder
+                                    actionContent = `<img src="${player.actionUrl}" alt="${player.name} action" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                     <div class="action-placeholder" style="display: none;">🏈<br><small>Action Media</small></div>`;
+                                }
+                            } else {
+                                actionContent = `<div class="action-placeholder">🏈<br><small>Action Video</small></div>`;
+                            }
+                            
+                            return `
+                                <div class="player-card">
+                                    <div class="card-inner">
+                                        <div class="card-front">
+                                            <div class="headshot-container">
+                                                ${headshotContent}
+                                                <div class="headshot-overlay">
+                                                    <div class="jersey-number">${player.number}</div>
+                                                </div>
+                                            </div>
+                                            <div class="front-info">
+                                                <div class="player-name">${player.name}</div>
+                                                <div class="player-position">${player.position}</div>
+                                            </div>
+                                        </div>
+                                        <div class="card-back">
+                                            <div class="action-container">
+                                                ${actionContent}
+                                            </div>
+                                            <div class="back-info">
+                                                <div class="player-info">
+                                                    <div class="info-label">${player.year} | ${player.height} / ${player.weight}</div>
+                                                </div>
+                                                <div class="stats-grid">
+                                                    ${player.stats.map(stat => `
+                                                        <div class="stat-item">
+                                                            <div class="stat-value">${stat.value}</div>
+                                                            <div class="stat-label">${stat.label}</div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            
+            // Add coaches section
+            if (coaches.length > 0) {
+                const coachSection = document.createElement('div');
+                coachSection.className = 'position-section';
+                coachSection.innerHTML = `
+                    <h3 class="position-title">Coaching Staff</h3>
+                    <div class="coaches-grid">
+                        ${coaches.map(coach => `
+                            <div class="coach-card">
+                                <div class="card-inner">
+                                    <div class="card-front">
+                                        <div class="headshot-container">
+                                            <div class="headshot-placeholder">
+                                                👤
+                                                <div class="placeholder-text">Coach Photo</div>
+                                            </div>
+                                            <div class="headshot-overlay">
+                                                <div style="font-size: 1.5rem; font-weight: bold; color: #c0c0c0;">${coach.position.includes('Head') ? 'HC' : 'OC'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="front-info">
+                                            <div class="coach-name">${coach.name}</div>
+                                            <div class="coach-position">${coach.position}</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-back">
+                                        <div class="action-container">
+                                            <div class="action-placeholder">🏆<br><small>Coach Video</small></div>
+                                        </div>
+                                        <div class="back-info">
+                                            <div class="coach-info">
+                                                <div class="info-label">${coach.experience}</div>
+                                            </div>
+                                            <div class="experience-grid">
+                                                ${coach.stats.map(stat => `
+                                                    <div class="experience-item">
+                                                        <div class="experience-value">${stat.value}</div>
+                                                        <div class="experience-label">${stat.label}</div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(coachSection);
+            }
+        }
+
+        function renderTeamStats(data = null) {
+            const teamStats = data?.teamStats || programData.teamStats;
+            const container = document.getElementById('teamStatsContainer');
+            container.innerHTML = '';
+            
+            teamStats.forEach(stat => {
+                const statCard = document.createElement('div');
+                statCard.className = 'stats-card';
+                statCard.innerHTML = `
+                    <h3>${stat.title}</h3>
+                    <div class="big-stat">${stat.value}</div>
+                    <p>${stat.description}</p>
+                `;
+                container.appendChild(statCard);
+            });
+        }
+
+        function renderSponsors(data = null) {
+            const sponsors = data?.sponsors || programData.sponsors;
+            const container = document.getElementById('sponsorsGrid');
+            container.innerHTML = '';
+            
+            sponsors.forEach(sponsor => {
+                const sponsorCard = document.createElement('div');
+                sponsorCard.className = 'sponsor-card';
+                
+                // Use image if URL provided, otherwise use emoji
+                const logoContent = sponsor.imageUrl && sponsor.imageUrl.trim() !== '' 
+                    ? `<img src="${sponsor.imageUrl}" alt="${sponsor.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                       <div class="sponsor-logo" style="display: none;">${sponsor.emoji}</div>`
+                    : `<div class="sponsor-logo">${sponsor.emoji}</div>`;
+                
+                // Build contact info if available
+                let contactInfo = '';
+                if (sponsor.website || sponsor.phone) {
+                    contactInfo = '<div class="sponsor-contact">';
+                    if (sponsor.website) {
+                        contactInfo += `<a href="${sponsor.website}" target="_blank">Visit Website</a>`;
+                        if (sponsor.phone) contactInfo += ' | ';
+                    }
+                    if (sponsor.phone) {
+                        contactInfo += sponsor.phone;
+                    }
+                    contactInfo += '</div>';
+                }
+                
+                sponsorCard.innerHTML = `
+                    <div class="sponsor-card-inner">
+                        <div class="sponsor-card-front">
+                            ${logoContent}
+                            <div class="sponsor-name">${sponsor.name}</div>
+                            <div class="sponsor-type">${sponsor.type}</div>
+                        </div>
+                        <div class="sponsor-card-back">
+                            <div class="sponsor-back-content">${sponsor.backContent || 'Thank you for supporting Lions Football!'}</div>
+                            ${contactInfo}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(sponsorCard);
+            });
+        }
+
+        function renderAll() {
+            renderTeamInfo();
+            renderSchedule();
+            renderRoster();
+            renderTeamStats();
+            renderSponsors();
+        }
+
+        // Navigation functions
+        const container = document.getElementById('programContainer');
+        const pageInfo = document.getElementById('pageInfo');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function initializeIndicators() {
+            const indicators = document.getElementById('pageIndicators');
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'page-dot';
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => goToPage(i));
+                indicators.appendChild(dot);
+            }
+        }
+
+        function updatePage() {
+            const offset = -currentPage * 100;
+            container.style.transform = `translateX(${offset}vw)`;
+            
+            pageInfo.textContent = `${currentPage + 1} / ${totalPages}`;
+            
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+            
+            document.querySelectorAll('.page-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+
+            if (pageNames[currentPage]) {
+                window.history.replaceState({}, '', `#${pageNames[currentPage]}`);
+            }
+            
+            // Update admin content when page changes if admin is open
+            if (isAdminOpen) {
+                generateAdminContent();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updatePage();
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                updatePage();
+            }
+        }
+
+        function goToPage(pageIndex) {
+            if (pageIndex >= 0 && pageIndex < totalPages) {
+                currentPage = pageIndex;
+                updatePage();
+            }
+        }
+
+        // Touch/swipe handling
+        let startX = 0;
+        let startY = 0;
+        let isDragging = false;
+
+        container.addEventListener('touchstart', (e) => {
+            if (isAdminOpen) return; // Don't handle swipes when admin is open
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isDragging = true;
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging || isAdminOpen) return;
+            e.preventDefault();
+        });
+
+        container.addEventListener('touchend', (e) => {
+            if (!isDragging || isAdminOpen) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            const deltaX = startX - endX;
+            const deltaY = startY - endY;
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                if (deltaX > 0) {
+                    nextPage();
+                } else {
+                    previousPage();
+                }
+            }
+            
+            isDragging = false;
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (isAdminOpen) return; // Don't handle keyboard when admin is open
+            
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                previousPage();
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                nextPage();
+            } else if (e.key === 'Escape' && isAdminOpen) {
+                closeAdmin();
+            }
+        });
+
+        // Mouse wheel navigation (desktop)
+        let wheelTimeout;
+        container.addEventListener('wheel', (e) => {
+            if (isAdminOpen) return; // Don't handle wheel when admin is open
+            
+            e.preventDefault();
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    nextPage();
+                } else {
+                    previousPage();
+                }
+            }, 150);
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            
+            // Apply branding
+            const branding = programData.brandingSettings;
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', branding.primaryColor);
+            root.style.setProperty('--secondary-color', branding.secondaryColor);
+            root.style.setProperty('--logo-size', branding.logoSize + 'px');
+            
+            // Set logo background
+            let logoBackground;
+            switch (branding.logoBackgroundType) {
+                case 'transparent':
+                    logoBackground = 'transparent';
+                    break;
+                case 'gradient':
+                    logoBackground = `radial-gradient(circle, ${branding.logoBackgroundColor}, ${branding.logoBackgroundColor}88)`;
+                    break;
+                default: // 'color'
+                    logoBackground = branding.logoBackgroundColor;
+            }
+            root.style.setProperty('--logo-background', logoBackground);
+            
+            renderAll();
+            initializeIndicators();
+            updateAdminButton();
+            updateSecurityDisplay();
+            
+            const hash = window.location.hash.slice(1);
+            const pageIndex = pageNames.indexOf(hash);
+            if (pageIndex !== -1) {
+                currentPage = pageIndex;
+            }
+            
+            updatePage();
+
+            setTimeout(() => {
+                const hint = document.querySelector('.swipe-hint');
+                if (hint) {
+                    hint.style.opacity = '0';
+                    setTimeout(() => hint.style.display = 'none', 500);
+                }
+            }, 5000);
+        });
+
+        // Player card interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        const cards = document.querySelectorAll('.player-card, .coach-card');
+                        cards.forEach(card => {
+                            card.addEventListener('click', function() {
+                                this.style.transform = 'scale(0.98)';
+                                setTimeout(() => {
+                                    this.style.transform = '';
+                                }, 150);
+                            });
+                        });
+                    }
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Sign In - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-auth-card.css?v=1">
+</head>
+
+<body>
+
+    <main class="card">
+
+        <img class="brand-mark" src="/media/lsc_head_128.png" width="84" height="76"
+             alt="Lions Sports Club">
+        <p class="brand-name">Lions Sports Club</p>
+
+        <!-- Working -------------------------------------------------- -->
+        <section id="view-working" class="view is-active" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <h1>Signing you in</h1>
+            <p>This takes a few seconds. Please do not close this page.</p>
+        </section>
+
+        <!-- Confirm email -------------------------------------------
+             Shown when the link is opened in a different browser from
+             the one that requested it, which is the normal case when a
+             volunteer requests on a computer and opens on a phone. The
+             address is required by Firebase to complete the sign-in and
+             is checked against the link itself, so supplying someone
+             else's address does not grant access to their account.
+             ---------------------------------------------------------- -->
+        <section id="view-email" class="view">
+            <h1>Confirm your email</h1>
+            <p>You opened this link on a different device or browser. Enter the
+               email address you requested the link with.</p>
+
+            <form id="email-form" novalidate>
+                <div class="field">
+                    <label for="confirm-email">Email address</label>
+                    <input type="email" id="confirm-email" name="email"
+                           autocomplete="email" inputmode="email"
+                           autocapitalize="none" spellcheck="false" required>
+                </div>
+                <button type="submit" class="btn" id="email-submit">Continue</button>
+            </form>
+        </section>
+
+        <!-- Success --------------------------------------------------- -->
+        <section id="view-success" class="view" aria-live="polite">
+            <div class="banner is-success" id="success-banner">You are signed in.</div>
+            <h1>Welcome back</h1>
+            <p class="detail" id="success-email"></p>
+            <p id="success-role"></p>
+            <a class="btn" id="success-continue" href="/">Continue</a>
+        </section>
+
+        <!-- Failure --------------------------------------------------- -->
+        <section id="view-error" class="view" aria-live="assertive">
+            <div class="banner is-error" id="error-message">
+                This sign-in link could not be used.
+            </div>
+            <h1>Sign in again</h1>
+            <p>Sign-in links expire and can only be used once. Request a new one
+               and open it on the same device if you can.</p>
+            <a class="btn" href="/auth/signin.html">Request a new link</a>
+            <a class="btn btn-secondary" href="https://lionssports.club">Back to Lions Sports Club</a>
+        </section>
+
+        <p class="footnote">
+            Trouble signing in? Email
+            <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>.
+        </p>
+
+    </main>
+
+    <!-- Console gate. Must load before any Lions script so that diagnostic
+         output is suppressed on a production page load. -->
+    <script src="/js/lions-log.js?v=1"></script>
+
+    <script type="module">
+        import { handleVerificationPage } from './lions-auth.js';
+
+        const views = {
+            working: document.getElementById('view-working'),
+            email:   document.getElementById('view-email'),
+            success: document.getElementById('view-success'),
+            error:   document.getElementById('view-error')
+        };
+
+        function show(name) {
+            Object.keys(views).forEach(key => {
+                views[key].classList.toggle('is-active', key === name);
+            });
+        }
+
+        /**
+         * Presentation contract consumed by lions-auth.js. The auth module
+         * owns the sign-in sequence and calls these; it does not touch markup.
+         * Keeping the two apart means a styling change cannot break sign-in
+         * and an auth change cannot erase the page.
+         */
+        window.LIONS_VERIFY_VIEW = {
+
+            working() {
+                show('working');
+            },
+
+            /** Resolves with the address the visitor confirms. */
+            requestEmail() {
+                return new Promise(resolve => {
+                    show('email');
+                    const form = document.getElementById('email-form');
+                    const input = document.getElementById('confirm-email');
+                    input.focus();
+
+                    form.addEventListener('submit', event => {
+                        event.preventDefault();
+                        const value = input.value.trim();
+                        if (!value) {
+                            input.focus();
+                            return;
+                        }
+                        document.getElementById('email-submit').disabled = true;
+                        show('working');
+                        resolve(value);
+                    }, { once: true });
+                });
+            },
+
+            success(result) {
+                document.getElementById('success-email').textContent = result.email || '';
+                document.getElementById('success-role').textContent =
+                    result.role ? 'Signed in as ' + result.role + '.' : '';
+
+                document.getElementById('success-continue')
+                    .setAttribute('href', result.destination || '/');
+                show('success');
+            },
+
+            failure(message) {
+                document.getElementById('error-message').textContent =
+                    message || 'This sign-in link could not be used.';
+                show('error');
+            }
+        };
+
+        handleVerificationPage();
+    </script>
+
+</body>
+
+</html>

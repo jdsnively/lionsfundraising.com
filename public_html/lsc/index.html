@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Sports Club | Christian Football & Cheerleading in Central Indiana</title>
+    <meta name="description"
+        content="Lions Sports Club - Giving God the Glory through Football. Christian football club serving Central Indiana with programs for Junior High, High School, and Cheerleading.">
+    <link rel="icon" type="image/png" href="https://lionsfundraising.com/media/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-display: 'Playfair Display', Georgia, serif;
+
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            --text-5xl: 3rem;
+            --text-6xl: 3.75rem;
+            --text-7xl: 4.5rem;
+
+            --color-primary: #1e40af;
+            --color-primary-dark: #1e3a8a;
+            --color-primary-darker: #1e293b;
+            --color-secondary: #3b82f6;
+            --color-success: #10b981;
+            --color-white: #ffffff;
+            --color-black: #000000;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            line-height: 1.15;
+            -webkit-text-size-adjust: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            line-height: 1.6;
+            color: var(--color-gray-900);
+            background-color: var(--color-white);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        img,
+        video,
+        canvas,
+        audio,
+        iframe,
+        embed,
+        object {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+
+        #splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        body.splash-active {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .splash-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .splash-video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .skip-button {
+            position: absolute;
+            bottom: var(--space-8);
+            right: var(--space-8);
+            background: var(--color-white);
+            color: var(--color-black);
+            border: none;
+            padding: var(--space-3) var(--space-6);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            z-index: 10;
+            transition: background 0.25s ease;
+            min-height: 44px;
+        }
+
+        .skip-button:hover {
+            background: var(--color-gray-100);
+        }
+
+        /* Main Site */
+        #main-site {
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        #main-site.visible {
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background-image: url('https://lionsfundraising.com/lsc/media/hero-background.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--color-white);
+            position: relative;
+            padding: var(--space-8) var(--space-4);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 25, 60, 0.7);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .hero-logo {
+            width: 340px;
+            height: 340px;
+            margin: 0 auto var(--space-8) auto;
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
+            display: block;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
+            -webkit-user-drag: none;
+        }
+
+        #main-site.visible .hero-logo {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(var(--text-4xl), 6vw, var(--text-6xl));
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: var(--space-6);
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: clamp(var(--text-lg), 2.5vw, var(--text-xl));
+            line-height: 1.5;
+            margin: 0 auto var(--space-8) auto;
+            max-width: 600px;
+            font-weight: 400;
+        }
+
+        .donate-btn {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: var(--space-4) var(--space-8);
+            border: none;
+            border-radius: 50px;
+            font-size: var(--text-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.25s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            min-height: 44px;
+        }
+
+        .donate-btn:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* Container System */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-6);
+        }
+
+        /* About Section */
+        .about {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: var(--space-20) 0;
+        }
+
+        .about h2 {
+            font-family: var(--font-display);
+            text-align: center;
+            font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+            font-weight: 600;
+            margin-bottom: var(--space-16);
+            line-height: 1.2;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-16);
+            align-items: center;
+        }
+
+        .about-image {
+            width: 100%;
+            height: 450px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .about-text h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            margin-bottom: var(--space-6);
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .about-text p {
+            font-size: var(--text-lg);
+            line-height: 1.7;
+            margin-bottom: var(--space-5);
+        }
+
+        /* Slider Section */
+        .slider-section {
+            background: var(--color-black);
+            color: var(--color-white);
+            padding: var(--space-20) 0;
+            text-align: center;
+        }
+
+        .slider-section h2 {
+            font-family: var(--font-display);
+            font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+            font-weight: 600;
+            margin-bottom: var(--space-16);
+            line-height: 1.2;
+        }
+
+        .slider-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 700px;
+            overflow: hidden;
+            border-radius: 8px;
+            background: var(--color-gray-900);
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.25s ease;
+            z-index: 10;
+            opacity: 0.7;
+        }
+
+        .slider-nav:hover {
+            background: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slider-nav.prev {
+            left: 20px;
+        }
+
+        .slider-nav.next {
+            right: 20px;
+        }
+
+        .slider {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-gray-900);
+            position: relative;
+        }
+
+        .slide img {
+            max-width: 95%;
+            max-height: 95%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .thumbnail-nav {
+            position: relative;
+            max-width: 400px;
+            margin: var(--space-8) auto 0;
+            padding: 0 40px;
+        }
+
+        .thumbnail-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: var(--space-3);
+            transition: transform 0.3s ease;
+        }
+
+        .thumbnail {
+            min-width: 60px;
+            width: 60px;
+            height: 40px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--color-gray-800);
+            flex-shrink: 0;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail.active {
+            border-color: var(--color-secondary);
+            transform: scale(1.1);
+        }
+
+        .thumbnail-nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(30, 64, 175, 0.8);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.25s ease;
+            z-index: 10;
+        }
+
+        .thumbnail-nav-arrow:hover {
+            background: rgba(30, 64, 175, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .thumbnail-nav-arrow.prev {
+            left: 0;
+        }
+
+        .thumbnail-nav-arrow.next {
+            right: 0;
+        }
+
+        .thumbnail-nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: rgba(107, 114, 128, 0.5);
+        }
+
+        .thumbnail-nav-arrow:disabled:hover {
+            transform: translateY(-50%);
+            background: rgba(107, 114, 128, 0.5);
+        }
+
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 700px;
+            color: var(--color-gray-400);
+            font-size: var(--text-lg);
+            font-weight: 500;
+        }
+
+        .loading-indicator.hidden {
+            display: none;
+        }
+
+        /* Contact Section - Tightened spacing and equal heights */
+        .contact {
+            background: var(--color-primary);
+            color: var(--color-white);
+            padding: var(--space-16) 0;
+        }
+
+        .contact h2 {
+            font-family: var(--font-display);
+            font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+            font-weight: 600;
+            margin-bottom: var(--space-12);
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .contact-header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+        }
+
+        .contact-header h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .contact-header p {
+            font-size: var(--text-lg);
+            line-height: 1.6;
+            margin-bottom: var(--space-2);
+        }
+
+        .contact-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-8);
+            height: 620px;
+        }
+
+        .contact-form,
+        .map-section {
+            background: var(--color-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-form {
+            padding: var(--space-8);
+            color: var(--color-gray-900);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-form h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            margin-bottom: var(--space-6);
+            color: var(--color-gray-800);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: var(--space-5);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+            color: var(--color-gray-700);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: var(--space-3);
+            border: 2px solid var(--color-gray-200);
+            border-radius: 4px;
+            font-size: var(--text-base);
+            font-family: var(--font-primary);
+            transition: border-color 0.25s ease;
+            background: var(--color-white);
+            color: var(--color-gray-900);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            background: var(--color-gray-600);
+            color: var(--color-white);
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            border-radius: 8px;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: 100%;
+            font-family: var(--font-primary);
+            margin-top: auto;
+            min-height: 44px;
+        }
+
+        .submit-btn:hover {
+            background: var(--color-gray-700);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .map-header {
+            padding: var(--space-6);
+            text-align: center;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .map-header h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            color: var(--color-gray-800);
+            margin-bottom: var(--space-3);
+        }
+
+        .map-header p {
+            font-size: var(--text-base);
+            color: var(--color-gray-600);
+            font-weight: 600;
+        }
+
+        .map-container {
+            flex: 1;
+            overflow: hidden;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .success-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: var(--space-6);
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            margin: var(--space-4);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .success-message h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            margin-bottom: var(--space-3);
+            font-weight: 600;
+        }
+
+        .success-message p {
+            font-size: var(--text-base);
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: var(--space-4);
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: var(--space-4);
+            font-size: var(--text-sm);
+        }
+
+        /* Social Section */
+        .social {
+            background: var(--color-primary-darker);
+            color: var(--color-white);
+            padding: var(--space-12) 0;
+            text-align: center;
+        }
+
+        .social h3 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            margin-bottom: var(--space-8);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-4);
+        }
+
+        .social-link {
+            width: 56px;
+            height: 56px;
+            background: var(--color-white);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.25s ease;
+            text-decoration: none;
+            color: var(--color-primary);
+        }
+
+        .social-link svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .social-link:hover {
+            background: var(--color-gray-100);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--color-gray-900);
+            color: var(--color-white);
+            text-align: center;
+            padding: var(--space-8) 0;
+            font-size: var(--text-sm);
+        }
+
+        .footer .tagline {
+            margin-top: var(--space-3);
+            font-size: var(--text-base);
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero {
+                background-attachment: scroll;
+                padding: var(--space-6) var(--space-4);
+            }
+
+            .hero-logo {
+                width: 280px;
+                height: 280px;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-12);
+            }
+
+            .contact-main {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: var(--space-8);
+            }
+
+            .map-section {
+                min-height: 400px;
+            }
+
+            .about-image {
+                height: 300px;
+            }
+
+            .container {
+                padding: 0 var(--space-4);
+            }
+
+            .thumbnail {
+                min-width: 48px;
+                width: 48px;
+                height: 32px;
+            }
+
+            .thumbnail-nav {
+                max-width: 300px;
+                padding: 0 40px;
+            }
+
+            .thumbnail-nav-arrow {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .thumbnail-nav-arrow.prev {
+                left: 5px;
+            }
+
+            .thumbnail-nav-arrow.next {
+                right: 5px;
+            }
+
+            .slider-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .slider-nav.prev {
+                left: 10px;
+            }
+
+            .slider-nav.next {
+                right: 10px;
+            }
+
+            .slider-container {
+                height: 400px;
+            }
+
+            .loading-indicator {
+                height: 400px;
+            }
+
+            .social-links {
+                gap: var(--space-3);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: var(--space-4) var(--space-3);
+            }
+
+            .hero-logo {
+                width: 220px;
+                height: 220px;
+            }
+
+            .skip-button {
+                bottom: var(--space-4);
+                right: var(--space-4);
+                padding: var(--space-2) var(--space-4);
+            }
+
+            .about,
+            .slider-section,
+            .contact {
+                padding: var(--space-12) 0;
+            }
+
+            .contact-form,
+            .map-section {
+                padding: var(--space-6);
+            }
+        }
+
+        /* Focus states */
+        .skip-button:focus,
+        .donate-btn:focus,
+        .thumbnail:focus,
+        .social-link:focus,
+        .submit-btn:focus {
+            outline: 2px solid var(--color-white);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="splash">
+        <div class="splash-content">
+            <iframe class="splash-video"
+                src="https://player.vimeo.com/video/1118388576?h=a692b817be&autoplay=1&muted=1&background=1&loop=0&autopause=0&playsinline=1"
+                frameborder="0" allow="autoplay; fullscreen; picture-in-picture"
+                title="Lions Sports Club Introduction Video">
+            </iframe>
+            <button class="skip-button" onclick="hideSplash()" aria-label="Skip video">Skip</button>
+        </div>
+    </div>
+
+    <div id="main-site">
+        <section class="hero">
+            <div class="hero-content">
+                <img src="https://lionsfundraising.com/media/favicon.png" alt="Lions Sports Club Logo" class="hero-logo">
+                <h1>Giving God The Glory Through Football</h1>
+                <p>A Christian Football Club Located in Central Indiana with High Schoolers for Junior High, High School
+                    and Cheerleading</p>
+                <a href="https://www.paypal.com/ncp/payment/8VLDWYKZ8DEGQ" target="_blank" class="donate-btn">Donate
+                    Now!</a>
+            </div>
+        </section>
+
+        <section class="about">
+            <div class="container">
+                <h2>About Lions Football Club</h2>
+                <div class="about-content">
+                    <img src="https://lionsfundraising.com/lsc/media/about-image.jpg" alt="Lions Football Team in action" class="about-image">
+                    <div class="about-text">
+                        <h3>23 Years Of Building A Winning Tradition</h3>
+                        <p>The Lions Island School Football Club is a program, not for profit organization where kids
+                            have the opportunity to learn the game while giving themselves an opportunity to participate
+                            in competitive football.</p>
+                        <p>We have developed young men into mature and trained athletes, building character and
+                            developing godly young men and women from all over Indiana.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slider-section">
+            <div class="container">
+                <h2>Giving God The Glory Through Football</h2>
+                <div class="slider-container">
+                    <div class="loading-indicator" id="loading-indicator">
+                        Loading images...
+                    </div>
+                    <div class="slider" id="slider" style="display: none;">
+                        <!-- Dynamic content -->
+                    </div>
+                    <button class="slider-nav prev" id="prevSlide" aria-label="Previous image">‹</button>
+                    <button class="slider-nav next" id="nextSlide" aria-label="Next image">›</button>
+                </div>
+                <div class="thumbnail-nav" id="thumbnail-nav" role="tablist" aria-label="Image gallery navigation">
+                    <button class="thumbnail-nav-arrow prev" id="prevThumbs" aria-label="Previous thumbnails">‹</button>
+                    <div class="thumbnail-wrapper">
+                        <div class="thumbnail-container" id="thumbnail-container">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                    <button class="thumbnail-nav-arrow next" id="nextThumbs" aria-label="Next thumbnails">›</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact" id="contact">
+            <div class="container">
+                <h2>Contact Us</h2>
+
+                <div class="contact-header">
+                    <h3>Get In Touch</h3>
+                    <p>We love our fans and community!</p>
+                    <p>Get more involved in serving and attending all our games!</p>
+                    <p><strong>Lions Football Club and Cheerleading</strong></p>
+                </div>
+
+                <div class="contact-main">
+                    <div class="contact-form">
+                        <h3>Send Us A Message</h3>
+                        <div id="contactForm">
+                            <div class="form-group">
+                                <label for="name">Name *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message *</label>
+                                <textarea id="message" name="message" required placeholder="Tell us how we can help you..."></textarea>
+                            </div>
+                            <button type="button" class="submit-btn" onclick="handleFormSubmit()">Send Message</button>
+                        </div>
+                    </div>
+
+                    <div class="map-section">
+                        <div class="map-header">
+                            <h3>Lions Home Field</h3>
+                            <p>5608 Whitestown Parkway<br>Whitestown, IN 46075</p>
+                        </div>
+                        <div class="map-container">
+                            <iframe
+                                src="https://maps.google.com/maps?q=5608+Whitestown+Parkway,+Whitestown,+IN+46075&t=&z=17&ie=UTF8&iwloc=&output=embed"
+                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Lions Sports Club Location - 5608 Whitestown Parkway, Whitestown, IN 46075">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="social">
+            <div class="container">
+                <h3>Connect With Us</h3>
+                <div class="social-links">
+                    <a href="https://facebook.com/LionsHomeschoolFootball" target="_blank" class="social-link"
+                        aria-label="Follow us on Facebook">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                    </a>
+                    <a href="https://instagram.com/Lionsfootballclub" target="_blank" class="social-link"
+                        aria-label="Follow us on Instagram">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2025 Lions Sports Club. All rights reserved.</p>
+                <div class="tagline">Giving God The Glory Through Sports</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        class ImageSlider {
+            constructor() {
+                this.mediaPath = 'https://lionsfundraising.com/lsc/media/';
+                this.images = [];
+                this.currentSlide = 0;
+                this.thumbnailStart = 0;
+                this.visibleThumbnails = 5;
+                this.autoSlideTimer = null;
+                this.isVisible = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.protectImages();
+                this.setupObserver();
+                this.loadImages();
+                this.bindEvents();
+            }
+
+            protectImages() {
+                ['contextmenu', 'dragstart', 'selectstart'].forEach(event => {
+                    document.addEventListener(event, e => {
+                        if (e.target.tagName === 'IMG') {
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
+                });
+            }
+
+            setupObserver() {
+                const observer = new IntersectionObserver(entries => {
+                    this.isVisible = entries[0].isIntersecting;
+                    this.isVisible ? this.startAutoSlide() : this.stopAutoSlide();
+                });
+                
+                observer.observe(document.querySelector('.slider-section'));
+            }
+
+            async loadImages() {
+                const patterns = this.generateImagePatterns();
+                
+                // Small batches for faster initial display
+                const batchSize = 10;
+                const batches = this.chunkArray(patterns, batchSize);
+                let hasRendered = false;
+                
+                for (const batch of batches) {
+                    const results = await Promise.allSettled(
+                        batch.map(name => this.validateImage(name))
+                    );
+                    
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value) {
+                            this.images.push(result.value);
+                        }
+                    });
+
+                    // Render immediately after first successful batch
+                    if (this.images.length > 0 && !hasRendered) {
+                        this.render();
+                        hasRendered = true;
+                    }
+                    
+                    // Stop after we have enough images for performance
+                    if (this.images.length >= 50) break;
+                }
+
+                // If we found more images, sort and re-render
+                if (this.images.length > 0) {
+                    this.images.sort((a, b) => {
+                        const aNum = parseInt(a.filename.match(/\d+/)?.[0] || '0');
+                        const bNum = parseInt(b.filename.match(/\d+/)?.[0] || '0');
+                        return aNum - bNum;
+                    });
+                    
+                    if (hasRendered) {
+                        // Update existing slider with sorted images
+                        this.updateSliderContent();
+                    } else {
+                        this.render();
+                    }
+                } else {
+                    // Fallback if no images found
+                    this.images = this.getFallbackImages();
+                    this.render();
+                }
+            }
+            
+            updateSliderContent() {
+                const slider = document.getElementById('slider');
+                const thumbnailContainer = document.getElementById('thumbnail-container');
+                
+                if (slider && thumbnailContainer) {
+                    // Update with sorted images
+                    slider.innerHTML = this.images.map((img, i) => 
+                        `<div class="slide" role="tabpanel" aria-label="Image ${i + 1} of ${this.images.length}">
+                            <img src="${img.url}" alt="${img.alt}" loading="lazy">
+                         </div>`
+                    ).join('');
+
+                    thumbnailContainer.innerHTML = this.images.map((img, i) => 
+                        `<button class="thumbnail ${i === 0 ? 'active' : ''}" 
+                                 role="tab" 
+                                 aria-label="View image ${i + 1}"
+                                 onclick="slider.goToSlide(${i})">
+                            <img src="${img.url}" alt="" loading="lazy">
+                         </button>`
+                    ).join('');
+                    
+                    this.updateThumbnailView();
+                }
+            }
+
+            generateImagePatterns() {
+                const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                const patterns = [];
+
+                // Most common patterns first for quick loading
+                extensions.forEach(ext => {
+                    // Simple numbered files (most likely to exist)
+                    for (let i = 1; i <= 50; i++) {
+                        patterns.push(`${i}.${ext}`);
+                        patterns.push(`${String(i).padStart(2, '0')}.${ext}`);
+                        patterns.push(`slide${i}.${ext}`);
+                        patterns.push(`image${i}.${ext}`);
+                        patterns.push(`photo${i}.${ext}`);
+                    }
+                });
+
+                // Common descriptive names
+                const commonNames = [
+                    'banner', 'Banner', 'logo', 'Logo', 'header', 'Header',
+                    'team', 'Team', 'game', 'Game', 'practice', 'Practice',
+                    'photo', 'Photo', 'image', 'Image', 'pic', 'Pic',
+                    'football', 'Football', 'lions', 'Lions', 'coach', 'Coach',
+                    'field', 'Field', 'stadium', 'Stadium', 'action', 'Action',
+                    'victory', 'Victory', 'championship', 'Championship',
+                    'slide', 'Slide'
+                ];
+
+                commonNames.forEach(name => {
+                    extensions.forEach(ext => {
+                        patterns.push(`${name}.${ext}`);
+                        for (let i = 1; i <= 30; i++) {
+                            patterns.push(`${name}${i}.${ext}`);
+                            patterns.push(`${name}_${i}.${ext}`);
+                            patterns.push(`${name}-${i}.${ext}`);
+                            patterns.push(`${name}${String(i).padStart(2, '0')}.${ext}`);
+                        }
+                    });
+                });
+
+                // Camera patterns
+                extensions.forEach(ext => {
+                    for (let i = 1; i <= 100; i++) {
+                        const num = String(i).padStart(4, '0');
+                        patterns.push(`IMG_${num}.${ext}`);
+                        patterns.push(`img_${num}.${ext}`);
+                        patterns.push(`DSC_${num}.${ext}`);
+                        patterns.push(`dsc_${num}.${ext}`);
+                    }
+                });
+
+                return patterns;
+            }
+
+            chunkArray(array, size) {
+                const chunks = [];
+                for (let i = 0; i < array.length; i += size) {
+                    chunks.push(array.slice(i, i + size));
+                }
+                return chunks;
+            }
+
+            validateImage(filename) {
+                return new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => resolve({
+                        url: this.mediaPath + filename,
+                        alt: this.generateAlt(filename),
+                        filename
+                    });
+                    img.onerror = () => resolve(null);
+                    img.src = this.mediaPath + filename;
+                });
+            }
+
+            generateAlt(filename) {
+                const type = filename.split(/\d/)[0];
+                const num = filename.match(/\d+/)?.[0];
+                const descriptions = {
+                    slide: 'Lions Sports Club in action',
+                    game: 'Game day moments',
+                    practice: 'Team practice session',
+                    team: 'Lions team photo',
+                    victory: 'Victory celebration',
+                    championship: 'Championship achievement'
+                };
+                
+                return `${descriptions[type] || 'Lions Sports Club'} ${num || ''}`.trim();
+            }
+
+            getFallbackImages() {
+                return [{
+                    url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI3MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzAwNjZjYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNDAlIiBmb250LWZhbWlseT0iSW50ZXIsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TGlvbnMgU3BvcnRzIENsdWI8L3RleHQ+PHRleHQgeD0iNTAlIiB5PSI2MCUiIGZvbnQtZmFtaWx5PSJJbnRlciwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjgpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+R2l2aW5nIEdvZCB0aGUgR2xvcnkgVGhyb3VnaCBGb290YmFsbDwvdGV4dD48L3N2Zz4=',
+                    alt: 'Lions Sports Club - Giving God the Glory Through Football'
+                }];
+            }
+
+            render() {
+                const slider = document.getElementById('slider');
+                const thumbnailContainer = document.getElementById('thumbnail-container');
+                
+                slider.innerHTML = this.images.map((img, i) => 
+                    `<div class="slide" role="tabpanel" aria-label="Image ${i + 1} of ${this.images.length}">
+                        <img src="${img.url}" alt="${img.alt}" loading="lazy">
+                     </div>`
+                ).join('');
+
+                thumbnailContainer.innerHTML = this.images.map((img, i) => 
+                    `<button class="thumbnail ${i === 0 ? 'active' : ''}" 
+                             role="tab" 
+                             aria-label="View image ${i + 1}"
+                             onclick="slider.goToSlide(${i})">
+                        <img src="${img.url}" alt="" loading="lazy">
+                     </button>`
+                ).join('');
+
+                document.getElementById('loading-indicator').classList.add('hidden');
+                slider.style.display = 'flex';
+                
+                this.updateThumbnailView();
+                this.startAutoSlide();
+            }
+
+            bindEvents() {
+                document.getElementById('prevSlide')?.addEventListener('click', () => this.previousSlide());
+                document.getElementById('nextSlide')?.addEventListener('click', () => this.nextSlide());
+                document.getElementById('prevThumbs')?.addEventListener('click', () => this.scrollThumbnails(-1));
+                document.getElementById('nextThumbs')?.addEventListener('click', () => this.scrollThumbnails(1));
+                
+                document.addEventListener('keydown', e => {
+                    if (!this.isVisible) return;
+                    if (e.key === 'ArrowLeft') { e.preventDefault(); this.previousSlide(); }
+                    if (e.key === 'ArrowRight') { e.preventDefault(); this.nextSlide(); }
+                });
+
+                window.addEventListener('resize', () => this.calculateVisibleThumbnails());
+            }
+
+            calculateVisibleThumbnails() {
+                const nav = document.querySelector('.thumbnail-nav');
+                if (!nav) return;
+                
+                const availableWidth = nav.getBoundingClientRect().width - 80; // Arrows
+                const thumbnailWidth = 72; // 60px + 12px gap
+                this.visibleThumbnails = Math.max(3, Math.min(6, Math.floor(availableWidth / thumbnailWidth)));
+            }
+
+            goToSlide(index) {
+                if (index < 0 || index >= this.images.length) return;
+                
+                this.currentSlide = index;
+                document.getElementById('slider').style.transform = `translateX(-${index * 100}%)`;
+                
+                document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+                    thumb.classList.toggle('active', i === index);
+                    thumb.setAttribute('aria-selected', i === index);
+                });
+
+                this.ensureThumbnailVisible(index);
+            }
+
+            ensureThumbnailVisible(index) {
+                const maxStart = Math.max(0, this.images.length - this.visibleThumbnails);
+                
+                if (index < this.thumbnailStart) {
+                    this.thumbnailStart = index;
+                    this.updateThumbnailView();
+                } else if (index >= this.thumbnailStart + this.visibleThumbnails) {
+                    this.thumbnailStart = Math.min(index - this.visibleThumbnails + 1, maxStart);
+                    this.updateThumbnailView();
+                }
+            }
+
+            scrollThumbnails(direction) {
+                const maxStart = Math.max(0, this.images.length - this.visibleThumbnails);
+                
+                if (direction > 0) {
+                    this.thumbnailStart = Math.min(this.thumbnailStart + 1, maxStart);
+                } else {
+                    this.thumbnailStart = Math.max(this.thumbnailStart - 1, 0);
+                }
+                
+                this.updateThumbnailView();
+            }
+
+            updateThumbnailView() {
+                const container = document.getElementById('thumbnail-container');
+                const prevBtn = document.getElementById('prevThumbs');
+                const nextBtn = document.getElementById('nextThumbs');
+                
+                if (container) {
+                    const translateX = this.thumbnailStart * 72; // 60px + 12px gap
+                    container.style.transform = `translateX(-${translateX}px)`;
+                }
+
+                if (prevBtn && nextBtn) {
+                    const maxStart = Math.max(0, this.images.length - this.visibleThumbnails);
+                    
+                    prevBtn.disabled = this.thumbnailStart === 0;
+                    nextBtn.disabled = this.thumbnailStart >= maxStart;
+                    
+                    const showArrows = this.images.length > this.visibleThumbnails;
+                    prevBtn.style.display = showArrows ? 'flex' : 'none';
+                    nextBtn.style.display = showArrows ? 'flex' : 'none';
+                }
+            }
+
+            nextSlide() {
+                this.goToSlide((this.currentSlide + 1) % this.images.length);
+            }
+
+            previousSlide() {
+                this.goToSlide(this.currentSlide === 0 ? this.images.length - 1 : this.currentSlide - 1);
+            }
+
+            startAutoSlide() {
+                if (!this.autoSlideTimer) {
+                    this.autoSlideTimer = setInterval(() => this.nextSlide(), 5000);
+                }
+            }
+
+            stopAutoSlide() {
+                if (this.autoSlideTimer) {
+                    clearInterval(this.autoSlideTimer);
+                    this.autoSlideTimer = null;
+                }
+            }
+        }
+
+        // Global functions
+        function hideSplash() {
+            document.body.classList.remove('splash-active');
+            document.getElementById('splash').classList.add('hidden');
+            document.getElementById('main-site').classList.add('visible');
+        }
+
+        function handleFormSubmit() {
+            const form = document.getElementById('contactForm');
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const message = document.getElementById('message').value.trim();
+            
+            // Remove any existing error messages
+            const existingError = form.querySelector('.error-message');
+            if (existingError) existingError.remove();
+            
+            // Validation
+            if (!name) {
+                showError(form, 'Name is required');
+                return;
+            }
+            
+            if (!email && !phone) {
+                showError(form, 'Please provide either an email address or phone number');
+                return;
+            }
+            
+            if (email && !isValidEmail(email)) {
+                showError(form, 'Please enter a valid email address');
+                return;
+            }
+            
+            if (!message) {
+                showError(form, 'Message is required');
+                return;
+            }
+            
+            const btn = form.querySelector('.submit-btn');
+            const originalText = btn.textContent;
+            
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const successMsg = document.createElement('div');
+                successMsg.className = 'success-message';
+                successMsg.innerHTML = `
+                    <h3>Message Sent Successfully!</h3>
+                    <p>Thank you for reaching out. We'll get back to you soon.</p>
+                `;
+                
+                form.appendChild(successMsg);
+                setTimeout(() => successMsg.classList.add('show'), 100);
+                
+                form.querySelectorAll('input, textarea').forEach(field => {
+                    if (!field.type || !field.type.includes('hidden')) field.value = '';
+                });
+                
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                setTimeout(() => {
+                    successMsg.style.opacity = '0';
+                    setTimeout(() => successMsg.remove(), 500);
+                }, 5000);
+            }, 1500);
+        }
+        
+        function showError(form, message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            form.insertBefore(errorDiv, form.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.style.opacity = '0';
+                setTimeout(() => errorDiv.remove(), 500);
+            }, 4000);
+        }
+        
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Initialize
+        let slider;
+        
+        // Prevent scrolling during splash
+        document.body.classList.add('splash-active');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            slider = new ImageSlider();
+            
+            // Video handling with mobile fallback
+            const video = document.querySelector('.splash-video');
+            if (video) {
+                video.addEventListener('ended', hideSplash);
+                
+                // Check if video is actually playing on mobile
+                let videoCheckTimeout = setTimeout(() => {
+                    // If video hasn't started playing after 2 seconds, show skip option more prominently
+                    const skipBtn = document.querySelector('.skip-button');
+                    if (skipBtn) {
+                        skipBtn.style.fontSize = '16px';
+                        skipBtn.style.padding = '12px 24px';
+                        skipBtn.textContent = 'Continue to Site';
+                    }
+                }, 2000);
+                
+                video.addEventListener('play', () => {
+                    clearTimeout(videoCheckTimeout);
+                });
+                
+                window.addEventListener('message', event => {
+                    if (event.origin === 'https://player.vimeo.com') {
+                        try {
+                            const data = JSON.parse(event.data);
+                            if (data.event === 'ended') hideSplash();
+                        } catch (e) {
+                            // Ignore parse errors
+                        }
+                    }
+                });
+            }
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', e => {
+                    e.preventDefault();
+                    const target = document.querySelector(anchor.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        });
+
+        setTimeout(hideSplash, 8000);
+    </script>
+</body>
+
+</html>

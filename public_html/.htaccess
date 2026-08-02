@@ -1,0 +1,79 @@
+# =============================================================================
+# FILE: /domains/lionsfundraising.com/public_html/.htaccess
+#
+# Lions Sports Club ERP - root access rules
+# Created 2026-07-27. Verified: no prior root .htaccess existed, so this is
+# the complete file, not an append.
+#
+# Deliberately conservative. Contains no Content-Security-Policy and no
+# HTTPS rewrite, because the app loads the Firebase SDK from the gstatic CDN
+# and HTTPS is already handled at the host. Adding either here risks breaking
+# a working system for no gain.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. Source control and dotfiles. READ THIS BEFORE YOU RUN git init.
+#
+# If a .git directory ever exists inside the web root, the entire source tree
+# AND its full history become downloadable by anyone who guesses the path.
+# This block closes that before it can happen.
+# -----------------------------------------------------------------------------
+RedirectMatch 404 /\.git
+RedirectMatch 404 /\.svn
+RedirectMatch 404 /\.hg
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(\.gitignore|\.gitattributes|\.env|composer\.(json|lock)|package(-lock)?\.json)$">
+    Require all denied
+</FilesMatch>
+
+
+# -----------------------------------------------------------------------------
+# 2. Never serve data or backup files, anywhere in the tree.
+# Belt and braces behind the per-directory deny rules.
+# -----------------------------------------------------------------------------
+<FilesMatch "\.(log|bak|old|orig|save|swp|sql|sqlite|db|env|ini|yml|yaml|DEPRECATED)$">
+    Require all denied
+</FilesMatch>
+
+
+# -----------------------------------------------------------------------------
+# 3. Dormant modules. Hiding a nav link does not secure a route.
+# Remove a line here when the module goes live again.
+#
+# /events IS TEMPORARY. It currently serves a non-functional prototype with a
+# fake "Magic Link" login and a "Demo Mode" button, publicly reachable. Block
+# it now; remove this line the day the real signup sheet ships.
+#
+# /claims points at a different Firebase project (lions-fundraising rather
+# than lionsfundraising-1f854) and loads Firebase SDK 9.23.0. Confirm it is
+# genuinely dead before unblocking.
+# -----------------------------------------------------------------------------
+RedirectMatch 403 ^/claims(/.*)?$
+RedirectMatch 403 ^/d2(/.*)?$
+RedirectMatch 403 ^/main(/.*)?$
+RedirectMatch 403 ^/events(/.*)?$
+RedirectMatch 403 ^/lionsfundraising_BAK(/.*)?$
+
+
+# -----------------------------------------------------------------------------
+# 4. Directory listings off site-wide.
+# -----------------------------------------------------------------------------
+Options -Indexes
+
+
+# -----------------------------------------------------------------------------
+# 5. Low-risk security headers.
+# No CSP here on purpose. A CSP would need to allow the gstatic CDN, Vimeo,
+# and the Firestore endpoints, and getting it wrong takes the app down. Add
+# one later, in report-only mode first.
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

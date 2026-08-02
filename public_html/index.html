@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Fundraising</title>
+    <!-- Protected favicon implementation -->
+    <link rel="icon" type="image/png" id="dynamicFavicon">
+    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
+    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* PRIMARY BRAND COLORS - EXACT MATCH TO DASHBOARD */
+            --navy-blue: #1a365d;
+            --navy-blue-light: #2c5282;
+            --navy-blue-dark: #1a202c;
+
+            /* NEUTRAL GRAYS - EXACT MATCH TO DASHBOARD */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            /* SEMANTIC COLORS - EXACT MATCH TO DASHBOARD */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+
+            /* TYPOGRAPHY - EXACT MATCH TO DASHBOARD */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-display: 'Playfair Display', 'Times New Roman', serif;
+
+            /* FLAT DESIGN - EXACT MATCH TO DASHBOARD */
+            --border-light: 1px solid var(--gray-200);
+            --border-medium: 2px solid var(--gray-300);
+            --border-focus: 2px solid var(--navy-blue);
+
+            /* BORDER RADIUS - EXACT MATCH TO DASHBOARD */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* SPACING - EXACT MATCH TO DASHBOARD */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+
+            /* LOGO DATA - EXACT MATCH TO DASHBOARD */
+            --logo-data: url('https://lionsfundraising.com/media/lsc_head.png');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--navy-blue);
+            min-height: 100vh;
+            color: var(--gray-700);
+            position: relative;
+            padding: var(--space-6);
+        }
+
+        /* STANDARDIZED MAIN CONTAINER - matches header system exactly */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - calc(var(--space-6) * 2) - calc(var(--space-4) * 2) - 120px);
+            border: var(--border-light);
+        }
+
+        /* HOME PAGE SPECIFIC STYLES */
+        .hero-section {
+            text-align: center;
+            margin-bottom: var(--space-12);
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--navy-blue);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-500);
+            max-width: 600px;
+            margin: 0 auto var(--space-8);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-6) var(--space-8);
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 1.125rem;
+            border: var(--border-medium);
+            min-height: 56px;
+            transition: all 0.2s ease;
+            min-width: 150px;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .hero-btn-signin {
+            background: var(--white);
+            color: var(--navy-blue);
+            border-color: var(--navy-blue);
+        }
+
+        .hero-btn-register {
+            background: var(--navy-blue);
+            color: var(--white);
+            border-color: var(--navy-blue);
+        }
+
+        .hero-btn-signin:hover {
+            background: var(--navy-blue);
+            color: var(--white);
+            transform: translateY(-1px);
+        }
+
+        .hero-btn-register:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Features Section */
+        .features-section {
+            margin-bottom: var(--space-12);
+            text-align: center;
+        }
+
+        .features-title {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-8);
+            font-weight: 600;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--navy-blue);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .feature-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-3);
+            font-weight: 600;
+        }
+
+        .feature-description {
+            color: var(--gray-700);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Process Steps Section */
+        .upcoming-section {
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
+            margin-bottom: var(--space-12);
+            border: var(--border-light);
+        }
+
+        .upcoming-title {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            color: var(--navy-blue);
+            text-align: center;
+            margin-bottom: var(--space-8);
+            font-weight: 600;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-8);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-4);
+            text-align: left;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--navy-blue);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-family: var(--font-display);
+            color: var(--navy-blue);
+            margin-bottom: var(--space-2);
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .step-content p {
+            color: var(--gray-700);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* LOGIN MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 54, 93, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: var(--space-4);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-container {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .login-header {
+            margin-bottom: var(--space-8);
+            text-align: center;
+        }
+
+        .login-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-4);
+            font-weight: 600;
+        }
+
+        .login-subtitle {
+            color: var(--gray-500);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: var(--space-6);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--navy-blue);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--space-3);
+            border: var(--border-medium);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-500);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: var(--space-1);
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--navy-blue);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            background: var(--navy-blue);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            min-height: 44px;
+            justify-content: center;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .login-status {
+            padding: var(--space-3);
+            margin: var(--space-4) 0;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            display: none;
+            text-align: left;
+            line-height: 1.4;
+            font-size: 0.875rem;
+        }
+
+        .login-status.success {
+            background: #d1fae5;
+            color: var(--success);
+            border: 1px solid var(--success);
+            display: block;
+        }
+
+        .login-status.error {
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid var(--error);
+            display: block;
+        }
+
+        .login-options {
+            margin-top: var(--space-6);
+            text-align: center;
+        }
+
+        .login-options a {
+            color: var(--navy-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin: 0 var(--space-3);
+            transition: color 0.2s ease;
+        }
+
+        .login-options a:hover {
+            color: var(--navy-blue-dark);
+            text-decoration: underline;
+        }
+
+        /* FOOTER - EXACT MATCH TO DASHBOARD */
+        .footer {
+            background: transparent;
+            border: none;
+            padding: var(--space-8);
+            text-align: center;
+            margin-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--white) !important;
+            text-decoration: none;
+            font-size: 0.925rem;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            font-family: var(--font-primary);
+        }
+
+        .footer a:hover {
+            color: var(--warning) !important;
+            text-decoration: underline;
+        }
+
+        .footer-brand {
+            margin-top: var(--space-4);
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        /* RESPONSIVE DESIGN - UPDATED for modal */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+
+            .main-container {
+                padding: var(--space-6);
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+
+            .hero-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .features-title,
+            .upcoming-title {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-nav {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+
+            .upcoming-section {
+                padding: var(--space-8);
+            }
+
+            .modal-container {
+                padding: var(--space-6);
+                margin: var(--space-2);
+            }
+
+            .login-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .hero-btn {
+                padding: var(--space-4) var(--space-6);
+                font-size: 1rem;
+            }
+
+            .features-title,
+            .upcoming-title {
+                font-size: 1.75rem;
+            }
+
+            .step {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+
+            .step-content {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Universal Header Container -->
+    <div id="headerContainer"></div>
+
+    <div class="main-container">
+        <main>
+            <section class="hero-section">
+                <h1 class="hero-title">Lions Fundraising</h1>
+                <p class="hero-subtitle">Earn money to support your family while helping Lions Sports Club through
+                    fundraising events</p>
+                <div class="hero-actions">
+                    <a href="/register" class="hero-btn hero-btn-register">
+                        📋 Register
+                    </a>
+                    <button class="hero-btn hero-btn-signin" onclick="openLoginModal(event)">
+                        🔐 Sign In
+                    </button>
+                </div>
+            </section>
+
+            <section class="features-section">
+                <h2 class="features-title">Why Work With Us?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <h3 class="feature-title">Support Your Family</h3>
+                        <p class="feature-description">Earnings go directly toward program fees, equipment, school
+                            expenses, and Florida championship travel.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⏰</div>
+                        <h3 class="feature-title">Flexible Schedule</h3>
+                        <p class="feature-description">Choose events and time slots that work with your availability.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">Meaningful Work</h3>
+                        <p class="feature-description">Help Lions Sports Club give God the glory through sports while
+                            supporting your family.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="upcoming-section">
+                <h2 class="upcoming-title">How It Works</h2>
+                <div class="process-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Register</h3>
+                            <p>Complete your profile with availability and any required certifications</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Work Events</h3>
+                            <p>Get assigned to fundraising events that match your schedule</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Get Reimbursed</h3>
+                            <p>Use earnings for family expenses and Lions-related costs</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="modal-overlay" onclick="closeLoginModal(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+
+            <div class="login-header">
+                <h1 class="login-title">Welcome Back</h1>
+                <p class="login-subtitle">Sign in to access your Lions account</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+                            Show
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div id="loginStatus" class="login-status"></div>
+
+            <div class="login-options">
+                <a href="/register">Create Account</a>
+                <a href="/forgot-password">Forgot Password?</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER - OUTSIDE MAIN CONTAINER -->
+    <footer class="footer">
+        <nav class="footer-nav">
+            <a href="/">Home</a>
+            <a href="/events">Events</a>
+            <a href="/reimbursement">Reimbursement</a>
+            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
+        </nav>
+        <div class="footer-brand">
+            © 2025 Lions Sports Club. All rights reserved.<br>
+            Giving God The Glory Through Sports
+        </div>
+    </footer>
+
+    <!-- Load Universal Systems -->
+    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+    <script src="https://lionsfundraising.com/universal-header.js"></script>
+    <script src="https://lionsfundraising.com/relationship-config.js"></script>
+
+    <script>
+        let isProcessingLogin = false;
+
+        // MODAL FUNCTIONS
+        function openLoginModal(event) {
+            if (event) event.preventDefault();
+            
+            const modal = document.getElementById('loginModal');
+            modal.classList.add('active');
+            
+            // Focus on email field after modal opens
+            setTimeout(() => {
+                const emailInput = document.getElementById('email');
+                if (emailInput) emailInput.focus();
+            }, 100);
+            
+            // Store current page for redirect after login
+            if (window.LIONS_AUTH) {
+                window.LIONS_AUTH.storeRedirectUrl(window.location.href);
+            } else {
+                sessionStorage.setItem('lionsAuthRedirect', window.location.href);
+            }
+        }
+
+        function closeLoginModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.classList.contains('modal-close')) {
+                return;
+            }
+            
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.classList.remove('active');
+            }
+            
+            // Clear any modal-related states
+            hideLoginStatus();
+            
+            // Clear any form data
+            const form = document.getElementById('loginForm');
+            if (form) form.reset();
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLoginModal();
+            }
+        });
+
+        // LOGIN FUNCTIONALITY (preserved from original)
+        async function handleEmailLogin(event) {
+            event.preventDefault();
+            
+            if (isProcessingLogin) return;
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            if (!email || !password) {
+                showLoginStatus('error', 'Please enter both email and password.');
+                return;
+            }
+
+            isProcessingLogin = true;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing in...';
+                
+                // Clear any existing status
+                hideLoginStatus();
+
+                // Wait for auth system (with reasonable timeout)
+                await waitForAuth(5000);
+
+                if (!window.LIONS_AUTH || !window.LIONS_AUTH.isInitialized) {
+                    throw new Error('Authentication system not available. Please refresh the page.');
+                }
+
+                // Attempt login
+                const result = await window.LIONS_AUTH.signInWithEmailAndPassword(email, password);
+                
+                if (result.success) {
+                    // Success - close modal and let universal auth handle redirect
+                    showLoginStatus('success', 'Login successful! Redirecting...');
+                    setTimeout(() => {
+                        closeLoginModal();
+                    }, 1000);
+                    console.log('Login successful');
+                } else {
+                    // Handle error
+                    throw new Error(result.error || 'Login failed');
+                }
+
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                const errorMessages = {
+                    'auth/user-not-found': 'No account found with this email address.',
+                    'auth/wrong-password': 'Incorrect password. Please try again.',
+                    'auth/invalid-email': 'Invalid email address format.',
+                    'auth/too-many-requests': 'Too many failed attempts. Please wait and try again.',
+                    'auth/user-disabled': 'This account has been disabled.',
+                    'auth/invalid-credential': 'Invalid email or password.',
+                    'auth/network-request-failed': 'Network error. Please check your connection.',
+                };
+
+                const displayError = errorMessages[error.code] || error.message || 'Login failed. Please try again.';
+                showLoginStatus('error', displayError);
+
+                // Re-enable form
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                isProcessingLogin = false;
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = 'Show';
+            }
+        }
+
+        function showLoginStatus(type, message) {
+            const statusElement = document.getElementById('loginStatus');
+            statusElement.className = `login-status ${type}`;
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 4000);
+            }
+        }
+
+        function hideLoginStatus() {
+            const statusElement = document.getElementById('loginStatus');
+            statusElement.style.display = 'none';
+        }
+
+        async function waitForAuth(timeoutMs = 3000) {
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < timeoutMs) {
+                if (window.LIONS_AUTH && window.LIONS_AUTH.isInitialized) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            throw new Error('Auth system timeout');
+        }
+
+        // INITIALIZATION (preserved from original)
+        async function checkExistingAuth() {
+            try {
+                // Wait for universal auth to be ready (with timeout)
+                await waitForAuth(3000);
+
+                if (window.LIONS_AUTH && window.LIONS_AUTH.isAuthenticated()) {
+                    console.log('User already authenticated, redirecting...');
+                    
+                    // Get redirect URL
+                    const redirectUrl = sessionStorage.getItem('lionsAuthRedirect') || '/dashboard';
+                    sessionStorage.removeItem('lionsAuthRedirect');
+                    
+                    setTimeout(() => {
+                        window.location.replace(redirectUrl);
+                    }, 800);
+                }
+            } catch (error) {
+                console.warn('Auth check failed:', error);
+                // Continue - page still works
+            }
+        }
+
+        function setupLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleEmailLogin);
+            }
+        }
+
+        async function initializeBackgroundSystems() {
+            try {
+                // Initialize header in background
+                if (window.LIONS_HEADER && window.LIONS_HEADER.setupPage) {
+                    await window.LIONS_HEADER.setupPage('headerContainer');
+                    console.log('Header initialized');
+                }
+
+                // Check if already authenticated
+                await checkExistingAuth();
+                
+            } catch (error) {
+                console.warn('Background system initialization failed:', error);
+                // Continue - page still works
+            }
+        }
+
+        // Initialize page when DOM is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Set up universal header system
+            await window.LIONS_HEADER.setupPage('headerContainer');
+            
+            // Set up login form
+            setupLoginForm();
+            
+            // Initialize background systems
+            initializeBackgroundSystems();
+            
+            // Force header update after short delay to ensure auth state is loaded
+            setTimeout(() => {
+                if (window.LIONS_HEADER && window.LIONS_HEADER.forceUpdate) {
+                    window.LIONS_HEADER.forceUpdate();
+                }
+            }, 300);
+            
+            console.log('Landing page initialized');
+        });
+
+        // Global functions for external access (e.g., from header)
+        window.openLoginModal = openLoginModal;
+        window.closeLoginModal = closeLoginModal;
+        window.togglePasswordVisibility = togglePasswordVisibility;
+    </script>
+</body>
+
+</html>

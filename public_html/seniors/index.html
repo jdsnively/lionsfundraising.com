@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions 2025 Seniors</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            background-color: #1a365d;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #1a365d;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            background-color: #FFD700;
+            color: #1a365d;
+            text-align: center;
+            padding: 40px 200px 40px 200px;
+            position: relative;
+            border-bottom: 2px solid #1a365d;
+        }
+
+        .header::before,
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 140px;
+            height: 140px;
+            background-image: url('image-proxy.php');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.9;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Fallback if image proxy fails */
+        .header::before,
+        .header::after {
+            background-color: #1a365d;
+            border: 4px solid #1a365d;
+            border-radius: 50%;
+            font-size: 56px;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+            line-height: 132px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .header.logo-loaded::before,
+        .header.logo-loaded::after {
+            content: '';
+            background-color: transparent;
+            border: none;
+            font-size: 0;
+            line-height: normal;
+        }
+
+        .header::before {
+            left: 40px;
+            content: 'L';
+        }
+
+        .header::after {
+            right: 40px;
+            content: 'L';
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .form-section {
+            background-color: #f8fafc;
+            padding: 40px;
+        }
+
+        .intro-text {
+            text-align: center;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f4f4f5;
+            border-radius: 8px;
+            border: 2px solid #1a365d;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #1a365d;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a365d;
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group.large-text textarea {
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Character counter for textareas */
+        .char-counter {
+            text-align: right;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Auto-save indicator */
+        .auto-save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 30px 140px 30px 140px;
+            }
+
+            .header::before,
+            .header::after {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+                line-height: 92px;
+                border: 3px solid #1a365d;
+            }
+
+            .header::before {
+                left: 20px;
+            }
+
+            .header::after {
+                right: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .auto-save-indicator {
+                position: static;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 25px 110px 25px 110px;
+            }
+
+            .header::before,
+            .header::after {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+                line-height: 72px;
+            }
+
+            .header::before {
+                left: 15px;
+            }
+
+            .header::after {
+                right: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            border: 2px solid #1a365d;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: auto;
+            max-width: 350px;
+            margin: 20px auto 0;
+            display: block;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-right: 10px;
+        }
+
+        .submit-btn.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-info {
+            background-color: #cce7ff;
+            color: #004085;
+            border: 2px solid #b3d7ff;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .field-help {
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .lions-pride {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #1a365d;
+            color: white;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+        }
+
+        .lions-pride h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .lions-footer {
+            text-align: center;
+            padding: 20px;
+            background: transparent;
+            border: none;
+            margin-top: 0;
+        }
+
+        .footer-copyright {
+            font-size: 0.9em;
+        }
+
+        .footer-copyright a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-copyright a:hover {
+            text-decoration: underline;
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for better accessibility */
+        input:focus,
+        textarea:focus,
+        button:focus {
+            outline: 2px solid #1a365d;
+            outline-offset: 2px;
+        }
+
+        /* Logo protection */
+        .header {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .header::before,
+        .header::after {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Auto-save indicator -->
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        Draft saved automatically
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Lions 2025 Seniors</h1>
+            <p>Senior Recognition Form</p>
+        </div>
+
+        <div class="form-section">
+            <div class="intro-text">
+                <strong>Congratulations on your senior year!</strong><br>
+                Please fill out this form so we can celebrate your achievements and recognize you properly during senior night.
+            </div>
+
+            <form id="seniorsForm" novalidate>
+                <div class="form-group">
+                    <label for="fullName">Your Full Name <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="fullName" name="fullName" required
+                           autocomplete="name"
+                           aria-describedby="fullName-error">
+                    <div class="error-message" id="fullName-error" role="alert"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="parentsNames">Parent(s)/Guardian(s) names <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="parentsNames" name="parentsNames" required
+                           placeholder="e.g., John Smith or Mary & David Johnson"
+                           aria-describedby="parentsNames-error">
+                    <div class="error-message" id="parentsNames-error" role="alert"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fieldAccompany">Who will accompany you on the field <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="fieldAccompany" name="fieldAccompany" required
+                           aria-describedby="fieldAccompany-help">
+                    <div class="field-help" id="fieldAccompany-help">(Parents, grandparents, etc.)</div>
+                    <div class="error-message" id="fieldAccompany-error" role="alert"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="yearsWithLions">How many years with the Lions? <span class="required" aria-label="required">*</span></label>
+                    <input type="number" id="yearsWithLions" name="yearsWithLions" required min="1" max="12"
+                           aria-describedby="yearsWithLions-error">
+                    <div class="error-message" id="yearsWithLions-error" role="alert"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="plansAfterGraduation">Plans after graduation <span class="required" aria-label="required">*</span></label>
+                    <textarea id="plansAfterGraduation" name="plansAfterGraduation" required
+                              maxlength="500"
+                              aria-describedby="plansAfterGraduation-help plansAfterGraduation-counter"></textarea>
+                    <div class="field-help" id="plansAfterGraduation-help">(college, military, work?)</div>
+                    <div class="char-counter" id="plansAfterGraduation-counter">0/500</div>
+                    <div class="error-message" id="plansAfterGraduation-error" role="alert"></div>
+                </div>
+
+                <div class="form-group large-text">
+                    <label for="futureGoals">Future goals</label>
+                    <textarea id="futureGoals" name="futureGoals"
+                              maxlength="500"
+                              aria-describedby="futureGoals-counter"></textarea>
+                    <div class="char-counter" id="futureGoals-counter">0/500</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="favoriteBibleVerse">Favorite Bible verse</label>
+                    <textarea id="favoriteBibleVerse" name="favoriteBibleVerse"
+                              maxlength="500"
+                              aria-describedby="favoriteBibleVerse-counter"></textarea>
+                    <div class="char-counter" id="favoriteBibleVerse-counter">0/500</div>
+                </div>
+
+                <div class="form-group large-text">
+                    <label for="departingThought">Departing thought for the team</label>
+                    <textarea id="departingThought" name="departingThought"
+                              maxlength="500"
+                              aria-describedby="departingThought-counter"></textarea>
+                    <div class="char-counter" id="departingThought-counter">0/500</div>
+                </div>
+
+                <div class="form-group large-text">
+                    <label for="acknowledgements">Any acknowledgements</label>
+                    <textarea id="acknowledgements" name="acknowledgements"
+                              maxlength="500"
+                              aria-describedby="acknowledgements-help acknowledgements-counter"></textarea>
+                    <div class="field-help" id="acknowledgements-help">(parents, grandparents, coaches, pastor, etc.)
+                    </div>
+                    <div class="char-counter" id="acknowledgements-counter">0/500</div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitButton">
+                    <span class="loading-spinner"></span>
+                    <span id="submitText">Submit & Email PDF</span>
+                </button>
+            </form>
+
+            <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+
+            <div class="lions-pride">
+                <h3>Lions Pride</h3>
+                <p>Thank you for being part of the Lions family. Your dedication and spirit have made our team stronger!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="lions-footer">
+        <div class="footer-copyright">
+            <a href="https://www.lionsfootballclub.com" target="_blank">© Lions Home School Football, Inc. All rights
+                reserved.</a>
+        </div>
+    </div>
+
+    <script>
+        // Secure configuration - matches your submit-seniors.php
+        const CONFIG = {
+            BACKEND_ENDPOINT: 'submit-seniors.php',
+            AUTO_SAVE_DELAY: 2000,
+            MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+            RATE_LIMIT_DELAY: 1000
+        };
+
+        class LionsSeniorsForm {
+            constructor() {
+                this.autoSaveTimer = null;
+                this.pdfLibLoaded = false;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupCharCounters();
+                this.setupAutoSave();
+                this.setupValidation();
+                this.setupLogoProtection();
+                this.setupLogoFallback();
+                this.restoreDraft();
+            }
+
+            setupEventListeners() {
+                document.getElementById('seniorsForm').addEventListener('submit', (e) => this.handleSubmit(e));
+                
+                // Auto-save on input
+                document.getElementById('seniorsForm').addEventListener('input', () => {
+                    this.debouncedAutoSave();
+                });
+
+                // Real-time validation
+                const inputs = document.querySelectorAll('input[required], textarea[required]');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', () => this.validateField(input));
+                    input.addEventListener('input', () => this.clearFieldError(input));
+                });
+            }
+
+            setupCharCounters() {
+                const textareas = document.querySelectorAll('textarea[maxlength]');
+                textareas.forEach(textarea => {
+                    const counter = document.getElementById(textarea.id + '-counter');
+                    if (counter) {
+                        textarea.addEventListener('input', () => {
+                            const current = textarea.value.length;
+                            const max = textarea.maxLength;
+                            counter.textContent = `${current}/${max}`;
+                            
+                            // Warning when approaching limit
+                            if (current > max * 0.9) {
+                                counter.style.color = '#dc3545';
+                            } else {
+                                counter.style.color = '#666';
+                            }
+                        });
+                        
+                        // Initialize counter
+                        textarea.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+
+            setupAutoSave() {
+                this.debouncedAutoSave = this.debounce(() => {
+                    this.saveDraft();
+                }, CONFIG.AUTO_SAVE_DELAY);
+            }
+
+            setupValidation() {
+                // Custom validation messages
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('invalid', (e) => {
+                        e.preventDefault();
+                        this.showFieldError(input, this.getValidationMessage(input));
+                    });
+                });
+            }
+
+            setupLogoProtection() {
+                // Protect logos from right-click saving
+                const header = document.querySelector('.header');
+                if (header) {
+                    ['contextmenu', 'selectstart', 'dragstart', 'mousedown', 'touchstart'].forEach(event => {
+                        header.addEventListener(event, (e) => {
+                            const rect = header.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            
+                            // Check if click is near logo areas (much larger logos now)
+                            if ((x < 180 || x > rect.width - 180) && y < rect.height) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return false;
+                            }
+                        }, { passive: false });
+                    });
+
+                    // Add additional protection
+                    header.style.webkitUserSelect = 'none';
+                    header.style.mozUserSelect = 'none';
+                    header.style.msUserSelect = 'none';
+                    header.style.userSelect = 'none';
+                }
+            }
+
+            setupLogoFallback() {
+                // Test if logo image loads successfully
+                const testImage = new Image();
+                testImage.onload = () => {
+                    // Image loaded successfully, hide text fallback
+                    const header = document.querySelector('.header');
+                    if (header) {
+                        header.classList.add('logo-loaded');
+                    }
+                };
+                testImage.onerror = () => {
+                    // Image failed to load, keep text fallback visible
+                    console.log('Logo image failed to load, using text fallback');
+                };
+                
+                // Set a timeout in case the image takes too long
+                setTimeout(() => {
+                    if (!testImage.complete) {
+                        console.log('Logo image timeout, using text fallback');
+                    }
+                }, 3000);
+                
+                testImage.src = 'image-proxy.php';
+            }
+
+            getValidationMessage(input) {
+                if (input.validity.valueMissing) {
+                    return 'This field is required.';
+                }
+                if (input.validity.typeMismatch) {
+                    return 'Please enter a valid value.';
+                }
+                if (input.validity.rangeUnderflow) {
+                    return `Please enter a number greater than or equal to ${input.min}.`;
+                }
+                if (input.validity.rangeOverflow) {
+                    return `Please enter a number less than or equal to ${input.max}.`;
+                }
+                if (input.validity.tooLong) {
+                    return `Please enter no more than ${input.maxLength} characters.`;
+                }
+                return 'Please enter a valid value.';
+            }
+
+            validateField(input) {
+                if (input.required && !input.value.trim()) {
+                    this.showFieldError(input, 'This field is required.');
+                    return false;
+                }
+                
+                if (input.type === 'number') {
+                    const value = parseInt(input.value);
+                    if (isNaN(value) || value < 1 || value > 12) {
+                        this.showFieldError(input, 'Please enter a valid number of years (1-12).');
+                        return false;
+                    }
+                }
+                
+                this.clearFieldError(input);
+                return true;
+            }
+
+            showFieldError(input, message) {
+                const errorEl = document.getElementById(input.id + '-error');
+                
+                if (errorEl) {
+                    errorEl.textContent = message;
+                    errorEl.style.display = 'block';
+                }
+            }
+
+            clearFieldError(input) {
+                const errorEl = document.getElementById(input.id + '-error');
+                
+                if (errorEl) {
+                    errorEl.style.display = 'none';
+                }
+            }
+
+            validateForm() {
+                const requiredFields = document.querySelectorAll('input[required], textarea[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!this.validateField(field)) {
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            saveDraft() {
+                const formData = this.collectFormData();
+                const draft = {
+                    data: formData,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('lions-seniors-draft', JSON.stringify(draft));
+                this.showAutoSaveIndicator();
+            }
+
+            restoreDraft() {
+                const draftStr = localStorage.getItem('lions-seniors-draft');
+                if (!draftStr) return;
+
+                try {
+                    const draft = JSON.parse(draftStr);
+                    const ageHours = (Date.now() - draft.timestamp) / (1000 * 60 * 60);
+                    
+                    // Only restore drafts less than 24 hours old
+                    if (ageHours < 24) {
+                        Object.keys(draft.data).forEach(key => {
+                            const field = document.getElementById(key);
+                            if (field && draft.data[key]) {
+                                field.value = draft.data[key];
+                                field.dispatchEvent(new Event('input')); // Trigger char counters
+                            }
+                        });
+                        
+                        this.showStatus('Previous draft restored', 'info', 3000);
+                    } else {
+                        // Remove old draft
+                        localStorage.removeItem('lions-seniors-draft');
+                    }
+                } catch (error) {
+                    console.warn('Error restoring draft:', error);
+                    localStorage.removeItem('lions-seniors-draft');
+                }
+            }
+
+            showAutoSaveIndicator() {
+                const indicator = document.getElementById('autoSaveIndicator');
+                indicator.classList.add('show');
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+
+            collectFormData() {
+                const formData = {};
+                const inputs = document.querySelectorAll('input, textarea');
+                
+                inputs.forEach(input => {
+                    formData[input.id] = this.sanitizeInput(input.value.trim());
+                });
+                
+                return formData;
+            }
+
+            // Basic XSS prevention
+            sanitizeInput(input) {
+                return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                           .replace(/javascript:/gi, '')
+                           .replace(/on\w+\s*=/gi, '');
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                if (!this.validateForm()) {
+                    this.showStatus('Please correct the errors above before submitting.', 'error');
+                    return;
+                }
+
+                try {
+                    this.setSubmitState(true);
+                    this.showStatus('Generating PDF and preparing email...', 'info');
+                    
+                    const formData = this.collectFormData();
+                    
+                    // Load PDF library if needed
+                    if (!this.pdfLibLoaded) {
+                        await this.loadPDFLib();
+                    }
+                    
+                    // Generate PDF
+                    const pdfBlob = await this.generatePDF(formData);
+                    
+                    // Submit to server for emailing
+                    await this.submitToServer(pdfBlob, formData);
+                    
+                    this.showStatus('Senior form submitted successfully! The PDF has been emailed to the coaching staff.', 'success');
+                    this.clearDraft();
+                    this.resetForm();
+                    
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    this.showStatus('Error processing submission. Please try again or contact support.', 'error');
+                } finally {
+                    this.setSubmitState(false);
+                }
+            }
+
+            async loadPDFLib() {
+                if (window.PDFLib) {
+                    this.pdfLibLoaded = true;
+                    return;
+                }
+
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+                    script.onload = () => {
+                        this.pdfLibLoaded = true;
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error('Failed to load PDF library'));
+                    document.head.appendChild(script);
+                });
+            }
+
+            // Fixed PDF generation function - no const assignment errors
+            async generatePDF(formData) {
+                try {
+                    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+                    
+                    const doc = await PDFDocument.create();
+                    const pages = [];
+                    pages.push(doc.addPage([612, 792]));
+                    let pageIndex = 0;
+                    let y = 740; // Start higher for better layout
+                    
+                    const fonts = {
+                        normal: await doc.embedFont(StandardFonts.TimesRoman),
+                        bold: await doc.embedFont(StandardFonts.TimesRomanBold)
+                    };
+                    
+                    const settings = {
+                        margin: 60,
+                        pageWidth: 612,
+                        contentWidth: 492
+                    };
+                    
+                    // Self-contained text wrapping with newline handling
+                    const wrapTextLines = (text, font, fontSize, maxWidth) => {
+                        // First, handle newlines by splitting text into paragraphs
+                        const paragraphs = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                        const allLines = [];
+                        
+                        paragraphs.forEach((paragraph, index) => {
+                            // Skip empty paragraphs but preserve spacing
+                            if (!paragraph.trim()) {
+                                if (index < paragraphs.length - 1) {
+                                    allLines.push(''); // Add empty line for paragraph break
+                                }
+                                return;
+                            }
+                            
+                            const words = paragraph.split(' ');
+                            let currentLine = '';
+
+                            for (let i = 0; i < words.length; i++) {
+                                const word = words[i];
+                                const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                                
+                                try {
+                                    const textWidth = font.widthOfTextAtSize(testLine, fontSize);
+                                    
+                                    if (textWidth > maxWidth && currentLine) {
+                                        allLines.push(currentLine);
+                                        currentLine = word;
+                                    } else {
+                                        currentLine = testLine;
+                                    }
+                                } catch (error) {
+                                    // If we can't measure the text, just add the word
+                                    if (currentLine) {
+                                        allLines.push(currentLine);
+                                        currentLine = word;
+                                    } else {
+                                        currentLine = testLine;
+                                    }
+                                }
+                            }
+
+                            if (currentLine) {
+                                allLines.push(currentLine);
+                            }
+                            
+                            // Add spacing between paragraphs (except for the last one)
+                            if (index < paragraphs.length - 1) {
+                                allLines.push('');
+                            }
+                        });
+
+                        return allLines;
+                    };
+                    
+                    // Helper functions using arrow syntax to preserve context
+                    const getCurrentPage = () => pages[pageIndex];
+                    
+                    const addNewPage = () => {
+                        const newPage = doc.addPage([612, 792]);
+                        pages.push(newPage);
+                        pageIndex = pageIndex + 1;
+                        y = 740; // Reset to top with more space
+                        return newPage;
+                    };
+                    
+                    const checkSpace = (needed) => {
+                        if (y < needed) {
+                            addNewPage();
+                        }
+                    };
+                    
+                    const drawCenteredText = (text, size, fontType, color) => {
+                        const textWidth = fonts[fontType].widthOfTextAtSize(text, size);
+                        const x = (settings.pageWidth - textWidth) / 2;
+                        getCurrentPage().drawText(text, {
+                            x: x,
+                            y: y,
+                            size: size,
+                            font: fonts[fontType],
+                            color: color || rgb(0, 0, 0)
+                        });
+                    };
+                    
+                    const drawText = (text, size, fontType, color) => {
+                        getCurrentPage().drawText(text, {
+                            x: settings.margin,
+                            y: y,
+                            size: size,
+                            font: fonts[fontType],
+                            color: color || rgb(0, 0, 0)
+                        });
+                    };
+                    
+                    // Centered Header with simple two-line title
+                    drawCenteredText('Lions 2025 Senior', 20, 'bold', rgb(0.1, 0.21, 0.36));
+                    y = y - 30;
+                    
+                    // Centered student name
+                    drawCenteredText(formData.fullName, 20, 'bold', rgb(0.1, 0.21, 0.36));
+                    y = y - 45;
+                    
+                    // Form fields with more compact spacing
+                    const formFields = [
+                        ['Parent(s)/Guardian(s):', formData.parentsNames],
+                        ['Will be accompanied by:', formData.fieldAccompany],
+                        ['Years with the Lions:', formData.yearsWithLions],
+                        ['Plans after graduation:', formData.plansAfterGraduation],
+                        ['Future goals:', formData.futureGoals],
+                        ['Favorite Bible verse:', formData.favoriteBibleVerse],
+                        ['Departing thought for the team:', formData.departingThought],
+                        ['Acknowledgements:', formData.acknowledgements]
+                    ];
+                    
+                    // Process each field with compact spacing
+                    formFields.forEach((field) => {
+                        const label = field[0];
+                        const value = field[1];
+                        
+                        // Skip empty optional fields to save space
+                        if (!value || !value.trim()) {
+                            return;
+                        }
+                        
+                        checkSpace(80); // Reduced space requirement
+                        
+                        // Label
+                        drawText(label, 12, 'bold', rgb(0.1, 0.21, 0.36));
+                        y = y - 18; // Reduced spacing
+                        
+                        // Value
+                        const lines = wrapTextLines(value, fonts.normal, 11, settings.contentWidth - 20);
+                        lines.forEach((line) => {
+                            checkSpace(40);
+                            getCurrentPage().drawText(line, {
+                                x: settings.margin + 15,
+                                y: y,
+                                size: 11,
+                                font: fonts.normal,
+                                color: rgb(0, 0, 0)
+                            });
+                            y = y - 14; // Tighter line spacing
+                        });
+                        y = y - 8; // Reduced gap between fields
+                    });
+                    
+                    const pdfBytes = await doc.save();
+                    return new Blob([pdfBytes], { type: 'application/pdf' });
+                    
+                } catch (error) {
+                    console.error('PDF generation failed:', error);
+                    throw new Error('PDF creation failed: ' + error.message);
+                }
+            }
+
+            async submitToServer(pdfBlob, formData) {
+                const submitData = new FormData();
+                
+                // Add CSRF token for security
+                submitData.append('csrf_token', this.generateCSRFToken());
+                submitData.append('pdf', pdfBlob, `Lions_2025_Seniors_${formData.fullName.replace(/\s+/g, '_')}.pdf`);
+                submitData.append('studentName', formData.fullName);
+                submitData.append('parentsNames', formData.parentsNames);
+                submitData.append('yearsWithLions', formData.yearsWithLions);
+                submitData.append('timestamp', new Date().toISOString());
+
+                const response = await fetch(CONFIG.BACKEND_ENDPOINT, {
+                    method: 'POST',
+                    body: submitData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Server processing failed');
+                }
+
+                return result;
+            }
+
+            generateCSRFToken() {
+                // Simple CSRF token generation
+                return btoa(Math.random().toString()).substr(10, 20);
+            }
+
+            setSubmitState(loading) {
+                const button = document.getElementById('submitButton');
+                const submitText = document.getElementById('submitText');
+                
+                button.disabled = loading;
+                
+                if (loading) {
+                    button.classList.add('loading');
+                    submitText.textContent = 'Processing...';
+                } else {
+                    button.classList.remove('loading');
+                    submitText.textContent = 'Submit & Email PDF';
+                }
+            }
+
+            resetForm() {
+                document.getElementById('seniorsForm').reset();
+                
+                // Reset character counters
+                document.querySelectorAll('textarea[maxlength]').forEach(textarea => {
+                    textarea.dispatchEvent(new Event('input'));
+                });
+            }
+
+            clearDraft() {
+                localStorage.removeItem('lions-seniors-draft');
+            }
+
+            showStatus(message, type, duration = 0) {
+                const statusEl = document.getElementById('statusMessage');
+                statusEl.textContent = message;
+                statusEl.className = `status-message status-${type}`;
+                statusEl.style.display = 'block';
+                
+                // Auto-hide success and info messages
+                if (duration > 0 || type === 'success' || type === 'info') {
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                    }, duration || 5000);
+                }
+            }
+
+            debounce(func, wait) {
+                return (...args) => {
+                    clearTimeout(this.autoSaveTimer);
+                    this.autoSaveTimer = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new LionsSeniorsForm();
+        });
+    </script>
+</body>
+
+</html>

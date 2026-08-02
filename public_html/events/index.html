@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Event Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* PRIMARY BRAND COLORS - EXACT MATCH TO DASHBOARD */
+            --navy-blue: #1a365d;
+            --navy-blue-light: #2c5282;
+            --navy-blue-dark: #1a202c;
+
+            /* NEUTRAL GRAYS - EXACT MATCH TO DASHBOARD */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            /* SEMANTIC COLORS - EXACT MATCH TO DASHBOARD */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+
+            /* TYPOGRAPHY - EXACT MATCH TO DASHBOARD */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-display: 'Playfair Display', 'Times New Roman', serif;
+
+            /* FLAT DESIGN - EXACT MATCH TO DASHBOARD */
+            --border-light: 1px solid var(--gray-200);
+            --border-medium: 2px solid var(--gray-300);
+            --border-focus: 2px solid var(--navy-blue);
+
+            /* BORDER RADIUS - EXACT MATCH TO DASHBOARD */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* SPACING - EXACT MATCH TO DASHBOARD */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+
+            /* LOGO DATA - EXACT MATCH TO DASHBOARD */
+            --logo-data: url('https://lionsfundraising.com/media/lsc_head.png');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--navy-blue);
+            min-height: 100vh;
+            color: var(--gray-700);
+            position: relative;
+            padding: var(--space-6);
+        }
+
+        /* MAIN CONTAINER - EXACT MATCH TO DASHBOARD (1600px) */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - var(--space-12));
+            border: var(--border-light);
+        }
+
+        /* HEADER - EXACT MATCH TO DASHBOARD */
+        .header {
+            background: var(--gray-100);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+            border: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: var(--border-light);
+            background-image: var(--logo-data);
+            background-size: 90%;
+            background-repeat: no-repeat;
+            background-position: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            position: relative;
+            overflow: hidden;
+            filter: contrast(1.1) saturate(1.1);
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(26, 54, 93, 0.02) 50%, transparent 51%);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .header-brand-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-brand {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--navy-blue);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .header-tagline {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        /* NAVIGATION - STANDARDIZED WITH ACTIVE STATE */
+        .nav-pills {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .nav-pill {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            background: var(--white);
+            color: var(--navy-blue);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-weight: 600;
+            font-size: 1rem;
+            min-height: 44px;
+            cursor: pointer;
+        }
+
+        .nav-pill:hover {
+            background: var(--navy-blue);
+            color: var(--white);
+        }
+
+        /* ACTIVE STATE - CURRENT PAGE */
+        .nav-pill.active {
+            background: var(--navy-blue);
+            color: var(--white);
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Enhanced Logo Protection */
+        .image-protected {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Print Protection */
+        @media print {
+            .logo {
+                filter: blur(2px) !important;
+                opacity: 0.3 !important;
+            }
+        }
+
+        /* AUTHENTICATION STYLES */
+        .auth-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: var(--space-8);
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: var(--space-6);
+            color: var(--gray-900);
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .auth-mode-toggle {
+            display: flex;
+            background: var(--gray-100);
+            border-radius: var(--radius-lg);
+            padding: 4px;
+            margin-bottom: var(--space-8);
+            border: var(--border-light);
+        }
+
+        .auth-mode-btn {
+            flex: 1;
+            padding: var(--space-3);
+            border: none;
+            background: transparent;
+            color: var(--navy-blue);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .auth-mode-btn.active {
+            background: var(--navy-blue);
+            color: var(--white);
+        }
+
+        .auth-section {
+            display: none;
+        }
+
+        .auth-section.active {
+            display: block;
+        }
+
+        /* FORM STYLES */
+        .form-group {
+            margin-bottom: var(--space-6);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: var(--border-medium);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--white);
+            color: var(--gray-900);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+        }
+
+        /* BUTTON STYLES - EXACT MATCH TO DASHBOARD */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            background: var(--navy-blue);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            min-height: 44px;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-500);
+            border-color: var(--gray-500);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-700);
+            border-color: var(--gray-700);
+        }
+
+        .btn-success {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--white);
+            border-color: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            border-color: #d97706;
+        }
+
+        .btn-sm {
+            padding: var(--space-2) var(--space-3);
+            font-size: 0.8rem;
+            min-height: 36px;
+        }
+
+        .btn-lg {
+            padding: var(--space-4) var(--space-8);
+            font-size: 1.125rem;
+        }
+
+        /* DEMO MODE STYLES */
+        .demo-section {
+            background: var(--gray-50);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            border: var(--border-light);
+            margin-top: var(--space-8);
+        }
+
+        .demo-title {
+            text-align: center;
+            font-weight: 600;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-4);
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .demo-note {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: var(--space-4);
+        }
+
+        /* MESSAGE STYLES */
+        .message {
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4) 0;
+            font-weight: 500;
+            border: var(--border-light);
+        }
+
+        .message.success {
+            background: #f0fdf4;
+            color: var(--success);
+            border-color: #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: var(--error);
+            border-color: #fecaca;
+        }
+
+        .message.info {
+            background: #eff6ff;
+            color: var(--info);
+            border-color: #bfdbfe;
+        }
+
+        /* USER INFO STYLES */
+        .user-info {
+            background: var(--gray-100);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+            border: var(--border-light);
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--navy-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .user-meta {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        /* CALENDAR SPECIFIC STYLES */
+        .calendar-container {
+            padding: var(--space-8);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .calendar-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--navy-blue);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: var(--space-2);
+            align-items: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: var(--border-light);
+        }
+
+        .calendar-day-header {
+            background: var(--navy-blue);
+            color: var(--white);
+            padding: var(--space-4);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .calendar-day {
+            background: var(--white);
+            min-height: 120px;
+            padding: var(--space-2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border: var(--border-light);
+        }
+
+        .calendar-day:hover {
+            background: var(--gray-50);
+        }
+
+        .calendar-day.other-month {
+            background: var(--gray-50);
+            color: var(--gray-500);
+        }
+
+        .calendar-day.today {
+            background: var(--gray-100);
+            border: var(--border-focus);
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+            color: var(--gray-900);
+        }
+
+        .event-indicator {
+            background: var(--navy-blue);
+            color: var(--white);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            margin-bottom: var(--space-1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: var(--border-light);
+        }
+
+        .event-indicator:hover {
+            background: var(--navy-blue-light);
+        }
+
+        /* FOOTER - EXACT MATCH TO DASHBOARD */
+        .footer {
+            background: transparent;
+            border: none;
+            padding: var(--space-8);
+            text-align: center;
+            margin-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--white) !important;
+            text-decoration: none;
+            font-size: 0.925rem;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            font-family: var(--font-primary);
+        }
+
+        .footer a:hover {
+            color: var(--warning) !important;
+            text-decoration: underline;
+        }
+
+        .footer-brand {
+            margin-top: var(--space-4);
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        /* RESPONSIVE DESIGN - EXACT MATCH TO DASHBOARD */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+
+            .main-container {
+                padding: var(--space-6);
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-4);
+            }
+
+            .nav-pills {
+                gap: var(--space-2);
+                justify-content: center;
+            }
+
+            .nav-pill {
+                padding: var(--space-3) var(--space-4);
+                font-size: 0.9rem;
+            }
+
+            .calendar-grid {
+                gap: 0;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: var(--space-1);
+            }
+
+            .calendar-day-header {
+                padding: var(--space-2);
+                font-size: 0.75rem;
+            }
+
+            .footer-nav {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-title {
+                font-size: 1.75rem;
+            }
+
+            .nav-pills {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+
+            .nav-pill {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+        }
+
+        /* iPad specific improvements for navigation */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .nav-pills {
+                gap: var(--space-2);
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .nav-pill {
+                padding: var(--space-2) var(--space-4);
+                font-size: 0.875rem;
+                min-width: 140px;
+                flex: 0 1 auto;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-4);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mb-2 {
+            margin-bottom: var(--space-2);
+        }
+
+        .mt-4 {
+            margin-top: var(--space-4);
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- HEADER - STANDARDIZED NAVIGATION -->
+        <header class="header">
+            <div class="header-logo">
+                <div class="logo image-protected"></div>
+                <div class="header-brand-section">
+                    <a href="/" class="header-brand">Lions Sports Club</a>
+                    <div class="header-tagline">Giving God The Glory Through Sports</div>
+                </div>
+            </div>
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill">🏠 Home</a>
+                <a href="/reimbursement" class="nav-pill">💰 Reimbursement</a>
+                <a href="/dashboard" class="nav-pill">📊 Dashboard</a>
+                <a href="/LOS" class="nav-pill">🏟️ LOS</a>
+                <a href="/sodexo-atc" class="nav-pill">🍺 Alcohol License Info</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Authentication Screen -->
+            <div id="authScreen" class="auth-container">
+                <h2 class="auth-title">Access Event Calendar</h2>
+
+                <!-- Auth Mode Toggle -->
+                <div class="auth-mode-toggle">
+                    <button class="auth-mode-btn active" onclick="switchAuthMode('magic')">Magic Link</button>
+                    <button class="auth-mode-btn" onclick="switchAuthMode('demo')">Demo Mode</button>
+                </div>
+
+                <!-- Magic Link Section -->
+                <div id="magicLinkSection" class="auth-section active">
+                    <p style="text-align: center; margin-bottom: var(--space-8); color: var(--gray-500);">
+                        Enter your email to receive a secure access link
+                    </p>
+
+                    <form id="magicLinkForm">
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-input" required placeholder="your.email@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-full">Send Magic Link</button>
+                    </form>
+
+                    <div id="magicLinkMessage"></div>
+                </div>
+
+                <!-- Demo Mode Section -->
+                <div id="demoSection" class="auth-section">
+                    <div class="demo-section">
+                        <h3 class="demo-title">🚀 Try the System Instantly</h3>
+                        <div class="demo-buttons">
+                            <button type="button" class="btn btn-success btn-sm" onclick="demoLogin('john.doe@email.com')">
+                                👨‍💼 John Doe (Family Admin + Licensed)
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="demoLogin('jane.doe@email.com')">
+                                👩‍🎓 Jane Doe (Family Member)
+                            </button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="demoLogin('mike.wilson@email.com')">
+                                👦 Mike Wilson (Individual)
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="demoLogin('admin@lionsfootball.com')">
+                                ⚙️ System Admin
+                            </button>
+                        </div>
+                        <p class="demo-note">
+                            Click any button to experience the interface with sample user data
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Application -->
+            <div id="mainApp" class="hidden">
+                <!-- User Info Bar -->
+                <div class="user-info">
+                    <div class="user-details">
+                        <div class="user-avatar" id="userAvatar">JD</div>
+                        <div>
+                            <div id="userName">John Doe</div>
+                            <div class="user-meta" id="userMeta">Family Admin (3 total) • Licensed</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+                </div>
+
+                <!-- Navigation -->
+                <div style="display: flex; justify-content: center; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="showView('calendar')">📅 Calendar</button>
+                    <button class="btn btn-primary" onclick="showView('list')">📋 All Events</button>
+                    <button class="btn btn-primary hidden" id="adminBtn" onclick="showView('admin')">⚙️ Admin</button>
+                </div>
+
+                <!-- Calendar View -->
+                <div id="calendarView" class="calendar-container">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title" id="calendarTitle">July 2025</h2>
+                        <div class="calendar-nav">
+                            <button class="btn btn-secondary btn-sm" onclick="previousMonth()">‹ Prev</button>
+                            <button class="btn btn-success btn-sm" onclick="goToToday()">Today</button>
+                            <button class="btn btn-secondary btn-sm" onclick="nextMonth()">Next ›</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Sample Calendar Structure -->
+                        <div class="calendar-day-header">Sun</div>
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                        
+                        <!-- Sample Days -->
+                        <div class="calendar-day other-month"><div class="day-number">29</div></div>
+                        <div class="calendar-day other-month"><div class="day-number">30</div></div>
+                        <div class="calendar-day"><div class="day-number">1</div></div>
+                        <div class="calendar-day"><div class="day-number">2</div></div>
+                        <div class="calendar-day"><div class="day-number">3</div></div>
+                        <div class="calendar-day"><div class="day-number">4</div></div>
+                        <div class="calendar-day"><div class="day-number">5</div></div>
+                        
+                        <div class="calendar-day"><div class="day-number">6</div></div>
+                        <div class="calendar-day"><div class="day-number">7</div></div>
+                        <div class="calendar-day"><div class="day-number">8</div></div>
+                        <div class="calendar-day"><div class="day-number">9</div></div>
+                        <div class="calendar-day"><div class="day-number">10</div></div>
+                        <div class="calendar-day"><div class="day-number">11</div></div>
+                        <div class="calendar-day"><div class="day-number">12</div></div>
+                        
+                        <div class="calendar-day"><div class="day-number">13</div></div>
+                        <div class="calendar-day"><div class="day-number">14</div></div>
+                        <div class="calendar-day">
+                            <div class="day-number">15</div>
+                            <div class="event-indicator">Food Booth</div>
+                        </div>
+                        <div class="calendar-day"><div class="day-number">16</div></div>
+                        <div class="calendar-day"><div class="day-number">17</div></div>
+                        <div class="calendar-day"><div class="day-number">18</div></div>
+                        <div class="calendar-day"><div class="day-number">19</div></div>
+                        
+                        <div class="calendar-day today">
+                            <div class="day-number">20</div>
+                        </div>
+                        <div class="calendar-day"><div class="day-number">21</div></div>
+                        <div class="calendar-day"><div class="day-number">22</div></div>
+                        <div class="calendar-day"><div class="day-number">23</div></div>
+                        <div class="calendar-day"><div class="day-number">24</div></div>
+                        <div class="calendar-day"><div class="day-number">25</div></div>
+                        <div class="calendar-day"><div class="day-number">26</div></div>
+                        
+                        <div class="calendar-day"><div class="day-number">27</div></div>
+                        <div class="calendar-day"><div class="day-number">28</div></div>
+                        <div class="calendar-day"><div class="day-number">29</div></div>
+                        <div class="calendar-day"><div class="day-number">30</div></div>
+                        <div class="calendar-day"><div class="day-number">31</div></div>
+                        <div class="calendar-day other-month"><div class="day-number">1</div></div>
+                        <div class="calendar-day other-month"><div class="day-number">2</div></div>
+                    </div>
+                </div>
+
+                <!-- List View -->
+                <div id="listView" class="calendar-container hidden">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title">All Events</h2>
+                    </div>
+                    <div id="eventsList">
+                        <p style="text-align: center; color: var(--gray-500); padding: var(--space-8);">
+                            Events list will be populated after login
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Admin View -->
+                <div id="adminView" class="calendar-container hidden">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title">Event Administration</h2>
+                        <button class="btn btn-success" onclick="showCreateEvent()">+ Create Event</button>
+                    </div>
+                    <div id="adminEventsList">
+                        <p style="text-align: center; color: var(--gray-500); padding: var(--space-8);">
+                            Admin events list will be populated after login
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FOOTER - OUTSIDE MAIN CONTAINER -->
+    <footer class="footer">
+        <nav class="footer-nav">
+            <a href="/">Home</a>
+            <a href="/events">Events</a>
+            <a href="/reimbursement">Reimbursement</a>
+            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
+        </nav>
+        <div class="footer-brand">
+            © 2025 Lions Sports Club. All rights reserved.<br>
+            Giving God The Glory Through Sports
+        </div>
+    </footer>
+
+    <script>
+        // Enhanced Logo Protection System - EXACT MATCH TO DASHBOARD
+        function protectLogo() {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function () {
+                console.log('✅ Logo image loaded successfully');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                ctx.drawImage(img, 0, 0);
+
+                // Apply light protection overlay
+                ctx.globalCompositeOperation = 'overlay';
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.02)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.globalCompositeOperation = 'source-over';
+
+                const dataURL = canvas.toDataURL('image/png');
+                document.documentElement.style.setProperty('--logo-data', `url("${dataURL}")`);
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log('✅ Logo protection applied');
+            };
+
+            img.onerror = function () {
+                console.warn('⚠️ Logo failed to load from external source, using fallback');
+                
+                // Create a simple fallback logo
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 60;
+                canvas.height = 60;
+                
+                // Draw Lions logo fallback
+                ctx.fillStyle = '#1a365d';
+                ctx.fillRect(0, 0, 60, 60);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('L', 30, 30);
+                
+                const fallbackDataURL = canvas.toDataURL('image/png');
+                document.documentElement.style.setProperty('--logo-data', `url("${fallbackDataURL}")`);
+
+                console.log('✅ Fallback logo applied');
+            };
+
+            // Enterprise-level URL obfuscation
+            const t = new Date().getTime();
+            const r = Math.floor(Math.random() * 1000);
+            const s = [104,116,116,112,115,58,47,47].map(c => String.fromCharCode(c)).join('');
+            const d = [108,105,111,110,115,102,117,110,100,114,97,105,115,105,110,103].map(c => String.fromCharCode(c)).join('');
+            const e = String.fromCharCode(46) + [99,111,109].map(c => String.fromCharCode(c)).join('');
+            const p = [47,109,101,100,105,97,47].map(c => String.fromCharCode(c)).join('');
+            const f = [108,115,99,95,104,101,97,100].map(c => String.fromCharCode(c)).join('');
+            const x = String.fromCharCode(46) + [112,110,103].map(c => String.fromCharCode(c)).join('');
+            
+            const segments = [s, d, e, p, f, x];
+            const url = segments.join('');
+            
+            const key = (t + r) % 255;
+            const encoded = url.split('').map((c, i) => c.charCodeAt(0) ^ (key + i)).join(',');
+            
+            const decoded = encoded.split(',').map((n, i) => 
+                String.fromCharCode(parseInt(n) ^ (key + i))
+            ).join('');
+            
+            img.src = decoded;
+            console.log('🔄 Loading protected resource...');
+        }
+
+        function enhancedLogoProtection() {
+            const logoElements = document.querySelectorAll('.logo');
+            logoElements.forEach(element => {
+                element.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('selectstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('dragstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('touchstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.classList.add('image-protected');
+            });
+        }
+
+        // AUTHENTICATION FUNCTIONS
+        window.switchAuthMode = function(mode) {
+            const magicBtn = document.querySelector('.auth-mode-btn:first-child');
+            const demoBtn = document.querySelector('.auth-mode-btn:last-child');
+            const magicSection = document.getElementById('magicLinkSection');
+            const demoSection = document.getElementById('demoSection');
+
+            if (mode === 'magic') {
+                magicBtn.classList.add('active');
+                demoBtn.classList.remove('active');
+                magicSection.classList.add('active');
+                demoSection.classList.remove('active');
+            } else {
+                demoBtn.classList.add('active');
+                magicBtn.classList.remove('active');
+                demoSection.classList.add('active');
+                magicSection.classList.remove('active');
+            }
+        };
+
+        window.demoLogin = function(email) {
+            console.log('🎭 Demo login:', email);
+            
+            // Hide auth screen, show main app
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Update user info based on email
+            const userInfo = {
+                'john.doe@email.com': { name: 'John Doe', avatar: 'JD', meta: 'Family Admin (3 total) • Licensed', admin: true },
+                'jane.doe@email.com': { name: 'Jane Doe', avatar: 'JD', meta: 'Family Member (3 total) • Licensed', admin: false },
+                'mike.wilson@email.com': { name: 'Mike Wilson', avatar: 'MW', meta: 'Individual • Unlicensed', admin: false },
+                'admin@lionsfootball.com': { name: 'System Administrator', avatar: 'SA', meta: 'System Admin • Licensed', admin: true }
+            };
+            
+            const user = userInfo[email];
+            if (user) {
+                document.getElementById('userAvatar').textContent = user.avatar;
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userMeta').textContent = user.meta;
+                
+                if (user.admin) {
+                    document.getElementById('adminBtn').classList.remove('hidden');
+                }
+            }
+            
+            showView('calendar');
+        };
+
+        window.logout = function() {
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('adminBtn').classList.add('hidden');
+            console.log('👋 User logged out');
+        };
+
+        window.showView = function(view) {
+            // Hide all views
+            document.getElementById('calendarView').classList.add('hidden');
+            document.getElementById('listView').classList.add('hidden'); 
+            document.getElementById('adminView').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById(`${view}View`).classList.remove('hidden');
+            
+            // Update nav buttons
+            document.querySelectorAll('[onclick*="showView"]').forEach(btn => {
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            });
+            
+            if (view === 'calendar') {
+                document.querySelector('[onclick="showView(\'calendar\')"]').classList.add('btn-success');
+                document.querySelector('[onclick="showView(\'calendar\')"]').classList.remove('btn-primary');
+            } else if (view === 'list') {
+                document.querySelector('[onclick="showView(\'list\')"]').classList.add('btn-success');
+                document.querySelector('[onclick="showView(\'list\')"]').classList.remove('btn-primary');
+            } else if (view === 'admin') {
+                document.querySelector('[onclick="showView(\'admin\')"]').classList.add('btn-success');
+                document.querySelector('[onclick="showView(\'admin\')"]').classList.remove('btn-primary');
+            }
+        };
+
+        // Handle magic link form submission
+        document.getElementById('magicLinkForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            
+            // Show success message
+            const messageDiv = document.getElementById('magicLinkMessage');
+            messageDiv.innerHTML = `<div class="message success">Magic link sent to ${email}. Check your email and click the link to access the system.</div>`;
+            
+            console.log('📧 Magic link requested for:', email);
+        });
+
+        // Sample calendar functions
+        function previousMonth() {
+            console.log('Previous month clicked');
+        }
+
+        function nextMonth() {
+            console.log('Next month clicked');
+        }
+
+        function goToToday() {
+            console.log('Today clicked');
+        }
+
+        function showCreateEvent() {
+            console.log('Create event clicked');
+        }
+
+        // Initialize protection systems
+        document.addEventListener('DOMContentLoaded', function() {
+            protectLogo();
+            enhancedLogoProtection();
+        });
+    </script>
+</body>
+
+</html>

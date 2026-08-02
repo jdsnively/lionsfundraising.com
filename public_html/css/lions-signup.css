@@ -1,0 +1,282 @@
+/* ============================================================================
+   Lions Sports Club, event signup surfaces
+   File: /css/lions-signup.css
+   Requires: /css/lions-tokens.css, /css/lions-app.css
+   ----------------------------------------------------------------------------
+   Page-specific styling for /signup, in the two-tier sense described in
+   design-system-governance.md. The chrome comes from lions-app.css and is a
+   port of the marketing site; nothing here touches it.
+
+   Kept separate from lions-app.css so that /account does not carry the weight
+   of a list surface it never renders.
+
+   Flat surfaces only. Every value from a token.
+   ============================================================================ */
+
+/* The season list is wider than a form page. 720px puts a date, an event name,
+   and two shift rows on one line at desktop widths without stretching the
+   reading measure of the account page. */
+.page--wide {
+    max-width: 860px;
+}
+
+.event-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.event-card + .event-card {
+    margin-top: var(--lions-space-3);
+}
+
+/* -- One event -------------------------------------------------------------- */
+
+.event-block {
+    padding: var(--lions-space-4) var(--lions-space-6);
+}
+
+.event-block + .event-block {
+    border-top: 1px solid var(--lions-gray-light);
+}
+
+.event-block.is-closed {
+    background: var(--lions-blue-wash);
+}
+
+.event-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-4);
+    flex-wrap: wrap;
+}
+
+.event-when {
+    font-family: var(--lions-font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+    min-width: 8.5rem;
+}
+
+.event-name {
+    font-family: var(--lions-font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+}
+
+.event-day {
+    font-family: var(--lions-font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--lions-gray-text);
+}
+
+.event-closed,
+.event-alt {
+    margin-top: var(--lions-space-2);
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+/* -- Shift rows ------------------------------------------------------------- */
+
+.shift-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lions-space-4);
+    margin-top: var(--lions-space-3);
+    padding-left: 8.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 620px) {
+    .shift-row { padding-left: 0; }
+    .event-when { min-width: 0; }
+}
+
+/* The whole label is the hit target, not just the box. A 44px minimum height
+   keeps it thumb-reachable on the phones most volunteers will use. */
+.shift-check {
+    display: flex;
+    align-items: center;
+    gap: var(--lions-space-3);
+    min-height: var(--lions-tap-target);
+    cursor: pointer;
+}
+
+.shift-check input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--lions-blue);
+    cursor: pointer;
+}
+
+.shift-check input[type="checkbox"]:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+
+.shift-label {
+    font-size: 0.9375rem;
+    color: var(--lions-ink);
+}
+
+.shift-times {
+    color: var(--lions-gray-text);
+    font-size: 0.8125rem;
+}
+
+.shift-state {
+    display: flex;
+    align-items: center;
+    gap: var(--lions-space-3);
+}
+
+.shift-note {
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+/* A declared shift is visually settled rather than actionable, so it does not
+   read as something still waiting to be filled in. */
+.shift-row.is-declared {
+    padding-top: var(--lions-space-2);
+    padding-bottom: var(--lions-space-2);
+}
+
+.link-action {
+    font-family: var(--lions-font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+    background: none;
+    border: none;
+    padding: var(--lions-space-2);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.link-action:hover { color: var(--lions-blue-hover); }
+
+.link-action:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+
+.link-action:disabled {
+    color: var(--lions-gray-mid);
+    cursor: not-allowed;
+}
+
+/* -- Multi-day run ---------------------------------------------------------- */
+
+.run-summary {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-4);
+    flex-wrap: wrap;
+    padding: var(--lions-space-4) var(--lions-space-6);
+    cursor: pointer;
+    list-style: none;
+}
+
+.run-summary::-webkit-details-marker { display: none; }
+
+/* The disclosure caret is drawn rather than imported, because the icon sprite
+   on this property carries social marks only, and a sport or decorative icon
+   would violate the design standard. */
+.run-summary::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 6px solid var(--lions-blue);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+details[open] > .run-summary::before {
+    transform: rotate(90deg);
+}
+
+.run-summary:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: calc(-1 * var(--lions-focus-offset));
+}
+
+.run-name {
+    font-family: var(--lions-font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin-right: auto;
+}
+
+.run-span {
+    font-family: var(--lions-font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+}
+
+.run-count {
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+}
+
+details > .event-block:first-of-type {
+    border-top: 1px solid var(--lions-gray-light);
+}
+
+/* -- Commitment ------------------------------------------------------------- */
+
+.check-commit {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--lions-space-3);
+    min-height: var(--lions-tap-target);
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: var(--lions-ink);
+}
+
+.check-commit input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--lions-blue);
+    cursor: pointer;
+}
+
+.check-commit input[type="checkbox"]:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+
+/* -- State chips ------------------------------------------------------------
+   scheduled reuses .is-valid and standby reuses .is-expiring from
+   lions-app.css, since the colour meanings match. These two are the states
+   that have no equivalent there. */
+
+.chip.is-available {
+    background: var(--lions-blue-wash);
+    border-color: var(--lions-blue-edge);
+    color: var(--lions-blue);
+}
+
+.chip.is-released {
+    background: transparent;
+    border-color: var(--lions-gray-border);
+    color: var(--lions-gray-text);
+}

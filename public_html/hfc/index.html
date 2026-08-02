@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Football HFC Merchandise Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f6f0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #1B365D;
+            color: white;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 5px solid #D4A574;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header-logo {
+            height: 275px;
+            width: 275px;
+            background: white;
+            border-radius: 50%;
+            padding: 35px;
+            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.4));
+            object-fit: contain;
+            border: 3px solid #D4A574;
+            flex-shrink: 0;
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 350px;
+            text-align: left;
+            margin-left: 40px;
+        }
+
+        .header h1 {
+            color: #D4A574;
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-family: 'Georgia', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: #f8f6f0;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .event-date {
+            background: #D4A574;
+            color: #1B365D;
+            padding: 12px 30px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 1.1em;
+            border: 2px solid #1B365D;
+            font-family: 'Georgia', serif;
+        }
+
+        .cart-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .cart-button {
+            background: #D4A574;
+            color: #1B365D;
+            border: 2px solid #1B365D;
+            padding: 15px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .cart-button:hover {
+            background: #1B365D;
+            color: #D4A574;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .cart-count {
+            background: #8B0000;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* NEW: Floating Add All Items Section - Left side to avoid product containers */
+        .add-all-section {
+            position: fixed;
+            bottom: 20px;
+            left: 150px;
+            background: #1B365D;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 12px;
+            border: 3px solid #D4A574;
+            z-index: 999;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 320px;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .add-all-section h3 {
+            color: #D4A574;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-family: 'Georgia', serif;
+        }
+
+        .add-all-section p {
+            margin-bottom: 12px;
+            font-size: 0.85em;
+            opacity: 0.9;
+            line-height: 1.3;
+        }
+
+        .add-all-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .add-all-button {
+            background: #D4A574;
+            color: #1B365D;
+            border: 2px solid #1B365D;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            text-align: center;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .add-all-button:hover {
+            background: #1B365D;
+            color: #D4A574;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-all-button:disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .add-all-button.clear-btn {
+            background: #8B0000;
+            color: white;
+            border-color: #8B0000;
+        }
+
+        .add-all-button.clear-btn:hover {
+            background: #A52A2A;
+            border-color: #A52A2A;
+            color: white;
+        }
+
+        /* Floating section visibility toggle */
+        .add-all-section.hidden {
+            display: none;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+            align-items: stretch;
+        }
+
+        .product-card {
+            background: white;
+            border: 3px solid #1B365D;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(27, 54, 93, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-controls {
+            margin-top: auto;
+            padding-top: 15px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(27, 54, 93, 0.25);
+            border-color: #D4A574;
+        }
+
+        .product-card h3 {
+            color: #1B365D;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-family: 'Georgia', serif;
+            border-bottom: 2px solid #D4A574;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .product-thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            border: 2px solid #D4A574;
+            object-fit: cover;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .product-thumbnail:hover {
+            border-color: #1B365D;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-title-text {
+            flex-grow: 1;
+        }
+
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            cursor: pointer;
+        }
+
+        .lightbox-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .lightbox-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            opacity: 0.7;
+        }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+        }
+
+        .price {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #8B0000;
+            margin-bottom: 15px;
+            font-family: 'Georgia', serif;
+        }
+
+        .product-description {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .quantity-btn {
+            background: #1B365D;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #D4A574;
+            color: #1B365D;
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quantity-display {
+            font-size: 1.3em;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+            color: #1B365D;
+            background: #f8f6f0;
+            padding: 8px 15px;
+            border: 2px solid #D4A574;
+            border-radius: 6px;
+        }
+
+        .add-to-cart {
+            background: #D4A574;
+            color: #1B365D;
+            border: 2px solid #1B365D;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+        }
+
+        .add-to-cart:hover {
+            background: #1B365D;
+            color: #D4A574;
+            transform: translateY(-2px);
+        }
+
+        .add-to-cart:disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(27, 54, 93, 0.8);
+            z-index: 2000;
+            display: none;
+        }
+
+        .cart-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100%;
+            background: #f8f6f0;
+            border-left: 5px solid #1B365D;
+            transition: right 0.4s ease;
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-panel.open {
+            right: 0;
+        }
+
+        .cart-header {
+            background: #1B365D;
+            color: #D4A574;
+            padding: 25px;
+            font-size: 1.4em;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Georgia', serif;
+            border-bottom: 3px solid #D4A574;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            color: #D4A574;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .close-cart:hover {
+            transform: rotate(90deg);
+            color: white;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 2px solid #f8f6f0;
+        }
+
+        .cart-item-info h4 {
+            margin-bottom: 5px;
+            color: #1B365D;
+            font-family: 'Georgia', serif;
+        }
+
+        .cart-item-price {
+            color: #8B0000;
+            font-weight: 700;
+        }
+
+        .cart-total {
+            background: #1B365D;
+            color: white;
+            padding: 25px;
+            border-top: 3px solid #D4A574;
+        }
+
+        .total-amount {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #D4A574;
+            margin-bottom: 20px;
+            font-family: 'Georgia', serif;
+        }
+
+        /* NEW: Visible Cart Summary */
+        .cart-summary-section {
+            background: white;
+            border: 3px solid #1B365D;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 15px rgba(27, 54, 93, 0.15);
+        }
+
+        .cart-summary-section h2 {
+            color: #1B365D;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-family: 'Georgia', serif;
+            border-bottom: 3px solid #D4A574;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-summary-total {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #8B0000;
+            margin-bottom: 15px;
+        }
+
+        .cart-summary-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .cart-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .cart-summary-empty {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .checkout-section {
+            background: white;
+            border: 3px solid #1B365D;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 6px 15px rgba(27, 54, 93, 0.15);
+        }
+
+        .checkout-section h2 {
+            color: #1B365D;
+            margin-bottom: 25px;
+            font-size: 2em;
+            font-family: 'Georgia', serif;
+            border-bottom: 3px solid #D4A574;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #1B365D;
+            font-family: 'Georgia', serif;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #D4A574;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #f8f6f0;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1B365D;
+            background: white;
+        }
+
+        .form-group input.error,
+        .form-group textarea.error,
+        .form-group select.error {
+            border-color: #8B0000;
+            background: #ffe6e6;
+        }
+
+        .checkout-btn {
+            background: #D4A574;
+            color: #1B365D;
+            border: 2px solid #1B365D;
+            padding: 15px 40px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+        }
+
+        .checkout-btn:hover {
+            background: #1B365D;
+            color: #D4A574;
+            transform: translateY(-2px);
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .bundle-highlight {
+            background: #8B0000;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-family: 'Georgia', serif;
+            border: 2px solid #1B365D;
+            text-align: center;
+        }
+
+        .faith-values {
+            background: #1B365D;
+            color: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-radius: 8px;
+            border: 3px solid #D4A574;
+        }
+
+        .faith-values h3 {
+            color: #D4A574;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            font-family: 'Georgia', serif;
+        }
+
+        .faith-values p {
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        .success-message {
+            background: #228B22;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: none;
+            border: 2px solid #1B365D;
+            font-family: 'Georgia', serif;
+        }
+
+        .error-message {
+            background: #8B0000;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: none;
+            border: 2px solid #1B365D;
+            font-family: 'Georgia', serif;
+        }
+
+        .remove-btn {
+            background: #8B0000;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #A52A2A;
+            transform: scale(1.05);
+        }
+
+        .pre-footer {
+            background: #D4A574;
+            color: #1B365D;
+            padding: 20px 0;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            border-bottom: 3px solid #1B365D;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pre-footer-hfc-logo {
+            height: 80px;
+            width: auto;
+            vertical-align: middle;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        .pre-footer-hfc-logo:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .footer {
+            background: #1B365D;
+            color: white;
+            border-top: none;
+            font-family: 'Georgia', serif;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px 20px 20px;
+            text-align: center;
+        }
+
+        .footer-main {
+            margin-bottom: 20px;
+        }
+
+        .footer-main h3 {
+            color: #D4A574;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .footer-values {
+            background: #D4A574;
+            color: #1B365D;
+            padding: 12px 25px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin: 15px 0;
+        }
+
+        .footer-bottom {
+            border-top: 2px solid #D4A574;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .footer-copyright {
+            color: #f8f6f0;
+            font-size: 0.9em;
+        }
+
+        .footer-copyright a {
+            color: #f8f6f0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-copyright a:hover {
+            color: #FFD700;
+        }
+
+        .validation-error {
+            color: #8B0000;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) and (min-width: 769px) {
+
+            /* Tablet adjustments - avoid product grid overlap */
+            .add-all-section {
+                bottom: 15px;
+                left: 20px;
+                max-width: 250px;
+                min-width: 230px;
+                padding: 12px 15px;
+            }
+
+            .add-all-section h3 {
+                font-size: 1em;
+                margin-bottom: 6px;
+            }
+
+            .add-all-section p {
+                font-size: 0.8em;
+                margin-bottom: 10px;
+            }
+
+            .add-all-button {
+                padding: 9px 13px;
+                font-size: 13px;
+            }
+
+            /* Header logo adjustments for tablet */
+            .header-logo {
+                height: 200px;
+                width: 200px;
+                padding: 25px;
+            }
+
+            .header-content {
+                gap: 15px;
+            }
+
+            /* Pre-footer adjustments for tablet */
+            .pre-footer {
+                font-size: 1em;
+                padding: 15px 10px;
+            }
+
+            .pre-footer-hfc-logo {
+                height: 65px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pre-footer {
+                font-size: 1em;
+                padding: 15px 10px;
+            }
+
+            .footer-content {
+                padding: 20px 10px;
+            }
+
+            .footer-values {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+
+            /* Mobile floating section adjustments - Left side positioning */
+            .add-all-section {
+                bottom: 15px;
+                left: 20px;
+                max-width: 220px;
+                min-width: 200px;
+                padding: 12px 15px;
+            }
+
+            .add-all-section h3 {
+                font-size: 1em;
+                margin-bottom: 6px;
+            }
+
+            .add-all-section p {
+                font-size: 0.8em;
+                margin-bottom: 10px;
+            }
+
+            .add-all-button {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* Header logo adjustments for mobile */
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-logo {
+                height: 150px;
+                width: 150px;
+                padding: 20px;
+            }
+
+            .header-text {
+                min-width: auto;
+            }
+
+            /* Pre-footer adjustments for mobile */
+            .pre-footer {
+                font-size: 0.95em;
+                padding: 15px 10px;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .pre-footer-hfc-logo {
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cart-container">
+        <button class="cart-button" onclick="Store.cart.toggle()">
+            🛒 Cart <span class="cart-count" id="cart-count">0</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <img src="https://lionsfundraising.com/media/LionsFundraisingLogo.png" alt="Lions Fundraising Logo" class="header-logo">
+                <div class="header-text">
+                    <h1>Lions Football Team Store</h1>
+                    <p>Official Homeschool Football Classic Merchandise</p>
+                    <div class="event-date">August 23, 2025 • Lucas Oil Stadium</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="faith-values">
+            <h3>Faith • Family • Football</h3>
+            <p>Supporting our student athletes with quality merchandise and Christian values</p>
+        </div>
+
+        <div class="success-message" id="success-message">
+            Order submitted successfully! Thank you for your purchase and supporting our team.
+        </div>
+
+        <div class="error-message" id="error-message">
+            <span id="error-text"></span>
+        </div>
+
+        <div class="products-grid">
+            <!-- Bundle Product -->
+            <div class="product-card">
+                <div class="product-content">
+                    <div class="bundle-highlight">🏆 BEST VALUE BUNDLE</div>
+                    <h3>
+                        <span class="product-title-text">Merchandise Bundle</span>
+                        <img src="https://lionsfundraising.com/media/bundle.png" alt="Merchandise Bundle" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/bundle.png', 'Complete merchandise bundle with all items')">
+                    </h3>
+                    <div class="price">$60.00</div>
+                    <div class="product-description">
+                        Complete bundle includes: Letter Jacket Patch (Homeschool Football Classic with Lucas Oil
+                        Stadium), 40+ page Official Program, Drawstring Back Pack, 4" Computer Sticker, Lanyard
+                        Necklace, Wristband, 2.25" Commemorative Coin, and choice of T-shirt with front patch, sleeve,
+                        and back design! Everything you need to show your team pride for the August 23, 2025 event.
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: 700; margin-bottom: 10px; display: block;">T-Shirt Size (included in bundle):</label>
+                        <select id="bundle-tshirt-size" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #D4A574; background: #f8f6f0;">
+                            <optgroup label="Youth Sizes">
+                                <option value="y-small">Y - Small</option>
+                                <option value="y-med">Y - Med</option>
+                                <option value="y-large">Y - Large</option>
+                                <option value="y-xl">Y - XL</option>
+                            </optgroup>
+                            <optgroup label="Adult Sizes">
+                                <option value="a-small">A - Small</option>
+                                <option value="a-med">A - Med</option>
+                                <option value="a-large">A - Large</option>
+                                <option value="a-xlarge">A - XLarge</option>
+                                <option value="a-2xlarge">A - 2XLarge</option>
+                                <option value="a-3xlarge">A - 3XLarge</option>
+                                <option value="a-4xlarge">A - 4XLarge</option>
+                                <option value="a-5xlarge">A - 5XLarge</option>
+                                <option value="a-6xlarge">A - 6XLarge</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('bundle', -1)">-</button>
+                        <span class="quantity-display" id="qty-bundle">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('bundle', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addBundle()">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- T-Shirt Product -->
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Team T-Shirts</span>
+                        <img src="https://lionsfundraising.com/media/tshirt.png" alt="Team T-Shirts" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/tshirt.png', 'Premium quality cotton t-shirts with team designs')">
+                    </h3>
+                    <div class="price">$25 Adult / $20 Youth</div>
+                    <div class="product-description">
+                        Premium quality cotton t-shirts in navy blue featuring the official HFC design with front patch,
+                        sleeve design, and back design. Perfect for game day or everyday wear to show your team spirit
+                        for the August 23, 2025 Homeschool Football Classic.
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-weight: 700; margin-bottom: 10px; display: block;">Size Selection:</label>
+                        <select id="tshirt-size" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #D4A574; background: #f8f6f0;">
+                            <optgroup label="Youth Sizes ($20)">
+                                <option value="y-small">Y - Small</option>
+                                <option value="y-med">Y - Med</option>
+                                <option value="y-large">Y - Large</option>
+                                <option value="y-xl">Y - XL</option>
+                            </optgroup>
+                            <optgroup label="Adult Sizes ($25)">
+                                <option value="a-small">A - Small</option>
+                                <option value="a-med">A - Med</option>
+                                <option value="a-large">A - Large</option>
+                                <option value="a-xlarge">A - XLarge</option>
+                                <option value="a-2xlarge">A - 2XLarge</option>
+                                <option value="a-3xlarge">A - 3XLarge</option>
+                                <option value="a-4xlarge">A - 4XLarge</option>
+                                <option value="a-5xlarge">A - 5XLarge</option>
+                                <option value="a-6xlarge">A - 6XLarge</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('tshirt', -1)">-</button>
+                        <span class="quantity-display" id="qty-tshirt">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('tshirt', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addTShirt()">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Simple Products -->
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Official Game Program</span>
+                        <img src="https://lionsfundraising.com/media/program.png" alt="Game Program" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/program.png', 'Lucas Oil Stadium game program with team rosters and schedules')">
+                    </h3>
+                    <div class="price">$15.00</div>
+                    <div class="product-description">
+                        Official 40+ page Lucas Oil Stadium game program featuring all participating teams, player
+                        rosters, schedules, and complete event information for the August 23, 2025 Homeschool Football
+                        Classic.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('program', -1)">-</button>
+                        <span class="quantity-display" id="qty-program">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('program', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('program', 'Official Game Program', 15.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Commemorative Coin</span>
+                        <img src="https://lionsfundraising.com/media/coin.png" alt="Commemorative Coin" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/coin.png', '2.25 inch high-quality coin with HFC logo and Lucas Oil Stadium design')">
+                    </h3>
+                    <div class="price">$10.00</div>
+                    <div class="product-description">
+                        2.25" high-quality commemorative coin featuring HFC logo and Lucas Oil Stadium design. Two
+                        beautiful design options available - perfect keepsake from this historic event.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('coin', -1)">-</button>
+                        <span class="quantity-display" id="qty-coin">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('coin', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('coin', 'Commemorative Coin', 10.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Team Lanyard</span>
+                        <img src="https://lionsfundraising.com/media/lanyard.png" alt="Team Lanyard" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/lanyard.png', 'High-quality dye sublimation lanyard with HFC branding')">
+                    </h3>
+                    <div class="price">$5.00</div>
+                    <div class="product-description">
+                        High-quality gray dye sublimation lanyard with "2025 HFC Lucas Oil Stadium" branding. Perfect
+                        for holding keys, ID cards, or showing team spirit around campus.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('lanyard', -1)">-</button>
+                        <span class="quantity-display" id="qty-lanyard">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('lanyard', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('lanyard', 'Team Lanyard', 5.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Drawstring Backpack</span>
+                        <img src="https://lionsfundraising.com/media/bag.png" alt="Drawstring Backpack" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/bag.png', 'Durable black drawstring backpack with HFC logo')">
+                    </h3>
+                    <div class="price">$5.00</div>
+                    <div class="product-description">
+                        Durable black drawstring backpack featuring the official Homeschool Football Classic logo
+                        design. Great for carrying gear to games or everyday use.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('backpack', -1)">-</button>
+                        <span class="quantity-display" id="qty-backpack">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('backpack', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('backpack', 'Drawstring Backpack', 5.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Letter Jacket Patch</span>
+                        <img src="https://lionsfundraising.com/media/patch.png" alt="Letter Jacket Patch" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/patch.png', 'Embroidered commemorative patch with Lucas Oil Stadium and HFC 2025 branding')">
+                    </h3>
+                    <div class="price">$5.00</div>
+                    <div class="product-description">
+                        Embroidered circular commemorative patch featuring "HOMESCHOOL FOOTBALL CLASSIC" with Lucas Oil
+                        Stadium and "2025" branding. Perfect addition to letter jackets, backpacks, or personal gear.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('patch', -1)">-</button>
+                        <span class="quantity-display" id="qty-patch">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('patch', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('patch', 'Letter Jacket Patch', 5.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Computer Sticker</span>
+                        <img src="https://lionsfundraising.com/media/sticker.png" alt="Computer Sticker" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/sticker.png', 'Premium vinyl sticker with 2025 HFC Lucas Oil Stadium design')">
+                    </h3>
+                    <div class="price">$5.00</div>
+                    <div class="product-description">
+                        Premium 4" vinyl sticker featuring 2025 HFC Lucas Oil Stadium design. Weather-resistant and
+                        perfect for laptops, water bottles, car windows, and more.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('sticker', -1)">-</button>
+                        <span class="quantity-display" id="qty-sticker">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('sticker', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('sticker', 'Computer Sticker', 5.00)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-content">
+                    <h3>
+                        <span class="product-title-text">Team Wristband</span>
+                        <img src="https://lionsfundraising.com/media/wristband.png" alt="Team Wristband" class="product-thumbnail" onclick="Store.ui.openLightbox('https://lionsfundraising.com/media/wristband.png', 'Blue silicone wristband with 2025 HFC Lucas Oil Stadium text')">
+                    </h3>
+                    <div class="price">$2.00</div>
+                    <div class="product-description">
+                        Blue silicone wristband featuring "2025 HFC Lucas Oil Stadium" text. Size 8"X1/2" - comfortable
+                        fit for showing team pride everywhere you go.
+                    </div>
+                </div>
+                <div class="product-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('wristband', -1)">-</button>
+                        <span class="quantity-display" id="qty-wristband">0</span>
+                        <button class="quantity-btn" onclick="Store.products.changeQuantity('wristband', 1)">+</button>
+                    </div>
+                    <button class="add-to-cart" onclick="Store.products.addSimple('wristband', 'Team Wristband', 2.00)">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Visible Cart Summary -->
+        <div class="cart-summary-section">
+            <h2>
+                Your Cart Summary
+                <span style="font-size: 0.8em; color: #8B0000;" id="cart-summary-count">(0 items)</span>
+            </h2>
+            <div id="cart-summary-content">
+                <div class="cart-summary-empty">Your cart is empty. Add items above to see them here!</div>
+            </div>
+        </div>
+
+        <div class="checkout-section">
+            <h2>Order Information</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="customerName">Full Name *</label>
+                    <input type="text" id="customerName" required placeholder="Enter your full name">
+                    <div class="validation-error" id="name-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" required placeholder="(555) 123-4567">
+                    <div class="validation-error" id="phone-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email Address *</label>
+                    <input type="email" id="customerEmail" required placeholder="your.email@example.com">
+                    <div class="validation-error" id="email-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="teamName">Team Name</label>
+                    <select id="teamName" style="width: 100%; padding: 12px 15px; border: 2px solid #D4A574; border-radius: 6px; font-size: 16px; background: #f8f6f0; font-family: inherit;">
+                        <option value="Lions Football" selected>Lions Football</option>
+                        <option value="Harvest Covenant Lions">Harvest Covenant Lions</option>
+                        <option value="Illinois Crusaders">Illinois Crusaders</option>
+                        <option value="Maryland Crusaders">Maryland Crusaders</option>
+                        <option value="Christian Prep Patriots">Christian Prep Patriots</option>
+                        <option value="Columbus Crusaders">Columbus Crusaders</option>
+                        <option value="Atlas Rattlers">Atlas Rattlers</option>
+                        <option value="Cincinnati Eagles">Cincinnati Eagles</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="specialInstructions">Special Instructions or Notes</label>
+                <textarea id="specialInstructions" rows="4" placeholder="Any special requests, size preferences, or delivery instructions..."></textarea>
+            </div>
+            <button class="checkout-btn" onclick="Store.order.submit()">Submit Order</button>
+        </div>
+    </div>
+
+    <div class="pre-footer">
+        <div class="container">
+            <span>A Christian Football Team located in Central Indiana participating in the</span>
+            <a href="https://www.homeschoolfootballclassic.com/" target="_blank" rel="noopener noreferrer">
+                <img src="https://lionsfundraising.com/media/hfc_logo.png" alt="Homeschool Football Classic" class="pre-footer-hfc-logo">
+            </a>
+            <span>at Lucas Oil Stadium</span>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-main">
+                <h3>Connecting Football and Family</h3>
+                <div class="footer-values">Faith. Family. Fun.</div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    <a href="https://lionsfootballclub.com" target="_blank">&copy; <span id="current-year"></span> Lions
+                        Football, Inc. All rights reserved.</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NEW: Floating Quick Add Section -->
+    <div class="add-all-section" id="floating-add-section">
+        <h3>🚀 Quick Add</h3>
+        <p>Set quantities above, then add all at once!</p>
+        <div class="add-all-buttons">
+            <button class="add-all-button" onclick="Store.products.addAllItems()" id="add-all-btn">
+                🛒 Add All Items
+            </button>
+            <button class="add-all-button clear-btn" onclick="Store.products.clearAllQuantities()">
+                🗑️ Clear All
+            </button>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay" onclick="Store.cart.toggle()"></div>
+    <div class="cart-panel" id="cart-panel">
+        <div class="cart-header">
+            <span>Shopping Cart</span>
+            <button class="close-cart" onclick="Store.cart.toggle()">×</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <p style="text-align: center; color: #666; padding: 50px 20px; font-style: italic;">Your cart is empty</p>
+        </div>
+        <div class="cart-total">
+            <div class="total-amount">Total: $<span id="cart-total">0.00</span></div>
+            <button class="checkout-btn" onclick="Store.cart.scrollToCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox-overlay" id="lightbox-overlay" onclick="Store.ui.closeLightbox()">
+        <span class="lightbox-close" onclick="Store.ui.closeLightbox()">&times;</span>
+        <div class="lightbox-content">
+            <img class="lightbox-image" id="lightbox-image" src="" alt="">
+        </div>
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+
+    <script>
+        // Secure Store Management System
+        const Store = (function() {
+            'use strict';
+            
+            // Private data - not accessible from outside
+            let cartItems = [];
+            let quantities = {};
+            
+            // Input sanitization
+            const sanitize = {
+                text: function(input) {
+                    if (typeof input !== 'string') return '';
+                    return input.trim()
+                               .replace(/[<>]/g, '')
+                               .replace(/javascript:/gi, '')
+                               .replace(/on\w+=/gi, '')
+                               .substring(0, 500); // Max length
+                },
+                
+                email: function(email) {
+                    const sanitized = this.text(email);
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(sanitized) ? sanitized : '';
+                },
+                
+                phone: function(phone) {
+                    return this.text(phone).replace(/[^\d\s\-\(\)\+\.]/g, '').substring(0, 20);
+                },
+                
+                number: function(num) {
+                    const parsed = parseFloat(num);
+                    return isNaN(parsed) ? 0 : Math.max(0, Math.min(10000, parsed));
+                }
+            };
+            
+            // Validation functions
+            const validate = {
+                name: function(name) {
+                    const clean = sanitize.text(name);
+                    if (clean.length < 2) return { valid: false, error: 'Name must be at least 2 characters' };
+                    if (clean.length > 100) return { valid: false, error: 'Name is too long' };
+                    if (!/^[a-zA-Z\s\-'\.]+$/.test(clean)) return { valid: false, error: 'Name contains invalid characters' };
+                    return { valid: true, value: clean };
+                },
+                
+                email: function(email) {
+                    const clean = sanitize.email(email);
+                    if (!clean) return { valid: false, error: 'Please enter a valid email address' };
+                    if (clean.length > 254) return { valid: false, error: 'Email address is too long' };
+                    return { valid: true, value: clean };
+                },
+                
+                phone: function(phone) {
+                    const clean = sanitize.phone(phone);
+                    if (clean.length < 10) return { valid: false, error: 'Please enter a valid phone number' };
+                    return { valid: true, value: clean };
+                },
+                
+                teamName: function(team) {
+                    const clean = sanitize.text(team) || 'Lions Football';
+                    return { valid: true, value: clean };
+                },
+                
+                instructions: function(instructions) {
+                    const clean = sanitize.text(instructions);
+                    return { valid: true, value: clean };
+                }
+            };
+            
+            // Public API
+            return {
+                products: {
+                    changeQuantity: function(product, change) {
+                        if (!quantities[product]) quantities[product] = 0;
+                        quantities[product] = Math.max(0, Math.min(50, quantities[product] + change));
+                        
+                        const element = document.getElementById('qty-' + product);
+                        if (element) {
+                            element.textContent = quantities[product];
+                        }
+                        
+                        // Update the add all button state
+                        this.updateAddAllButton();
+                    },
+                    
+                    // NEW: Add all items with current quantities
+                    addAllItems: function() {
+                        let addedItems = 0;
+                        let errorMessages = [];
+                        
+                        // Add bundle if quantity > 0
+                        if (quantities['bundle'] > 0) {
+                            try {
+                                this.addBundle();
+                                addedItems++;
+                            } catch (e) {
+                                errorMessages.push('Bundle: ' + e.message);
+                            }
+                        }
+                        
+                        // Add t-shirt if quantity > 0
+                        if (quantities['tshirt'] > 0) {
+                            try {
+                                this.addTShirt();
+                                addedItems++;
+                            } catch (e) {
+                                errorMessages.push('T-Shirt: ' + e.message);
+                            }
+                        }
+                        
+                        // Add simple products
+                        const simpleProducts = [
+                            { id: 'program', name: 'Official Game Program', price: 15.00 },
+                            { id: 'coin', name: 'Commemorative Coin', price: 10.00 },
+                            { id: 'lanyard', name: 'Team Lanyard', price: 5.00 },
+                            { id: 'backpack', name: 'Drawstring Backpack', price: 5.00 },
+                            { id: 'patch', name: 'Letter Jacket Patch', price: 5.00 },
+                            { id: 'sticker', name: 'Computer Sticker', price: 5.00 },
+                            { id: 'wristband', name: 'Team Wristband', price: 2.00 }
+                        ];
+                        
+                        simpleProducts.forEach(product => {
+                            if (quantities[product.id] > 0) {
+                                try {
+                                    this.addSimple(product.id, product.name, product.price);
+                                    addedItems++;
+                                } catch (e) {
+                                    errorMessages.push(product.name + ': ' + e.message);
+                                }
+                            }
+                        });
+                        
+                        // Show results
+                        if (addedItems > 0) {
+                            Store.ui.showSuccess(`Successfully added ${addedItems} item type(s) to cart!`);
+                            if (errorMessages.length > 0) {
+                                setTimeout(() => {
+                                    Store.ui.showError('Some items had issues: ' + errorMessages.join(', '));
+                                }, 2000);
+                            }
+                        } else if (errorMessages.length > 0) {
+                            Store.ui.showError('Errors adding items: ' + errorMessages.join(', '));
+                        } else {
+                            Store.ui.showError('Please set quantities for items you want to add!');
+                        }
+                    },
+                    
+                    // NEW: Clear all quantities
+                    clearAllQuantities: function() {
+                        const productIds = ['bundle', 'tshirt', 'program', 'coin', 'lanyard', 'backpack', 'patch', 'sticker', 'wristband'];
+                        
+                        productIds.forEach(id => {
+                            quantities[id] = 0;
+                            const element = document.getElementById('qty-' + id);
+                            if (element) {
+                                element.textContent = '0';
+                            }
+                        });
+                        
+                        this.updateAddAllButton();
+                    },
+                    
+                    // NEW: Update add all button state
+                    updateAddAllButton: function() {
+                        const addAllBtn = document.getElementById('add-all-btn');
+                        if (!addAllBtn) return;
+                        
+                        const hasQuantities = Object.values(quantities).some(qty => qty > 0);
+                        addAllBtn.disabled = !hasQuantities;
+                        
+                        if (hasQuantities) {
+                            const totalItems = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
+                            addAllBtn.textContent = `🛒 Add All (${totalItems})`;
+                        } else {
+                            addAllBtn.textContent = '🛒 Add All Items';
+                        }
+                    },
+                    
+                    addSimple: function(id, name, price) {
+                        const qty = quantities[id] || 0;
+                        if (qty > 0) {
+                            this._addToCart(id, sanitize.text(name), sanitize.number(price), qty);
+                            quantities[id] = 0;
+                            const element = document.getElementById('qty-' + id);
+                            if (element) element.textContent = '0';
+                            this.updateAddAllButton();
+                        } else {
+                            Store.ui.showError('Please select a quantity first!');
+                        }
+                    },
+                    
+                    addBundle: function() {
+                        const qty = quantities['bundle'] || 0;
+                        if (qty > 0) {
+                            const sizeSelect = document.getElementById('bundle-tshirt-size');
+                            if (!sizeSelect) return;
+                            
+                            const size = sanitize.text(sizeSelect.value);
+                            const sizeText = sanitize.text(sizeSelect.options[sizeSelect.selectedIndex].text);
+                            const name = `Merchandise Bundle (T-shirt: ${sizeText})`;
+                            
+                            this._addToCart('bundle-' + size, name, 60.00, qty);
+                            quantities['bundle'] = 0;
+                            const element = document.getElementById('qty-bundle');
+                            if (element) element.textContent = '0';
+                            this.updateAddAllButton();
+                        } else {
+                            Store.ui.showError('Please select a quantity first!');
+                        }
+                    },
+                    
+                    addTShirt: function() {
+                        const qty = quantities['tshirt'] || 0;
+                        if (qty > 0) {
+                            const sizeSelect = document.getElementById('tshirt-size');
+                            if (!sizeSelect) return;
+                            
+                            const size = sanitize.text(sizeSelect.value);
+                            const sizeText = sanitize.text(sizeSelect.options[sizeSelect.selectedIndex].text);
+                            const isYouth = size.startsWith('y-');
+                            const price = isYouth ? 20.00 : 25.00;
+                            const name = `Team T-Shirt (${sizeText})`;
+                            
+                            this._addToCart('tshirt-' + size, name, price, qty);
+                            quantities['tshirt'] = 0;
+                            const element = document.getElementById('qty-tshirt');
+                            if (element) element.textContent = '0';
+                            this.updateAddAllButton();
+                        } else {
+                            Store.ui.showError('Please select a quantity first!');
+                        }
+                    },
+                    
+                    _addToCart: function(id, name, price, quantity) {
+                        const cleanId = sanitize.text(id);
+                        const cleanName = sanitize.text(name);
+                        const cleanPrice = sanitize.number(price);
+                        const cleanQty = sanitize.number(quantity);
+                        
+                        if (!cleanId || !cleanName || cleanPrice <= 0 || cleanQty <= 0) {
+                            Store.ui.showError('Invalid product data');
+                            return;
+                        }
+                        
+                        const existingItem = cartItems.find(item => item.id === cleanId);
+                        if (existingItem) {
+                            existingItem.quantity = Math.min(50, existingItem.quantity + cleanQty);
+                        } else {
+                            cartItems.push({ 
+                                id: cleanId, 
+                                name: cleanName, 
+                                price: cleanPrice, 
+                                quantity: cleanQty 
+                            });
+                        }
+                        
+                        Store.cart.updateDisplay();
+                        Store.cart.updateSummary(); // NEW: Update visible summary
+                    }
+                },
+                
+                cart: {
+                    toggle: function() {
+                        const overlay = document.getElementById('cart-overlay');
+                        const panel = document.getElementById('cart-panel');
+                        
+                        if (!overlay || !panel) return;
+                        
+                        if (panel.classList.contains('open')) {
+                            panel.classList.remove('open');
+                            overlay.style.display = 'none';
+                        } else {
+                            panel.classList.add('open');
+                            overlay.style.display = 'block';
+                        }
+                    },
+                    
+                    updateDisplay: function() {
+                        const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+                        const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                        const countElement = document.getElementById('cart-count');
+                        const totalElement = document.getElementById('cart-total');
+                        
+                        if (countElement) countElement.textContent = totalItems;
+                        if (totalElement) totalElement.textContent = totalPrice.toFixed(2);
+
+                        const cartItemsDiv = document.getElementById('cart-items');
+                        if (!cartItemsDiv) return;
+                        
+                        if (cartItems.length === 0) {
+                            cartItemsDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 50px 20px; font-style: italic;">Your cart is empty</p>';
+                        } else {
+                            cartItemsDiv.innerHTML = cartItems.map(item => `
+                                <div class="cart-item">
+                                    <div class="cart-item-info">
+                                        <h4>${this._escapeHtml(item.name)}</h4>
+                                        <div class="cart-item-price">$${item.price.toFixed(2)} × ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}</div>
+                                    </div>
+                                    <button class="remove-btn" onclick="Store.cart.removeItem('${this._escapeHtml(item.id)}')">Remove</button>
+                                </div>
+                            `).join('');
+                        }
+                    },
+                    
+                    // NEW: Update visible cart summary
+                    updateSummary: function() {
+                        const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+                        const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        
+                        const countElement = document.getElementById('cart-summary-count');
+                        const contentElement = document.getElementById('cart-summary-content');
+                        
+                        if (countElement) {
+                            countElement.textContent = `(${totalItems} items)`;
+                        }
+                        
+                        if (!contentElement) return;
+                        
+                        if (cartItems.length === 0) {
+                            contentElement.innerHTML = '<div class="cart-summary-empty">Your cart is empty. Add items above to see them here!</div>';
+                        } else {
+                            const itemsHtml = cartItems.map(item => `
+                                <div class="cart-summary-item">
+                                    <span>${this._escapeHtml(item.name)} (${item.quantity})</span>
+                                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('');
+                            
+                            contentElement.innerHTML = `
+                                <div class="cart-summary-items">
+                                    ${itemsHtml}
+                                </div>
+                                <div class="cart-summary-total">
+                                    <strong>Total: $${totalPrice.toFixed(2)}</strong>
+                                </div>
+                            `;
+                        }
+                    },
+                    
+                    removeItem: function(itemId) {
+                        const cleanId = sanitize.text(itemId);
+                        cartItems = cartItems.filter(item => item.id !== cleanId);
+                        this.updateDisplay();
+                        this.updateSummary(); // NEW: Update visible summary
+                    },
+                    
+                    scrollToCheckout: function() {
+                        this.toggle();
+                        const checkoutSection = document.querySelector('.checkout-section');
+                        if (checkoutSection) {
+                            checkoutSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    },
+                    
+                    getItems: function() {
+                        // Return a copy to prevent external modification
+                        return cartItems.map(item => ({...item}));
+                    },
+                    
+                    clear: function() {
+                        cartItems = [];
+                        this.updateDisplay();
+                        this.updateSummary(); // NEW: Update visible summary
+                    },
+                    
+                    _escapeHtml: function(text) {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
+                    }
+                },
+                
+                order: {
+                    submit: function() {
+                        Store.ui.hideMessages();
+                        
+                        // Validate all fields
+                        const validations = {
+                            name: validate.name(document.getElementById('customerName')?.value || ''),
+                            email: validate.email(document.getElementById('customerEmail')?.value || ''),
+                            phone: validate.phone(document.getElementById('customerPhone')?.value || ''),
+                            team: validate.teamName(document.getElementById('teamName')?.value || ''),
+                            instructions: validate.instructions(document.getElementById('specialInstructions')?.value || '')
+                        };
+                        
+                        // Clear previous error styles
+                        ['customerName', 'customerEmail', 'customerPhone'].forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) element.classList.remove('error');
+                        });
+                        
+                        // Check for errors
+                        let hasErrors = false;
+                        Object.keys(validations).forEach(field => {
+                            const validation = validations[field];
+                            if (!validation.valid) {
+                                hasErrors = true;
+                                const errorElement = document.getElementById(field + '-error');
+                                if (errorElement) {
+                                    errorElement.textContent = validation.error;
+                                }
+                                
+                                // Add error styling to input
+                                const inputMap = {
+                                    name: 'customerName',
+                                    email: 'customerEmail',
+                                    phone: 'customerPhone'
+                                };
+                                const inputId = inputMap[field];
+                                if (inputId) {
+                                    const inputElement = document.getElementById(inputId);
+                                    if (inputElement) inputElement.classList.add('error');
+                                }
+                            } else {
+                                // Clear error message
+                                const errorElement = document.getElementById(field + '-error');
+                                if (errorElement) {
+                                    errorElement.textContent = '';
+                                }
+                            }
+                        });
+                        
+                        if (hasErrors) {
+                            Store.ui.showError('Please correct the highlighted fields');
+                            return;
+                        }
+                        
+                        if (cartItems.length === 0) {
+                            Store.ui.showError('Please add items to your cart before submitting your order');
+                            return;
+                        }
+                        
+                        // Get submit button
+                        const submitBtn = document.querySelector('.checkout-btn[onclick="Store.order.submit()"]');
+                        if (!submitBtn) return;
+                        
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = 'Submitting Order...';
+                        submitBtn.disabled = true;
+
+                        // Prepare order data for PHP backend
+                        const orderData = {
+                            customerName: validations.name.value,
+                            customerPhone: validations.phone.value,
+                            customerEmail: validations.email.value,
+                            teamName: validations.team.value,
+                            specialInstructions: validations.instructions.value,
+                            cart: cartItems.map(item => ({
+                                id: sanitize.text(item.id),
+                                name: sanitize.text(item.name),
+                                price: sanitize.number(item.price),
+                                quantity: sanitize.number(item.quantity)
+                            }))
+                        };
+
+                        console.log('Submitting order to PHP:', orderData);
+
+                        // Send to PHP backend
+                        fetch('submit_order.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify(orderData)
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error(`Server error: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Response data:', data);
+                            
+                            if (data.success) {
+                                // Success! Order submitted and emailed
+                                Store.ui.showSuccess('Order submitted successfully! Thank you for supporting Lions Football. You should receive a confirmation email shortly.');
+                                
+                                // Clear everything
+                                Store.cart.clear();
+                                this._resetForm();
+                                
+                                // Scroll to success message
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                
+                            } else {
+                                throw new Error(data.error || 'Order submission failed');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Order submission failed:', error);
+                            Store.ui.showError('Failed to submit order: ' + error.message + '. Please try again or contact support.');
+                        })
+                        .finally(() => {
+                            // Re-enable submit button
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        });
+                    },
+                    
+                    _resetForm: function() {
+                        // Clear all form fields
+                        const fields = ['customerName', 'customerPhone', 'customerEmail', 'specialInstructions'];
+                        fields.forEach(fieldId => {
+                            const element = document.getElementById(fieldId);
+                            if (element) {
+                                element.value = '';
+                                element.classList.remove('error');
+                            }
+                        });
+                        
+                        // Reset team name dropdown to default
+                        const teamField = document.getElementById('teamName');
+                        if (teamField) {
+                            teamField.value = 'Lions Football';
+                        }
+                        
+                        // Clear all validation errors
+                        ['name-error', 'email-error', 'phone-error'].forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) element.textContent = '';
+                        });
+                    }
+                },
+                
+                ui: {
+                    showError: function(message) {
+                        this.showMessage(sanitize.text(message), 'error');
+                    },
+                    
+                    showSuccess: function(message) {
+                        const successElement = document.getElementById('success-message');
+                        if (successElement) {
+                            if (message) {
+                                successElement.textContent = sanitize.text(message);
+                            }
+                            successElement.style.display = 'block';
+                            successElement.scrollIntoView({ behavior: 'smooth' });
+                            setTimeout(() => {
+                                successElement.style.display = 'none';
+                            }, 10000);
+                        }
+                    },
+                    
+                    showMessage: function(message, type) {
+                        const cleanMessage = sanitize.text(message);
+                        
+                        if (type === 'error') {
+                            const errorElement = document.getElementById('error-message');
+                            const textElement = document.getElementById('error-text');
+                            if (errorElement && textElement) {
+                                textElement.textContent = cleanMessage;
+                                errorElement.style.display = 'block';
+                                errorElement.scrollIntoView({ behavior: 'smooth' });
+                                setTimeout(() => {
+                                    errorElement.style.display = 'none';
+                                }, 8000);
+                            }
+                        } else {
+                            // For success/info messages, just alert for now
+                            alert(cleanMessage);
+                        }
+                    },
+                    
+                    hideMessages: function() {
+                        const errorElement = document.getElementById('error-message');
+                        const successElement = document.getElementById('success-message');
+                        
+                        if (errorElement) errorElement.style.display = 'none';
+                        if (successElement) successElement.style.display = 'none';
+                        
+                        // Clear validation errors
+                        ['name-error', 'email-error', 'phone-error'].forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) element.textContent = '';
+                        });
+                    },
+                    
+                    openLightbox: function(imageSrc, caption) {
+                        const lightbox = document.getElementById('lightbox-overlay');
+                        const lightboxImage = document.getElementById('lightbox-image');
+                        const lightboxCaption = document.getElementById('lightbox-caption');
+                        
+                        if (!lightbox || !lightboxImage || !lightboxCaption) return;
+                        
+                        // Sanitize inputs
+                        const cleanSrc = sanitize.text(imageSrc);
+                        const cleanCaption = sanitize.text(caption);
+                        
+                        // Basic URL validation
+                        if (!cleanSrc.match(/^https?:\/\/.+\.(png|jpg|jpeg|gif|webp)$/i)) {
+                            return;
+                        }
+                        
+                        lightboxImage.src = cleanSrc;
+                        lightboxImage.alt = cleanCaption;
+                        lightboxCaption.textContent = cleanCaption;
+                        lightbox.style.display = 'block';
+                        
+                        document.body.style.overflow = 'hidden';
+                    },
+                    
+                    closeLightbox: function() {
+                        const lightbox = document.getElementById('lightbox-overlay');
+                        if (lightbox) {
+                            lightbox.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                    }
+                }
+            };
+        })();
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Enhanced Lions Football store initialized');
+            
+            // Set current year
+            const yearElement = document.getElementById('current-year');
+            if (yearElement) {
+                yearElement.textContent = new Date().getFullYear();
+            }
+            
+            // Add escape key handler for lightbox
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    Store.ui.closeLightbox();
+                }
+            });
+            
+            // Initialize cart display and summary
+            Store.cart.updateDisplay();
+            Store.cart.updateSummary();
+            Store.products.updateAddAllButton();
+        });
+        
+        // Prevent common XSS attacks
+        window.addEventListener('error', function(e) {
+            // Log errors but don't expose them to users
+            console.error('Store error:', e.error);
+        });
+        
+        // Clear sensitive data on page unload
+        window.addEventListener('beforeunload', function() {
+            // Clear any sensitive data if needed
+        });
+    </script>
+</body>
+
+</html>

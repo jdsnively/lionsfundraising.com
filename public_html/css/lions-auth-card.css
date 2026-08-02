@@ -1,0 +1,259 @@
+/* ============================================================================
+   Lions Sports Club, authentication card
+   File: /css/lions-auth-card.css
+   Requires: /css/lions-tokens.css
+   ----------------------------------------------------------------------------
+   Shared layout for the standalone sign-in pages, /auth/signin.html and
+   /auth/verify.html. Both are reached before the visitor has been identified,
+   so neither carries the site header, navigation, or footer: there is nothing
+   for an unidentified visitor to navigate to, and the chrome would only slow
+   the page that stands between them and their account.
+
+   Every value comes from a token. Flat surfaces only, no gradient and no
+   decorative shadow.
+   ============================================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--lions-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--lions-ink);
+    background: var(--lions-black);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--lions-space-6);
+}
+
+.card {
+    background: var(--lions-white);
+    border: var(--lions-border-firm);
+    border-radius: var(--lions-radius-lg);
+    padding: var(--lions-space-12) var(--lions-space-8);
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+}
+
+.brand-mark {
+    width: 84px;
+    height: auto;
+    margin: 0 auto var(--lions-space-4);
+    display: block;
+}
+
+.brand-name {
+    font-family: var(--lions-font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+    margin-bottom: var(--lions-space-8);
+}
+
+h1 {
+    font-family: var(--lions-font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--lions-blue);
+    margin-bottom: var(--lions-space-3);
+}
+
+p {
+    color: var(--lions-gray-text);
+    margin-bottom: var(--lions-space-4);
+}
+
+p:last-child {
+    margin-bottom: 0;
+}
+
+.detail {
+    font-family: var(--lions-font-mono);
+    font-size: 0.9375rem;
+    color: var(--lions-ink);
+    word-break: break-all;
+}
+
+/* Only one view is present at a time. Views are toggled rather than
+   re-rendered so that no script rewrites the document body. */
+.view {
+    display: none;
+}
+
+.view.is-active {
+    display: block;
+}
+
+/* -- Working indicator ---------------------------------------- */
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto var(--lions-space-6);
+    border: 3px solid var(--lions-gray-light);
+    border-top-color: var(--lions-blue);
+    border-radius: 50%;
+    animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation: none;
+        border-top-color: var(--lions-gray-light);
+        border-right-color: var(--lions-blue);
+        border-bottom-color: var(--lions-blue);
+    }
+}
+
+/* -- Status banners -------------------------------------------- */
+
+.banner {
+    border-radius: var(--lions-radius);
+    padding: var(--lions-space-3) var(--lions-space-4);
+    margin-bottom: var(--lions-space-6);
+    text-align: left;
+    font-size: 0.9375rem;
+}
+
+.banner.is-success {
+    background: var(--lions-success-bg);
+    border: 1px solid var(--lions-success);
+    color: var(--lions-success);
+}
+
+.banner.is-error {
+    background: var(--lions-error-bg);
+    border: 1px solid var(--lions-error);
+    color: var(--lions-error);
+}
+
+/* -- Form ------------------------------------------------------- */
+
+.field {
+    text-align: left;
+    margin-bottom: var(--lions-space-4);
+}
+
+.field label {
+    display: block;
+    font-family: var(--lions-font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-blue);
+    margin-bottom: var(--lions-space-2);
+}
+
+.field input {
+    width: 100%;
+    min-height: var(--lions-tap-target);
+    padding: var(--lions-space-3);
+    font-family: var(--lions-font-body);
+    font-size: 1rem;
+    color: var(--lions-ink);
+    background: var(--lions-white);
+    border: 2px solid var(--lions-gray-border);
+    border-radius: var(--lions-radius);
+}
+
+.field input:focus {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+    border-color: var(--lions-blue);
+}
+
+/* -- Buttons ---------------------------------------------------- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: var(--lions-tap-target);
+    padding: var(--lions-space-3) var(--lions-space-6);
+    font-family: var(--lions-font-heading);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--lions-white);
+    background: var(--lions-blue);
+    border: 2px solid var(--lions-blue);
+    border-radius: var(--lions-radius);
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--lions-blue-hover);
+    border-color: var(--lions-blue-hover);
+}
+
+.btn:active {
+    background: var(--lions-blue-active);
+    border-color: var(--lions-blue-active);
+}
+
+.btn:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+
+.btn:disabled {
+    background: var(--lions-gray-mid);
+    border-color: var(--lions-gray-mid);
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    color: var(--lions-blue);
+    background: transparent;
+}
+
+.btn-secondary:hover {
+    color: var(--lions-white);
+    background: var(--lions-blue);
+}
+
+.btn + .btn {
+    margin-top: var(--lions-space-3);
+}
+
+.footnote {
+    margin-top: var(--lions-space-8);
+    padding-top: var(--lions-space-4);
+    border-top: var(--lions-border);
+    font-size: 0.8125rem;
+    color: var(--lions-gray-mid);
+}
+
+.footnote a {
+    color: var(--lions-blue);
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: var(--lions-space-4);
+    }
+
+    .card {
+        padding: var(--lions-space-8) var(--lions-space-6);
+    }
+}

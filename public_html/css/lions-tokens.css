@@ -1,0 +1,123 @@
+/* ============================================================================
+   Lions Sports Club, shared design tokens
+   File: /css/lions-tokens.css
+   ----------------------------------------------------------------------------
+   Single source of truth for color, type, spacing, and border values on
+   lionsfundraising.com. Values match css/site.css on lionssports.club so the
+   two properties stay visually identical.
+
+   Pages reference tokens. A page must not hardcode a value a token already
+   covers, because a token change then reaches only part of the site.
+
+   Superseded palettes still present elsewhere in this application:
+     #1a365d / #153e75   navy, used by universal-header.js and the admin pages
+     #003366 / #002244   an older navy, used by the original verification page
+     #1e3a8a             a third navy, used by inline auth markup
+   All three resolve to --lions-blue. Replace them as each page is converted.
+
+   Brand palette:
+     Royal Blue    #0059A9   primary
+     Cross Red     #ED1C24   accent, scripture references and urgent calls
+     Gold          #D4AF37   accent, eyebrows and highlights
+     Near Black    #141413   primary dark surface
+     Ghost White   #F8F8FF   primary light surface
+   ============================================================================ */
+
+:root {
+
+    /* -- Royal Blue scale ------------------------------------------------
+       The hover and active values are the corrected June 2026 scale. Older
+       copies of site.css still carry #1a6fc2 and #0c4d8f. Those are wrong.
+       --lions-blue-light is an accent tuned by eye, not a math derivative. */
+
+    --lions-blue:         #0059A9;
+    --lions-blue-hover:   #006BCB;
+    --lions-blue-active:  #004B8F;
+    --lions-blue-light:   #3A82C9;
+
+    /* Tints of Royal Blue. These hardcode the RGB channels and do not follow
+       a change to --lions-blue. Update them by hand if the brand blue moves. */
+    --lions-blue-wash:    rgba(0, 89, 169, 0.06);
+    --lions-blue-edge:    rgba(0, 89, 169, 0.18);
+
+    /* -- Brand accents --------------------------------------------------- */
+
+    --lions-gold:         #D4AF37;
+    --lions-red:          #ED1C24;
+
+    /* -- Dark and light surfaces ----------------------------------------- */
+
+    --lions-black:        #141413;   /* Near Black, primary dark surface */
+    --lions-dark:         #161616;   /* elevated dark, site header        */
+    --lions-dark-card:    #1E1E1E;   /* card on a dark surface            */
+    --lions-darker:       #0D0D0D;   /* deepest emphasis                  */
+    --lions-white:        #F8F8FF;   /* Ghost White                       */
+
+    /* -- Grays ------------------------------------------------------------ */
+
+    --lions-gray-light:   #DCDCDC;
+    --lions-gray-border:  #C0C0C0;
+    --lions-gray-text:    #5E5E5E;
+    --lions-gray-mid:     #A4A4A4;
+    --lions-gray-dark:    #424242;
+    --lions-ink:          #1B1B1B;   /* body copy on light surfaces */
+
+    /* -- Status ----------------------------------------------------------
+       Chosen for contrast on white at WCAG AA rather than for saturation.
+       The application elsewhere uses #10b981, #f59e0b, #ef4444, which fail
+       AA for text on white. Do not carry those forward. */
+
+    --lions-success:      #1B7F4B;
+    --lions-warning:      #8A5A00;
+    --lions-error:        #B3261E;
+
+    --lions-success-bg:   #EDF7F1;
+    --lions-warning-bg:   #FBF3E4;
+    --lions-error-bg:     #FBEDEC;
+
+    /* -- Type -------------------------------------------------------------
+       League Spartan is loaded from Google Fonts by the page. Helvetica World
+       is a licensed face assumed present on the client and degrades to
+       Helvetica Neue, then Helvetica, then Arial.
+
+       Playfair Display, Inter, Poppins, and the Wayne team-mark faces are off
+       brand for interface use and must not appear. */
+
+    --lions-font-heading: 'League Spartan', 'Helvetica Neue', Arial, sans-serif;
+    --lions-font-body:    'Helvetica World', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --lions-font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* -- Spacing ---------------------------------------------------------- */
+
+    --lions-space-1:      0.25rem;
+    --lions-space-2:      0.5rem;
+    --lions-space-3:      0.75rem;
+    --lions-space-4:      1rem;
+    --lions-space-6:      1.5rem;
+    --lions-space-8:      2rem;
+    --lions-space-12:     3rem;
+    --lions-space-16:     4rem;
+
+    /* -- Borders and radius -----------------------------------------------
+       Flat and timeless. There is no shadow token and no gradient token, and
+       none should be added. The only permitted gradient anywhere on an LSC
+       property is the two percent image-protection sliver on the logo. */
+
+    --lions-border:       1px solid var(--lions-gray-light);
+    --lions-border-firm:  2px solid var(--lions-blue);
+    --lions-radius-sm:    4px;
+    --lions-radius:       8px;
+    --lions-radius-lg:    12px;
+
+    /* -- Controls --------------------------------------------------------- */
+
+    --lions-tap-target:   44px;   /* minimum touch height */
+
+    /* Focus is drawn with an outline plus an offset so the ring sits clear of
+       the control and stays visible on both blue and white surfaces. Gold is
+       the alternate for controls sitting on a dark surface, where blue on
+       Near Black does not carry enough contrast. */
+    --lions-focus-ring:   3px solid var(--lions-blue);
+    --lions-focus-ring-on-dark: 3px solid var(--lions-gold);
+    --lions-focus-offset: 2px;
+}

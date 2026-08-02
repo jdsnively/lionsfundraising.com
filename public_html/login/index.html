@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Lions Sports Club</title>
+    <link rel="icon" type="image/png" id="dynamicFavicon">
+    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
+    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            /* PRIMARY BRAND COLORS - EXACT MATCH TO DASHBOARD */
+            --navy-blue: #1a365d;
+            --navy-blue-light: #2c5282;
+            --navy-blue-dark: #1a202c;
+
+            /* NEUTRAL GRAYS - EXACT MATCH TO DASHBOARD */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            /* SEMANTIC COLORS - EXACT MATCH TO DASHBOARD */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+
+            /* TYPOGRAPHY - EXACT MATCH TO DASHBOARD */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-display: 'Playfair Display', 'Times New Roman', serif;
+
+            /* FLAT DESIGN - EXACT MATCH TO DASHBOARD */
+            --border-light: 1px solid var(--gray-200);
+            --border-medium: 2px solid var(--gray-300);
+            --border-focus: 2px solid var(--navy-blue);
+
+            /* BORDER RADIUS - EXACT MATCH TO DASHBOARD */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* SPACING - EXACT MATCH TO DASHBOARD */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--navy-blue);
+            min-height: 100vh;
+            color: var(--gray-700);
+            position: relative;
+            padding: var(--space-6);
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            padding-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - var(--space-12));
+            border: var(--border-light);
+        }
+
+        /* Login Screen - ALWAYS VISIBLE */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .login-container {
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .login-header {
+            margin-bottom: var(--space-8);
+        }
+
+        .login-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-4);
+            font-weight: 600;
+        }
+
+        .login-subtitle {
+            color: var(--gray-500);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: var(--space-6);
+        }
+
+        .auth-options {
+            margin-bottom: var(--space-6);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--navy-blue);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--space-3);
+            border: var(--border-medium);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-500);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: var(--space-1);
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--navy-blue);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            background: var(--navy-blue);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            min-height: 44px;
+            justify-content: center;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .login-status {
+            padding: var(--space-3);
+            margin: var(--space-4) 0;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            display: none;
+            text-align: left;
+            line-height: 1.4;
+            font-size: 0.875rem;
+        }
+
+        .login-status.success {
+            background: #d1fae5;
+            color: var(--success);
+            border: 1px solid var(--success);
+            display: block;
+        }
+
+        .login-status.error {
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid var(--error);
+            display: block;
+        }
+
+        .login-options {
+            margin-top: var(--space-6);
+            text-align: center;
+        }
+
+        .login-options a {
+            color: var(--navy-blue);
+            text-decoration: none;
+            font-weight: 500;
+            margin: 0 var(--space-3);
+            transition: color 0.2s ease;
+        }
+
+        .login-options a:hover {
+            color: var(--navy-blue-dark);
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+
+            .main-container {
+                padding: var(--space-4);
+                padding-top: var(--space-8);
+            }
+
+            .login-container {
+                padding: var(--space-8);
+            }
+
+            .login-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Universal Header Container -->
+    <div id="headerContainer"></div>
+
+    <div class="main-container">
+        <div class="login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1 class="login-title">Welcome Back</h1>
+                    <p class="login-subtitle">Sign in to access your Lions account</p>
+                </div>
+
+                <div class="auth-options">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" autocomplete="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="password-container">
+                                <input type="password" id="password" autocomplete="current-password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+                                    Show
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn">
+                                Sign In
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="loginStatus" class="login-status"></div>
+
+                    <div class="login-options">
+                        <a href="/register">Create Account</a>
+                        <a href="/forgot-password">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Universal Systems -->
+    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+    <script src="https://lionsfundraising.com/universal-header.js"></script>
+
+    <script type="module">
+        // SIMPLIFIED LOGIN - No complex loading states, immediate form display
+        let isProcessingLogin = false;
+
+        // Initialize immediately - no waiting
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Login page initializing...');
+            
+            // Setup form immediately
+            setupLoginForm();
+            
+            // Initialize header and check auth in background (non-blocking)
+            initializeBackgroundSystems();
+            
+            console.log('Login page ready');
+        });
+
+        async function initializeBackgroundSystems() {
+            try {
+                // Initialize header in background
+                if (window.LIONS_HEADER && window.LIONS_HEADER.setupPage) {
+                    await window.LIONS_HEADER.setupPage('headerContainer');
+                    console.log('Header initialized');
+                }
+
+                // Check if already authenticated
+                await checkExistingAuth();
+                
+            } catch (error) {
+                console.warn('Background system initialization failed:', error);
+                // Continue - login page still works
+            }
+        }
+
+        async function checkExistingAuth() {
+            try {
+                // Wait for universal auth to be ready (with timeout)
+                await waitForAuth(3000);
+
+                if (window.LIONS_AUTH && window.LIONS_AUTH.isAuthenticated()) {
+                    console.log('User already authenticated, redirecting...');
+                    showLoginStatus('success', 'Already logged in! Redirecting...');
+                    
+                    // Get redirect URL
+                    const redirectUrl = sessionStorage.getItem('lionsAuthRedirect') || '/dashboard';
+                    sessionStorage.removeItem('lionsAuthRedirect');
+                    
+                    setTimeout(() => {
+                        window.location.replace(redirectUrl);
+                    }, 800);
+                }
+            } catch (error) {
+                console.warn('Auth check failed:', error);
+                // Continue - login form still works
+            }
+        }
+
+        async function waitForAuth(timeoutMs = 3000) {
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < timeoutMs) {
+                if (window.LIONS_AUTH && window.LIONS_AUTH.isInitialized) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            throw new Error('Auth system timeout');
+        }
+
+        function setupLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleEmailLogin);
+            }
+        }
+
+        async function handleEmailLogin(event) {
+            event.preventDefault();
+            
+            if (isProcessingLogin) return;
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            if (!email || !password) {
+                showLoginStatus('error', 'Please enter both email and password.');
+                return;
+            }
+
+            isProcessingLogin = true;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing in...';
+                
+                // Clear any existing status
+                hideLoginStatus();
+
+                // Wait for auth system (with reasonable timeout)
+                await waitForAuth(5000);
+
+                if (!window.LIONS_AUTH || !window.LIONS_AUTH.isInitialized) {
+                    throw new Error('Authentication system not available. Please refresh the page.');
+                }
+
+                // Attempt login
+                const result = await window.LIONS_AUTH.signInWithEmailAndPassword(email, password);
+                
+                if (result.success) {
+                    // Success - universal auth handles redirect
+                    console.log('Login successful');
+                } else {
+                    // Handle error
+                    throw new Error(result.error || 'Login failed');
+                }
+
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                const errorMessages = {
+                    'auth/user-not-found': 'No account found with this email address.',
+                    'auth/wrong-password': 'Incorrect password. Please try again.',
+                    'auth/invalid-email': 'Invalid email address format.',
+                    'auth/too-many-requests': 'Too many failed attempts. Please wait and try again.',
+                    'auth/user-disabled': 'This account has been disabled.',
+                    'auth/invalid-credential': 'Invalid email or password.',
+                    'auth/network-request-failed': 'Network error. Please check your connection.',
+                };
+
+                const displayError = errorMessages[error.code] || error.message || 'Login failed. Please try again.';
+                showLoginStatus('error', displayError);
+
+                // Re-enable form
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                isProcessingLogin = false;
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = 'Show';
+            }
+        }
+
+        function showLoginStatus(type, message) {
+            const statusElement = document.getElementById('loginStatus');
+            statusElement.className = `login-status ${type}`;
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 4000);
+            }
+        }
+
+        function hideLoginStatus() {
+            const statusElement = document.getElementById('loginStatus');
+            statusElement.style.display = 'none';
+        }
+
+        // Global function for password toggle
+        window.togglePasswordVisibility = togglePasswordVisibility;
+    </script>
+</body>
+
+</html>

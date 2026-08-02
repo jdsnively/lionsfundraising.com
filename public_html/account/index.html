@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>My Account - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=2">
+</head>
+
+<body>
+<div class="page-bg">
+
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         which is the single definition on this property and mirrors
+         $nav_items in /includes/header.php on lionssports.club. Delete
+         this element and that file when the shared PHP include lands. -->
+    <header id="site-header" data-nav="account"></header>
+
+    <main class="page">
+
+        <!-- Resolving the session ------------------------------------------ -->
+        <section id="view-loading" class="view is-active">
+            <div class="loading">
+                <div class="spinner" role="status" aria-label="Loading"></div>
+                <p>Checking your sign in.</p>
+            </div>
+        </section>
+
+        <!-- Signed in but not usable --------------------------------------- -->
+        <section id="view-problem" class="view">
+            <div class="page-head">
+                <h1>We could not open your account</h1>
+                <hr class="hr-accent">
+            </div>
+            <div class="card">
+                <p id="problem-message">Something went wrong.</p>
+                <p>Email <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>
+                   and we will sort it out.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-secondary" id="problem-signout">Sign out</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- The account ---------------------------------------------------- -->
+        <section id="view-account" class="view">
+
+            <div class="page-head">
+                <h1>My Account</h1>
+                <hr class="hr-accent">
+                <p>Your record with Lions Sports Club. Keep your phone number current
+                   so we can reach you about the events you are scheduled to work.</p>
+                <p class="identity">
+                    <strong id="identity-name"></strong>
+                    <span class="chip" id="identity-role"></span>
+                </p>
+            </div>
+
+            <form class="card" id="profile-form" novalidate>
+
+                <h2>Profile</h2>
+
+                <div id="profile-banner" class="banner" hidden role="status"></div>
+
+                <div class="field">
+                    <span class="field-label">Name</span>
+                    <div class="field-value" id="value-name"></div>
+                    <span class="field-note">Your name is the key your event history and
+                        payouts are recorded against. To change it, email
+                        <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>.</span>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Email address</span>
+                    <div class="field-value" id="value-email"></div>
+                    <span class="field-note">This is the address your sign-in link is sent
+                        to. Changing it changes how you sign in, so we make the change for
+                        you rather than letting it happen by accident.</span>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <span class="field-label">Relationship to Lions</span>
+                        <div class="field-value" id="value-relationship"></div>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Age range</span>
+                        <div class="field-value" id="value-age"></div>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="field">
+                    <label for="input-phone">Phone number</label>
+                    <input type="tel" id="input-phone" name="phone" required
+                           autocomplete="tel" inputmode="tel" maxlength="40">
+                    <span class="field-note">Used to reach you about a shift. Other Lions
+                        volunteers can see it.</span>
+                </div>
+
+                <div class="field">
+                    <label for="input-shirt">Shirt size</label>
+                    <select id="input-shirt" name="shirtSize">
+                        <option value="">Select shirt size</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="2X">2X</option>
+                        <option value="3X">3X</option>
+                        <option value="NA">NA</option>
+                    </select>
+                    <span class="field-note">Adult sizes. Choose NA if you do not need a
+                        stand shirt.</span>
+                </div>
+
+                <div class="btn-row">
+                    <button type="submit" class="btn" id="profile-save">Save changes</button>
+                    <button type="button" class="btn btn-secondary" id="profile-cancel">Cancel</button>
+                </div>
+
+            </form>
+
+            <!-- Alcohol permit. Present only for volunteers recorded as 21 and
+                 over. Minors carry no permit status of any kind: there is no
+                 status they could hold other than non-alcohol, so showing one
+                 would disclose age without telling anyone anything. The values
+                 are never written into the document for a minor, so nothing is
+                 recoverable from the page source either. -->
+            <section class="card" id="license-card" hidden>
+
+                <h2>Alcohol permit</h2>
+
+                <div id="license-banner" class="banner" hidden></div>
+
+                <div id="license-none" hidden>
+                    <p>We do not have an alcohol permit on file for you. Permits are only
+                       needed for the stands that serve alcohol; there is plenty of work
+                       that does not require one.</p>
+                    <p id="license-willing" hidden>Our records show you are willing to
+                       obtain one.</p>
+                    <p>If you hold a permit now, email a copy to
+                       <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>
+                       and we will add it.</p>
+                </div>
+
+                <div id="license-detail" hidden>
+                    <div class="field-grid">
+                        <div class="field">
+                            <span class="field-label">Permit number</span>
+                            <div class="field-value" id="value-license-number"></div>
+                        </div>
+                        <div class="field">
+                            <span class="field-label">Expires</span>
+                            <div class="field-value">
+                                <span id="value-license-expiry"></span>
+                                <span class="chip" id="chip-license"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Alcohol training</span>
+                        <div class="field-value" id="value-license-training"></div>
+                        <span class="field-note">Permit details are maintained by the club.
+                            To correct anything here, email
+                            <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>.</span>
+                    </div>
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ======================================================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
+</div><!-- /page-bg -->
+
+<!-- Console gate. Must load before any other Lions script so that diagnostic
+     output is suppressed on a production page load. -->
+<script src="/js/lions-log.js?v=1"></script>
+<script src="/js/lions-nav.js?v=1" defer></script>
+
+<!-- Relationship values, for resolving a record still holding a superseded
+     string such as Lions Player/Cheerleader to its current form. -->
+<script src="/relationship-config.js?v=3"></script>
+
+<script type="module">
+/**
+ * account/index.html
+ *
+ * A volunteer's own record in Lions-Fundraising-Users.
+ *
+ * The previous file at this path was not a page. A JavaScript fragment had been
+ * saved over the whole document, and both the July archive and the Git baseline
+ * hold the same damage, so this is a rebuild rather than a restore. The fragment
+ * also wrote to Lions-Fundraising-Users/{uid} while documents are keyed by
+ * volunteer name, so self-service editing never worked even before the file was
+ * destroyed.
+ *
+ * What a volunteer may change here is decided by firestore.rules, not by this
+ * page:
+ *
+ *     allow update: if isAuthenticated()
+ *                   && stored().email == authEmail()
+ *                   && changedKeys().hasOnly(['phone', 'shirtSize', 'updatedAt']);
+ *
+ * Phone and shirt size are therefore the only editable fields. Everything else
+ * is displayed as text rather than as a disabled input, because a disabled
+ * input reads as temporarily unavailable and invites a support call. Name and
+ * email are payout and identity join keys; age range gates the alcohol section;
+ * permit fields decide who may staff a licensed slot. None of those should move
+ * without a human seeing the change.
+ *
+ * There is no password interface. Identity on this application is a
+ * passwordless email link, and the form the destroyed file carried asked
+ * volunteers for a password none of them has.
+ */
+
+import { lionsAuth, initializeProtectedPage } from '/auth/lions-auth.js';
+
+// The Firebase SDK version must match the one lions-auth.js imports. A
+// different version here loads a second copy of the SDK and a second set of
+// module-level instances, which is how this application ended up running two
+// Firebase apps at once on the registration page.
+import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    limit,
+    getDocs,
+    updateDoc,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const log = window.LIONS_LOG || { log() {}, warn() {}, error(...a) { console.error(...a); } };
+
+const USERS = 'Lions-Fundraising-Users';
+const SUPPORT = 'fundraising@lionssports.club';
+
+/** Days before expiry at which a permit is called out as expiring soon. */
+const EXPIRY_WARNING_DAYS = 60;
+
+/** The only age range for which permit information exists or is displayed. */
+const ADULT_AGE_RANGE = '21 and over';
+
+const db = getFirestore(getApp());
+
+/**
+ * The volunteer's document reference and the values the form started with.
+ * The reference is held so that Save does not have to locate the document
+ * again, and the baseline is held so that Cancel can restore it and so that an
+ * unchanged form does not generate a write.
+ */
+let profileRef = null;
+let baseline = { phone: '', shirtSize: '' };
+
+// ---------------------------------------------------------------------------
+// View helpers
+// ---------------------------------------------------------------------------
+
+const views = {
+    loading: document.getElementById('view-loading'),
+    problem: document.getElementById('view-problem'),
+    account: document.getElementById('view-account')
+};
+
+function show(name) {
+    Object.keys(views).forEach(key => {
+        views[key].classList.toggle('is-active', key === name);
+    });
+}
+
+function fail(message) {
+    document.getElementById('problem-message').textContent = message;
+    show('problem');
+}
+
+function setText(id, value) {
+    document.getElementById(id).textContent = value;
+}
+
+function announce(id, message, kind) {
+    const banner = document.getElementById(id);
+    banner.textContent = message;
+    banner.className = 'banner is-' + kind;
+    banner.hidden = false;
+}
+
+function clearBanner(id) {
+    const banner = document.getElementById(id);
+    banner.hidden = true;
+    banner.textContent = '';
+}
+
+// ---------------------------------------------------------------------------
+// Formatting
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalises a typed phone number to a single stored format so the roster does
+ * not accumulate six spellings of the same number. Anything that is not a
+ * recognisable ten digit North American number is stored as typed, because a
+ * volunteer with an unusual number is better served by an odd looking record
+ * than by a form that refuses to accept them.
+ */
+function formatPhone(value) {
+    const digits = String(value || '').replace(/\D/g, '');
+    const local = digits.length === 11 && digits.charAt(0) === '1' ? digits.slice(1) : digits;
+
+    if (local.length === 10) {
+        return '(' + local.slice(0, 3) + ') ' + local.slice(3, 6) + '-' + local.slice(6);
+    }
+    return String(value || '').trim();
+}
+
+function digitCount(value) {
+    return String(value || '').replace(/\D/g, '').length;
+}
+
+/**
+ * Reads a stored expiry into a local date at midnight.
+ *
+ * Registration writes an ISO date string from a date input. Older records may
+ * hold a Firestore Timestamp. The ISO string is split by hand rather than
+ * passed to the Date constructor, which parses a bare YYYY-MM-DD as UTC and
+ * therefore reports the previous day for anyone west of Greenwich. Indianapolis
+ * is four hours behind in summer, so every permit would appear to expire a day
+ * early.
+ */
+function toLocalDate(value) {
+    if (!value) {
+        return null;
+    }
+    if (typeof value.toDate === 'function') {
+        const converted = value.toDate();
+        return new Date(converted.getFullYear(), converted.getMonth(), converted.getDate());
+    }
+
+    const parts = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!parts) {
+        return null;
+    }
+    return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function relationshipLabel(value) {
+    const config = window.RELATIONSHIP_CONFIG;
+    const resolved = config ? config.normalize(value) : String(value || '').trim();
+    return resolved || 'Not recorded';
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+function renderProfile(record, role) {
+    setText('identity-name', record.name || 'Lions volunteer');
+    setText('identity-role', role || 'Volunteer');
+
+    setText('value-name', record.name || 'Not recorded');
+    setText('value-email', record.email || 'Not recorded');
+    setText('value-relationship', relationshipLabel(record.relationship));
+    setText('value-age', record.ageRange || 'Not recorded');
+
+    baseline = {
+        phone: String(record.phone || '').trim(),
+        shirtSize: String(record.shirtSize || '').trim()
+    };
+
+    resetForm();
+}
+
+/**
+ * Restores the editable controls to the values the record holds.
+ *
+ * A stored shirt size that is not one of the current options is added to the
+ * list rather than dropped. Silently replacing it would rewrite the
+ * volunteer's answer the first time they saved anything else on this page.
+ */
+function resetForm() {
+    // Displayed in the stored format where that is already consistent, and in
+    // the house format otherwise. Saving then normalises the record, so the
+    // roster converges on one spelling as volunteers pass through this page.
+    document.getElementById('input-phone').value = formatPhone(baseline.phone);
+
+    const select = document.getElementById('input-shirt');
+    const known = Array.from(select.options).some(option => option.value === baseline.shirtSize);
+
+    if (baseline.shirtSize && !known) {
+        const option = document.createElement('option');
+        option.value = baseline.shirtSize;
+        option.textContent = baseline.shirtSize;
+        select.appendChild(option);
+    }
+
+    select.value = baseline.shirtSize;
+}
+
+/**
+ * Renders permit state.
+ *
+ * The card is shown only for a volunteer recorded as 21 and over. Registration
+ * collects permit answers only in that case, and the non-negotiable for minors
+ * is that no permit status appears at all.
+ */
+function renderLicense(record) {
+    if (String(record.ageRange || '').trim() !== ADULT_AGE_RANGE) {
+        return;
+    }
+
+    document.getElementById('license-card').hidden = false;
+
+    if (String(record.hasLicense || '').trim().toLowerCase() !== 'yes') {
+        document.getElementById('license-none').hidden = false;
+        if (String(record.willingToObtainLicense || '').trim().toLowerCase() === 'yes') {
+            document.getElementById('license-willing').hidden = false;
+        }
+        return;
+    }
+
+    document.getElementById('license-detail').hidden = false;
+
+    const number = String(record.licenseNumber || '').trim();
+    setText('value-license-number', number || 'Not recorded');
+
+    const training = String(record.alcoholTrainingCompleted || '').trim().toLowerCase();
+    setText('value-license-training', training === 'yes' ? 'Completed' : 'Not recorded');
+
+    const chip = document.getElementById('chip-license');
+    const expiry = toLocalDate(record.licenseExpiration);
+
+    if (!expiry) {
+        setText('value-license-expiry', 'Not recorded');
+        chip.textContent = 'Date missing';
+        chip.className = 'chip is-expiring';
+        announce('license-banner',
+            'We hold a permit number for you but no expiration date. Email ' + SUPPORT
+            + ' with the date and we will complete the record.', 'warning');
+        return;
+    }
+
+    setText('value-license-expiry', formatDate(expiry));
+
+    const today = new Date();
+    const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const days = Math.round((expiry - midnight) / 86400000);
+
+    if (days < 0) {
+        chip.textContent = 'Expired';
+        chip.className = 'chip is-expired';
+        announce('license-banner',
+            'This permit expired on ' + formatDate(expiry) + '. You cannot be assigned '
+            + 'to a stand that serves alcohol until it is renewed. Send the new permit '
+            + 'to ' + SUPPORT + ' and we will update it.', 'error');
+        return;
+    }
+
+    if (days <= EXPIRY_WARNING_DAYS) {
+        chip.textContent = 'Expires soon';
+        chip.className = 'chip is-expiring';
+        announce('license-banner',
+            'This permit expires in ' + days + (days === 1 ? ' day' : ' days')
+            + '. Send the renewal to ' + SUPPORT + ' when you have it.', 'warning');
+        return;
+    }
+
+    chip.textContent = 'Valid';
+    chip.className = 'chip is-valid';
+}
+
+// ---------------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------------
+
+/**
+ * Locates the volunteer's document and returns both the reference and the data.
+ *
+ * lions-auth.js already read this record, but it returns the document data
+ * only, and a write needs the reference. Documents are keyed by volunteer name,
+ * so the reference cannot be derived from the address or the Firebase user id.
+ * The July deduplication also left some identifiers carrying a suffix, so
+ * assuming the id equals the name field would fail for exactly the records most
+ * likely to need correcting. One extra indexed read against a 115 document
+ * collection is the cheaper mistake.
+ */
+async function loadProfile(email) {
+    const snapshot = await getDocs(query(
+        collection(db, USERS),
+        where('email', '==', String(email || '').trim().toLowerCase()),
+        limit(1)
+    ));
+
+    if (snapshot.empty) {
+        return null;
+    }
+
+    return { ref: snapshot.docs[0].ref, data: snapshot.docs[0].data() };
+}
+
+async function start() {
+    const state = await initializeProtectedPage('account');
+
+    if (state.needsAuth) {
+        // Carries this page through the sign-in round trip so the volunteer
+        // returns here rather than to whichever page their role defaults to.
+        window.location.replace('/auth/signin.html?next=%2Faccount');
+        return;
+    }
+
+    if (!state.authorized) {
+        fail('Your sign in worked, but we could not match it to a Lions Sports Club '
+           + 'record. That usually means the address you used is not the one we have '
+           + 'on file.');
+        return;
+    }
+
+    let profile;
+    try {
+        profile = await loadProfile(state.user.email);
+    } catch (error) {
+        log.error('Roster lookup failed on the account page.', error);
+        fail('We could not load your record just now. Refresh the page, and if it '
+           + 'keeps happening let us know.');
+        return;
+    }
+
+    if (!profile) {
+        fail('Your sign in worked, but there is no Lions Sports Club record for that '
+           + 'address yet.');
+        return;
+    }
+
+    profileRef = profile.ref;
+
+    renderProfile(profile.data, state.role);
+    renderLicense(profile.data);
+
+    window.LIONS_NAV.setAuth({ signedIn: true, active: 'account',
+                               onSignOut: signOutAndReturn });
+    show('account');
+
+    log.log('Account page ready.');
+}
+
+// ---------------------------------------------------------------------------
+// Saving
+// ---------------------------------------------------------------------------
+
+document.getElementById('profile-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearBanner('profile-banner');
+
+    const phoneInput = document.getElementById('input-phone');
+    const shirtSelect = document.getElementById('input-shirt');
+
+    const phone = formatPhone(phoneInput.value);
+    const shirtSize = shirtSelect.value;
+
+    if (digitCount(phone) < 10) {
+        announce('profile-banner', 'Enter a phone number including the area code.', 'error');
+        phoneInput.focus();
+        return;
+    }
+
+    if (!shirtSize) {
+        announce('profile-banner', 'Choose a shirt size, or NA if you do not need one.', 'error');
+        shirtSelect.focus();
+        return;
+    }
+
+    if (phone === baseline.phone && shirtSize === baseline.shirtSize) {
+        announce('profile-banner', 'Nothing has changed yet.', 'warning');
+        return;
+    }
+
+    const save = document.getElementById('profile-save');
+    const cancel = document.getElementById('profile-cancel');
+    save.disabled = true;
+    cancel.disabled = true;
+    save.textContent = 'Saving';
+
+    try {
+        // The security rules accept phone, shirtSize, and updatedAt and reject
+        // any write that touches another field. Sending the whole record back
+        // would be denied in full.
+        await updateDoc(profileRef, {
+            phone: phone,
+            shirtSize: shirtSize,
+            updatedAt: serverTimestamp()
+        });
+
+        const changed = [];
+        if (phone !== baseline.phone) { changed.push('phone'); }
+        if (shirtSize !== baseline.shirtSize) { changed.push('shirtSize'); }
+
+        baseline = { phone: phone, shirtSize: shirtSize };
+        phoneInput.value = phone;
+
+        await lionsAuth.logAuditEvent('account_profile_updated', { fields: changed });
+
+        announce('profile-banner', 'Saved.', 'success');
+
+    } catch (error) {
+        log.error('Profile update failed.', error);
+
+        const denied = error && error.code === 'permission-denied';
+        announce('profile-banner', denied
+            ? 'That change was refused. Email ' + SUPPORT + ' and we will make it for you.'
+            : 'We could not save that. Check your connection and try again.', 'error');
+
+    } finally {
+        save.disabled = false;
+        cancel.disabled = false;
+        save.textContent = 'Save changes';
+    }
+});
+
+document.getElementById('profile-cancel').addEventListener('click', () => {
+    clearBanner('profile-banner');
+    resetForm();
+});
+
+// Reformatting on blur rather than on each keystroke. Rewriting the field while
+// someone is still typing moves the caret and makes a phone number genuinely
+// hard to enter on a phone.
+document.getElementById('input-phone').addEventListener('blur', (event) => {
+    event.target.value = formatPhone(event.target.value);
+});
+
+// ---------------------------------------------------------------------------
+// Sign out
+// ---------------------------------------------------------------------------
+
+async function signOutAndReturn() {
+    await lionsAuth.signOut();
+    window.location.replace('/auth/signin.html');
+}
+
+document.getElementById('problem-signout').addEventListener('click', signOutAndReturn);
+
+start();
+</script>
+
+</body>
+
+</html>

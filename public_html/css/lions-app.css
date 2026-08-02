@@ -1,0 +1,1006 @@
+/* ============================================================================
+   Lions Sports Club, signed-in application shell
+   File: /css/lions-app.css
+   Requires: /css/lions-tokens.css
+   ----------------------------------------------------------------------------
+   Chrome for pages a volunteer reaches after signing in on lionsfundraising.com.
+   The standalone sign-in pages use /css/lions-auth-card.css instead, because
+   they are reached before the visitor is known and carry no navigation.
+
+   THIS IS A PORT, NOT A DESIGN.
+
+   The header, primary navigation, mobile drawer, social section, and footer
+   below are copied from /css/site.css on lionssports.club and are intended to
+   render identically. Class names are kept the same as the marketing site
+   (.site-header, .header-inner, .primary-nav, .nav-link, .social-section,
+   .footer-section) so that a later move to the shared PHP includes described
+   in the brand alignment audit is a drop-in rather than a rewrite, and so that
+   a diff between the two files shows real drift rather than renamed rules.
+
+   Do not restyle a ported rule. If the marketing site changes, change this to
+   match. If this needs to differ, that is a documented exception under the
+   deviation policy in design-system-governance.md, and there are currently
+   none approved.
+
+   universal-header.js is deliberately not used. Read directly at v1.9 it
+   carries #1a365d and #153e75 with no occurrence of #0059A9, Inter with no
+   League Spartan, a text-shadow, three translateY lifts, emoji navigation
+   icons, and three @lionsfootballclub.com addresses. It is frozen.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Token bridge
+
+   site.css names its tokens without a prefix; this property names them with a
+   --lions- prefix. Aliasing here lets every ported rule below stay byte for
+   byte identical to its source, which is the only way a drift check between
+   the two files stays cheap.
+
+   Note the gray scale: --gray-mid is #5E5E5E and --gray-text is #A4A4A4 on the
+   marketing site, and the two names are SWAPPED in lions-tokens.css. The
+   aliases follow the marketing site's meaning so ported rules behave the same.
+   Do not "correct" one file to the other without checking every use.
+   -------------------------------------------------------------------------- */
+
+:root {
+    --blue-primary: var(--lions-blue);
+    --blue-hover:   var(--lions-blue-hover);
+    --blue-active:  var(--lions-blue-active);
+    --blue-light:   var(--lions-blue-light);
+
+    --gold:         var(--lions-gold);
+    --cross-red:    var(--lions-red);
+
+    --black:        var(--lions-black);
+    --dark:         var(--lions-dark);
+    --dark-card:    var(--lions-dark-card);
+    --darker:       var(--lions-darker);
+    --white:        var(--lions-white);
+
+    --gray-light:   var(--lions-gray-light);
+    --gray-mid:     var(--lions-gray-text);   /* #5E5E5E, see note above */
+    --gray-dark:    var(--lions-gray-dark);
+    --gray-text:    var(--lions-gray-mid);    /* #A4A4A4, see note above */
+    --gray-border:  var(--lions-gray-border);
+
+    --font-heading: var(--lions-font-heading);
+    --font-body:    var(--lions-font-body);
+}
+
+/* ----------------------------------------------------------------------------
+   Reset. Ported.
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+body {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--lions-ink);
+    background: var(--black);
+    line-height: 1.5;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    /* Image protection: prevent selection, drag, and long-press save. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+}
+
+a    { text-decoration: none; color: inherit; }
+ul   { list-style: none; }
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Page background. Hero pattern A, which is the canonical one: Royal Blue page
+   with dark chrome above it. Matches the home, about, and who-we-are pages. */
+.page-bg {
+    background-color: var(--blue-primary);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+}
+@media (min-width: 1536px) { .container { max-width: 1280px; } }
+
+/* ----------------------------------------------------------------------------
+   Site header. Ported.
+   Mobile order:  [hamburger] [logo] [Lions Sports Club]
+   Desktop order: [logo] [Lions Sports Club] --- [nav]
+   -------------------------------------------------------------------------- */
+
+.site-header {
+    background: var(--dark);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.header-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+/* Derived from /media/LSC_Head_Only.png on the marketing site, the canonical
+   head-only mark at 2862x2603, aspect 1.100.
+
+   NOT lsc_head_160.png. That file is a different lockup: the same head PLUS the
+   LSC wordmark and tagline beneath it, at aspect 0.925. Dropped into this box
+   with background-size:contain it renders the head at roughly 60 percent of the
+   canon size with an illegible line of text under it, which is why the
+   fundraising header looked smaller than the marketing header. Sizing rules
+   were identical; only the asset differed. */
+.logo {
+    width: 48px;
+    height: 48px;
+    background: transparent url('/media/lsc_head_128.png') center / contain no-repeat;
+    -webkit-user-select: none; user-select: none;
+    -webkit-user-drag: none;   user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+    position: relative;
+    overflow: hidden;
+}
+@media (min-width: 768px)  { .logo { width: 56px; height: 56px; } }
+@media (min-width: 1280px) { .logo { width: 64px; height: 64px; } }
+
+/* Defensive overlay layers interfere with right-click save and screen-capture
+   attempts on the logo. Same pattern site-wide. The 2 percent sliver is the
+   only gradient permitted anywhere on an LSC property, and it is functional
+   rather than decorative. */
+.logo::before,
+.logo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.logo::before { background: transparent; z-index: 10; }
+.logo::after  {
+    background: linear-gradient(45deg, transparent 49%, rgba(0, 89, 169, 0.02) 50%, transparent 51%);
+    z-index: 5;
+}
+
+.header-name {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 600;
+    color: #F7F7F7;
+}
+@media (min-width: 768px) { .header-name { font-size: 22px; } }
+.header-name a { color: inherit; text-decoration: none; }
+
+/* ----------------------------------------------------------------------------
+   Primary nav. Ported. Horizontal at >=1024px, hamburger drawer below.
+   -------------------------------------------------------------------------- */
+
+.primary-nav {
+    display: none;
+    margin-left: auto;
+}
+.primary-nav ul {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+}
+@media (min-width: 1024px) { .primary-nav { display: flex; } }
+
+.nav-link {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+    padding: 10px 0;
+    display: inline-block;
+}
+.nav-link:hover,
+.nav-link:focus-visible {
+    color: var(--white);
+    outline: none;
+}
+.nav-link[aria-current="page"] { color: var(--white); }
+.nav-link[aria-current="page"]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background: var(--blue-light);
+}
+
+.nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: var(--white);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+.nav-toggle:hover,
+.nav-toggle:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.35);
+    outline: none;
+}
+.nav-toggle svg { width: 22px; height: 22px; }
+@media (min-width: 1024px) { .nav-toggle { display: none; } }
+
+.mobile-nav {
+    background: var(--dark);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease-out;
+}
+.mobile-nav.is-open { max-height: 85vh; overflow-y: auto; }
+.mobile-nav[hidden] { display: none; }
+@media (min-width: 1024px) { .mobile-nav { display: none !important; } }
+
+.mobile-nav ul { padding: 8px 0; }
+.mobile-nav-link {
+    display: block;
+    padding: 14px 24px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.mobile-nav-link:hover,
+.mobile-nav-link:focus-visible {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--white);
+    outline: none;
+}
+.mobile-nav-link[aria-current="page"] {
+    color: var(--white);
+    border-left-color: var(--blue-light);
+    background: rgba(0, 89, 169, 0.12);
+}
+
+/* Gold pill CTA. Exactly one in the nav at a time, or the hierarchy collapses.
+   On the marketing site that slot is Shop. Here it is the link back to
+   lionssports.club, which is the only outbound destination on this property. */
+.nav-link.nav-link--cta {
+    background: var(--gold);
+    color: var(--black);
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.nav-link.nav-link--cta:hover,
+.nav-link.nav-link--cta:focus-visible {
+    background: #e8c45c;
+    color: var(--black);
+    transform: translateY(-1px);
+    outline: none;
+}
+.nav-link.nav-link--cta[aria-current="page"]::after,
+.nav-link.nav-link--cta::after {
+    display: none;
+}
+.mobile-nav-link.mobile-nav-link--cta {
+    background: var(--gold);
+    color: var(--black);
+    border-left: 3px solid var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-top: 8px;
+}
+
+/* ----------------------------------------------------------------------------
+   DOCUMENTED DEVIATION from the ported nav breakpoint.
+
+   site.css switches the primary nav horizontal at 1024px. This property
+   carries the same seven items PLUS the identity controls, which do not fit
+   on one line at that width: the wordmark and the auth controls wrap to a
+   second line and the header reads as broken.
+
+   The boundary was 1280px, chosen by eye. Measured on 2026-08-02 it is wrong.
+   The row's children are logo 64, wordmark 189, nav 745 and identity controls
+   197, plus four 14px gaps, the 24px margin before the identity controls and
+   48px of padding. That is 1285px of content inside a rail capped at 1160, so
+   the identity controls broke out of the rail at EVERY desktop width, and
+   because the rail is centred the break-out crossed the viewport edge below
+   1410px. A 1280px laptop scrolled sideways by 65px and a 1366 by 25.
+
+   Two numbers move as a pair. The drawer now runs to 1299, and above it the
+   header rail widens to 1340 so the row it has to hold actually fits inside
+   it. Only the header rail widens; page content stays on the canon 1160.
+
+   Rationale is user-facing, not preference, which is what the deviation policy
+   in design-system-governance.md requires. If the marketing site ever adopts
+   an auth slot, it will need the same change and this becomes a port again.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 1024px) and (max-width: 1299px) {
+    .primary-nav { display: none; }
+    .nav-toggle  { display: inline-flex; }
+    .mobile-nav  { display: block !important; }
+}
+
+/* The wordmark and identity controls are single-line labels. Allowing them to
+   wrap is what produced the two-line header this deviation exists to avoid. */
+.header-name a,
+.auth-link,
+.auth-signout { white-space: nowrap; }
+
+/* ----------------------------------------------------------------------------
+   Dropdown navigation. Ported.
+   Flat by design: a solid dark panel with a hairline border and a gold top
+   edge, no shadow. Opens on hover for a mouse, on click or focus for touch and
+   keyboard, which lions-nav.js handles.
+   -------------------------------------------------------------------------- */
+
+.has-dropdown { position: relative; }
+
+/* The global .primary-nav ul rule is display:flex; this panel is a nested ul
+   and must stack. Higher specificity wins the override. */
+.primary-nav ul.dropdown-menu { display: block; gap: 0; }
+
+.nav-dropdown-toggle {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 10px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+.nav-dropdown-toggle:hover,
+.nav-dropdown-toggle:focus-visible,
+.has-dropdown:hover .nav-dropdown-toggle,
+.nav-dropdown-toggle[aria-expanded="true"],
+.nav-dropdown-toggle.is-active-trail {
+    color: var(--white);
+    outline: none;
+}
+
+.nav-caret { width: 11px; height: 11px; transition: transform 0.2s; }
+.has-dropdown:hover .nav-caret,
+.nav-dropdown-toggle[aria-expanded="true"] .nav-caret { transform: rotate(180deg); }
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    min-width: 224px;
+    background: var(--dark-card);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-top: 2px solid var(--gold);
+    border-radius: 0 0 6px 6px;
+    padding: 8px 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    z-index: 60;
+}
+.has-dropdown:hover .dropdown-menu,
+.has-dropdown:focus-within .dropdown-menu,
+.dropdown-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-link {
+    display: block;
+    padding: 11px 22px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    border-left: 3px solid transparent;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.dropdown-link:hover,
+.dropdown-link:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--white);
+    outline: none;
+}
+.dropdown-link[aria-current="page"] {
+    color: var(--white);
+    border-left-color: var(--blue-light);
+    background: rgba(0, 89, 169, 0.16);
+}
+
+.mobile-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 24px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-left: 3px solid transparent;
+    transition: background 0.2s, color 0.2s;
+}
+.mobile-dropdown-toggle:hover { background: rgba(255, 255, 255, 0.04); color: var(--white); }
+.mobile-dropdown-toggle.is-active-trail { color: var(--white); border-left-color: var(--blue-light); }
+.mobile-dropdown-toggle[aria-expanded="true"] .nav-caret { transform: rotate(180deg); }
+
+.mobile-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    background: rgba(0, 0, 0, 0.22);
+}
+.mobile-submenu.is-open { max-height: 320px; }
+.mobile-submenu a {
+    display: block;
+    padding: 13px 24px 13px 40px;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-left: 3px solid transparent;
+    transition: background 0.2s, color 0.2s;
+}
+.mobile-submenu a:hover { background: rgba(255, 255, 255, 0.04); color: var(--white); }
+.mobile-submenu a[aria-current="page"] {
+    color: var(--white);
+    border-left-color: var(--blue-light);
+    background: rgba(0, 89, 169, 0.12);
+}
+
+/* ----------------------------------------------------------------------------
+   Auth slot. The only part of the header that is not on the marketing site.
+
+   This is the role layer the brand alignment audit describes: the chrome is
+   identical for every visitor, and only the identity-dependent pieces are
+   client-side, because roles resolve from Firebase at runtime. Keeping it in
+   its own block means the ported rules above stay diffable.
+   -------------------------------------------------------------------------- */
+
+/* Below 1024px the primary nav is hidden and its margin-left:auto goes with
+   it, so the slot takes over pushing itself to the right edge. Above 1024px it
+   sits a fixed distance after the last nav item. */
+.auth-slot {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+}
+@media (min-width: 1024px) { .auth-slot { margin-left: 24px; } }
+
+.auth-link,
+.auth-signout {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    padding: 10px 0;
+    transition: color 0.2s;
+}
+.auth-link:hover,
+.auth-link:focus-visible,
+.auth-signout:hover,
+.auth-signout:focus-visible {
+    color: var(--white);
+    outline: none;
+}
+.auth-link { text-decoration: none; }
+.auth-link[aria-current="page"] { color: var(--white); }
+
+.auth-link:focus-visible,
+.auth-signout:focus-visible {
+    outline: var(--lions-focus-ring-on-dark);
+    outline-offset: var(--lions-focus-offset);
+}
+
+/* ----------------------------------------------------------------------------
+   DOCUMENTED DEVIATION, second part. Identity controls move into the drawer.
+
+   .header-inner is a flex row holding the burger, the logo, the wordmark and
+   the identity controls. white-space: nowrap on the last two, added above to
+   stop the two-line header in the drawer band, pins the row's min-content
+   width at roughly 510px. A flex item will not shrink below min-content, so
+   below that width the row simply overhangs and the whole page scrolls
+   sideways. Measured against the shipped signup page on 2026-08-02, signed in:
+   150px of overhang at 360, 120 at 390, 80 at 430, 30 at 480, clear at 540.
+   Every volunteer opening the emailed link on a phone saw it.
+
+   The boundary is the one the deviation above already uses, so there is one
+   pair of numbers to reason about rather than two. At 1300 and up the controls
+   sit in the header, as the brand alignment audit specifies. Below it the drawer is already the
+   navigation, so they belong in the drawer too, and the header row falls back
+   to burger, logo, wordmark, which is the arrangement the marketing canon uses
+   on a phone. ADR-001 holds: the chrome is identical to the canon at every
+   width where the canon has an equivalent, and the canon has no auth slot.
+
+   The cost is that signing out is two taps on a phone rather than one. That is
+   the right trade against a page that will not sit still under a thumb.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1299px) {
+    .auth-slot { display: none; }
+}
+
+/* The rail that holds the header row, and only that row. The canon caps every
+   container at 1160, which is correct for page content and 125px short of what
+   this header contains. See the measurement in the deviation note above. */
+@media (min-width: 1300px) {
+    .site-header .header-inner { max-width: 1340px; }
+}
+
+/* Belt and braces. The drawer is already display:none at this width, so this
+   rule changes nothing today. It is here so that a later change to the drawer's
+   own display rules cannot leak a second set of identity controls onto a
+   desktop header that already has them. */
+@media (min-width: 1300px) {
+    .mobile-auth { display: none; }
+}
+
+.mobile-auth {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Sign out is a button, not a link, because it performs an action rather than
+   navigating. These rules strip the user-agent button styling so it reads as
+   one more row in the drawer. Everything else, including the font, comes from
+   .mobile-nav-link, which it also carries. */
+.mobile-auth-signout {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+}
+
+/* ----------------------------------------------------------------------------
+   Section heading. Ported.
+   -------------------------------------------------------------------------- */
+
+.section-heading {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    margin-bottom: 40px;
+}
+@media (min-width: 768px)  { .section-heading { font-size: 38px; } }
+@media (min-width: 1280px) { .section-heading { font-size: 44px; } }
+@media (min-width: 1536px) { .section-heading { font-size: 48px; } }
+
+.section-heading .hr-accent {
+    display: block;
+    width: 50px;
+    height: 2px;
+    margin: 16px auto 0;
+    border: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Social section. Ported. Required on every page by the governance document.
+   -------------------------------------------------------------------------- */
+
+.social-section {
+    background: var(--black);
+    padding: 56px 0;
+    text-align: center;
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.social-links a {
+    color: var(--white);
+    margin: 0 12px 8px;
+    transition: color 0.2s;
+    display: inline-flex;
+}
+.social-links a:hover { color: var(--gray-light); }
+.social-links svg { width: 40px; height: 40px; }
+
+@media (min-width: 1024px) {
+    .social-links a { margin: 0 20px; }
+    .social-links a svg { width: 48px; height: 48px; }
+}
+
+/* ----------------------------------------------------------------------------
+   Footer. Ported.
+   -------------------------------------------------------------------------- */
+
+.footer-section {
+    background: var(--blue-primary);
+    padding: 64px 0;
+    text-align: center;
+}
+@media (max-width: 767px) { .footer-section { padding: 48px 0; } }
+
+.footer-copyright {
+    color: rgb(218, 218, 225);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.footer-copyright a { color: rgba(255, 255, 255, 0.9); }
+
+/* ============================================================================
+   Application surfaces
+   ----------------------------------------------------------------------------
+   Below this line is page-specific styling in the two-tier sense: it does not
+   exist on the marketing site because the marketing site has no forms. It sits
+   on the Royal Blue page background established above.
+   ============================================================================ */
+
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 72px;
+}
+
+.page-head {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.page-head h1 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--white);
+}
+@media (min-width: 768px) { .page-head h1 { font-size: 38px; } }
+
+.page-head .hr-accent {
+    display: block;
+    width: 50px;
+    height: 2px;
+    margin: 16px auto 0;
+    border: none;
+    background: var(--gold);
+}
+
+.page-head p {
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 16px;
+}
+
+.identity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.identity strong {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    color: var(--white);
+}
+
+/* Only one top-level view is present at a time. Views are toggled rather than
+   re-rendered, so no script rewrites the document body. */
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* -- Card ---------------------------------------------------------------- */
+
+.card {
+    background: var(--white);
+    border-radius: var(--lions-radius);
+    padding: 32px 24px;
+}
+
+.card + .card { margin-top: 24px; }
+
+.card h2 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--blue-primary);
+    margin-bottom: 24px;
+}
+
+.card p {
+    color: var(--gray-mid);
+    font-size: 15px;
+    margin-bottom: 16px;
+}
+.card p:last-child { margin-bottom: 0; }
+
+/* -- Fields --------------------------------------------------------------- */
+
+.field { margin-bottom: 24px; }
+.field:last-child { margin-bottom: 0; }
+
+.field label,
+.field .field-label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue-primary);
+    margin-bottom: 8px;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    min-height: var(--lions-tap-target);
+    padding: 12px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--lions-ink);
+    background: var(--white);
+    border: 2px solid var(--gray-border);
+    border-radius: var(--lions-radius);
+}
+
+.field input:focus,
+.field select:focus {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+    border-color: var(--blue-primary);
+}
+
+/* A value the volunteer cannot change is rendered as text, not as a disabled
+   input. A disabled input looks like a control that is temporarily unavailable
+   and invites a support call asking why it will not accept typing. */
+.field-value {
+    font-size: 16px;
+    color: var(--lions-ink);
+    padding: 8px 0;
+    word-break: break-word;
+}
+
+.field-value .chip {
+    margin-left: 8px;
+    vertical-align: 1px;
+}
+
+.field-note {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--gray-mid);
+}
+.field-note a { color: var(--blue-primary); font-weight: 600; }
+
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+.field-grid .field { margin-bottom: 0; }
+
+.divider {
+    border: 0;
+    border-top: 1px solid var(--gray-light);
+    margin: 32px 0;
+}
+
+/* -- Buttons -------------------------------------------------------------- */
+
+.btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--lions-tap-target);
+    padding: 12px 32px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--white);
+    background: var(--blue-primary);
+    border: 2px solid var(--blue-primary);
+    border-radius: var(--lions-radius);
+    cursor: pointer;
+}
+.btn:hover  { background: var(--blue-hover);  border-color: var(--blue-hover); }
+.btn:active { background: var(--blue-active); border-color: var(--blue-active); }
+.btn:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+}
+.btn:disabled {
+    background: var(--gray-text);
+    border-color: var(--gray-text);
+    cursor: not-allowed;
+}
+
+.btn-secondary { color: var(--blue-primary); background: transparent; }
+.btn-secondary:hover { color: var(--white); background: var(--blue-primary); }
+.btn-secondary:disabled {
+    color: var(--gray-text);
+    background: transparent;
+    border-color: var(--gray-text);
+}
+
+/* -- Banners and chips ---------------------------------------------------- */
+
+.banner {
+    border-radius: var(--lions-radius);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 15px;
+}
+.banner:last-child { margin-bottom: 0; }
+
+.banner.is-success {
+    background: var(--lions-success-bg);
+    border: 1px solid var(--lions-success);
+    color: var(--lions-success);
+}
+.banner.is-warning {
+    background: var(--lions-warning-bg);
+    border: 1px solid var(--lions-warning);
+    color: var(--lions-warning);
+}
+.banner.is-error {
+    background: var(--lions-error-bg);
+    border: 1px solid var(--lions-error);
+    color: var(--lions-error);
+}
+
+.chip {
+    display: inline-block;
+    padding: 4px 12px;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: var(--lions-radius-sm);
+    background: var(--lions-blue-wash);
+    border: 1px solid var(--lions-blue-edge);
+    color: var(--blue-primary);
+}
+
+/* On the Royal Blue page background the default chip has no contrast, so the
+   identity chip inverts to a gold outline instead. */
+.identity .chip {
+    background: transparent;
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.chip.is-valid {
+    background: var(--lions-success-bg);
+    border-color: var(--lions-success);
+    color: var(--lions-success);
+}
+.chip.is-expiring {
+    background: var(--lions-warning-bg);
+    border-color: var(--lions-warning);
+    color: var(--lions-warning);
+}
+.chip.is-expired {
+    background: var(--lions-error-bg);
+    border-color: var(--lions-error);
+    color: var(--lions-error);
+}
+
+/* -- Working indicator ---------------------------------------------------- */
+
+.loading {
+    text-align: center;
+    padding: 64px 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto 24px;
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 900ms linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation: none;
+        border-top-color: rgba(255, 255, 255, 0.25);
+        border-right-color: var(--white);
+        border-bottom-color: var(--white);
+    }
+}
+
+/* -- Narrow viewports ----------------------------------------------------- */
+
+@media (max-width: 560px) {
+    .page { padding: 32px 16px 48px; }
+    .card { padding: 24px 16px; }
+    .field-grid { grid-template-columns: 1fr; }
+    .btn-row .btn { width: 100%; }
+}

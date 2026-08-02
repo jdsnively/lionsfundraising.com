@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Event Signup - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=2">
+    <link rel="stylesheet" href="/css/lions-signup.css?v=1">
+</head>
+
+<body>
+<div class="page-bg">
+
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         which is the single definition on this property and mirrors
+         $nav_items in /includes/header.php on lionssports.club. Delete
+         this element and that file when the shared PHP include lands. -->
+    <header id="site-header" data-nav="signup"></header>
+
+    <main class="page page--wide">
+
+        <!-- Resolving the session ------------------------------------------ -->
+        <section id="view-loading" class="view is-active">
+            <div class="loading">
+                <div class="spinner" role="status" aria-label="Loading"></div>
+                <p>Loading the season.</p>
+            </div>
+        </section>
+
+        <!-- Signed in but not usable --------------------------------------- -->
+        <section id="view-problem" class="view">
+            <div class="page-head">
+                <h1>We could not open the signup sheet</h1>
+                <hr class="hr-accent">
+            </div>
+            <div class="card">
+                <p id="problem-message">Something went wrong.</p>
+                <p>Email <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>
+                   and we will sort it out.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-secondary" id="problem-signout">Sign out</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- No events published yet ----------------------------------------- -->
+        <section id="view-empty" class="view">
+            <div class="page-head">
+                <h1>Event Signup</h1>
+                <hr class="hr-accent">
+            </div>
+            <div class="card">
+                <p>There are no events open for signup yet. We will email you when the
+                   season opens.</p>
+                <p>Questions:
+                   <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>.</p>
+            </div>
+        </section>
+
+        <!-- The season ------------------------------------------------------ -->
+        <section id="view-season" class="view">
+
+            <div class="page-head">
+                <h1>Event Signup</h1>
+                <hr class="hr-accent">
+                <p id="season-intro"></p>
+                <p class="identity">
+                    <strong id="identity-name"></strong>
+                    <span class="chip" id="identity-permit"></span>
+                </p>
+            </div>
+
+            <div id="season-banner" class="banner" hidden role="status"></div>
+
+            <form id="season-form" novalidate>
+
+                <div id="event-list"></div>
+
+                <!-- Commitment acknowledgment. Presented once per submission at
+                     declaration rather than at standby, because that is where the
+                     obligation begins. Text and version come from
+                     signup-config.js so the exact wording each volunteer agreed
+                     to is recorded alongside the timestamp. -->
+                <section class="card" id="commitment-card" hidden>
+                    <h2>Before you submit</h2>
+                    <p id="commitment-text"></p>
+                    <label class="check-commit">
+                        <input type="checkbox" id="commitment-ack">
+                        <span id="commitment-label"></span>
+                    </label>
+                    <div class="btn-row">
+                        <button type="submit" class="btn" id="submit-availability">Submit availability</button>
+                        <button type="button" class="btn btn-secondary" id="reset-selection">Clear selections</button>
+                    </div>
+                </section>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ======================================================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
+</div><!-- /page-bg -->
+
+<script src="/js/lions-log.js?v=1"></script>
+<script src="/js/lions-nav.js?v=1" defer></script>
+<script src="/relationship-config.js?v=3"></script>
+<script src="/signup/signup-config.js?v=1"></script>
+
+<script type="module">
+/**
+ * signup/index.html
+ *
+ * The volunteer-facing half of the event signup sheet. Replaces the Evite
+ * "Lucas Oil Stadium Events" sheet. The administrator surface is
+ * signup/admin.js and unlocks inline on this same URL.
+ *
+ * Model, from Event-Signup-v1-Build-Spec.md revision 2: request and assign,
+ * not first come first served. A volunteer declares availability and Jason
+ * assigns. Nothing here claims a slot, so there is no contention on any
+ * document and no capacity transaction. Capacity survives only as a target
+ * shown on the assignment screen.
+ *
+ * WHAT THE SECURITY RULES ALLOW, AND WHY THE PAYLOAD LOOKS LIKE THIS
+ *
+ *   allow create: if isAuthenticated()
+ *                 && incoming().userEmail == authEmail()
+ *                 && incoming().keys().hasAll(['userEmail','shiftKey','groupKey','createdAt'])
+ *                 && incoming().keys().size() < 25
+ *                 && !incoming().keys().hasAny(['adminOverride','attended','noShow']);
+ *
+ * The document shape in the build spec carries 28 fields. Writing that shape
+ * would be rejected in full by the size guard, and the rejection would look
+ * like a permissions problem rather than a field-count problem. The create
+ * payload below is deliberately 20 keys: everything a volunteer legitimately
+ * sets, and nothing an administrator owns. assignedAt, assignedBy, notifiedAt,
+ * isStandLead, workShiftId, remindersSent, and notificationsOptOut are added
+ * by the assignment surface and read with defaults until then.
+ *
+ * Read Lions-Events is open to any authenticated user, so the season loads for
+ * every signed-in volunteer regardless of role.
+ */
+
+import { lionsAuth, initializeProtectedPage } from '/auth/lions-auth.js';
+
+// Must match the version lions-auth.js imports. A second version loads a
+// second copy of the SDK and a second set of module-level instances.
+import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+    getFirestore,
+    collection,
+    collectionGroup,
+    query,
+    where,
+    limit,
+    getDocs,
+    addDoc,
+    deleteDoc,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const log = window.LIONS_LOG || { log() {}, warn() {}, error(...a) { console.error(...a); } };
+const CFG = window.SIGNUP_CONFIG;
+const SUPPORT = 'fundraising@lionssports.club';
+
+const db = getFirestore(getApp());
+
+/** Session state, populated by start(). */
+let me = null;          // { email, name, record, tier, ref }
+let season = '';
+let events = [];        // published events for the season, date ascending
+let mySignups = new Map(); // key `${eventId}|${shiftKey}` -> { id, ref, state, groupKey }
+
+// ---------------------------------------------------------------------------
+// Views
+// ---------------------------------------------------------------------------
+
+const views = {
+    loading: document.getElementById('view-loading'),
+    problem: document.getElementById('view-problem'),
+    empty:   document.getElementById('view-empty'),
+    season:  document.getElementById('view-season')
+};
+
+function show(name) {
+    Object.keys(views).forEach(k => views[k].classList.toggle('is-active', k === name));
+}
+
+function fail(message) {
+    document.getElementById('problem-message').textContent = message;
+    show('problem');
+}
+
+function announce(message, kind) {
+    const b = document.getElementById('season-banner');
+    b.textContent = message;
+    b.className = 'banner is-' + kind;
+    b.hidden = false;
+    b.scrollIntoView({ block: 'nearest' });
+}
+
+function clearBanner() {
+    const b = document.getElementById('season-banner');
+    b.hidden = true;
+    b.textContent = '';
+}
+
+// ---------------------------------------------------------------------------
+// Dates
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads a stored ISO date into a local date at midnight.
+ *
+ * Passing a bare YYYY-MM-DD to the Date constructor parses it as UTC, which
+ * reports the previous day for anyone west of Greenwich. Indianapolis is four
+ * hours behind in summer, so every event would appear to fall a day early.
+ * The same trap is live in signup-config.js licenseStatusFor; see the session
+ * handoff.
+ */
+function toLocalDate(value) {
+    if (!value) { return null; }
+    if (typeof value.toDate === 'function') {
+        const d = value.toDate();
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    const m = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('en-US',
+        { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatDateShort(date) {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatTime(hhmm) {
+    const m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) { return ''; }
+    const h = Number(m[1]);
+    const suffix = h >= 12 ? 'pm' : 'am';
+    const hour = h % 12 === 0 ? 12 : h % 12;
+    return hour + (m[2] === '00' ? '' : ':' + m[2]) + suffix;
+}
+
+// ---------------------------------------------------------------------------
+// Event grouping
+// ---------------------------------------------------------------------------
+
+/**
+ * Collapses a multi-day run into one entry.
+ *
+ * The 2026-2027 contract carries fourteen such runs, including a six-day FDIC
+ * block and a five-day Combine. Listing 57 rows flat buries the eight single
+ * days that most volunteers actually care about.
+ */
+function groupIntoRuns(list) {
+    const runs = [];
+    const bySeries = new Map();
+
+    list.forEach(ev => {
+        if (!ev.series) {
+            runs.push({ key: ev.id, series: null, events: [ev] });
+            return;
+        }
+        if (!bySeries.has(ev.series)) {
+            const run = { key: 'series:' + ev.series, series: ev.series, events: [] };
+            bySeries.set(ev.series, run);
+            runs.push(run);
+        }
+        bySeries.get(ev.series).events.push(ev);
+    });
+
+    return runs;
+}
+
+/**
+ * A shift is open for declaration when the event has a real date, that date is
+ * in the future, and the event is published.
+ *
+ * dateStatus carries a fourth value the build spec does not document:
+ * "conflict", used on five events where the contract's weekday labels and
+ * calendar dates disagree. Those are not opened, because collecting a
+ * commitment against a date that is probably wrong is worse than collecting
+ * nothing.
+ */
+function isOpen(ev) {
+    if (ev.status && ev.status !== 'published') { return false; }
+    if (ev.dateStatus === 'tba' || ev.dateStatus === 'conflict') { return false; }
+    const d = toLocalDate(ev.eventDate);
+    if (!d) { return false; }
+    return CFG.daysUntil(d) >= 0;
+}
+
+function closedReason(ev) {
+    if (ev.dateStatus === 'tba') {
+        return ev.dateWindow ? 'Date not set, expected ' + ev.dateWindow : 'Date not set yet';
+    }
+    if (ev.dateStatus === 'conflict') {
+        return 'Date being confirmed with Sodexo';
+    }
+    if (ev.status && ev.status !== 'published') {
+        return 'Not open yet';
+    }
+    return 'This date has passed';
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+function stateChip(state) {
+    const map = {
+        available: ['Available', 'is-available'],
+        scheduled: ['Scheduled', 'is-valid'],
+        standby:   ['Standby',   'is-expiring'],
+        released:  ['Released',  'is-released']
+    };
+    const entry = map[state];
+    return entry ? '<span class="chip ' + entry[1] + '">' + entry[0] + '</span>' : '';
+}
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/**
+ * Builds one shift row.
+ *
+ * A volunteer who already holds a signup for this shift sees its state and,
+ * where the cutoff allows, a cancel control. A shift they have not declared
+ * for shows a checkbox. The two are mutually exclusive: an existing
+ * declaration is changed by cancelling it, not by unticking a box, so that a
+ * stray click cannot silently withdraw a commitment.
+ */
+function shiftRow(ev, shift) {
+    const key = ev.id + '|' + shift.key;
+    const existing = mySignups.get(key);
+    const times = shift.startTime
+        ? formatTime(shift.startTime) + ' to ' + formatTime(shift.endTime)
+        : '';
+    const label = shift.label + (times ? ' <span class="shift-times">' + times + '</span>' : '');
+
+    if (existing) {
+        const eventDate = toLocalDate(ev.eventDate);
+        const canCancel = eventDate && CFG.canSelfCancel(eventDate)
+                       && existing.state !== 'released';
+        return '<div class="shift-row is-declared">'
+             + '<div class="shift-label">' + label + '</div>'
+             + '<div class="shift-state">' + stateChip(existing.state)
+             + (canCancel
+                 ? ' <button type="button" class="link-action" data-cancel="' + escapeHtml(key) + '">Cancel</button>'
+                 : ' <span class="shift-note">' + (existing.state === 'released'
+                     ? ''
+                     : 'Contact us to change') + '</span>')
+             + '</div></div>';
+    }
+
+    return '<div class="shift-row">'
+         + '<label class="shift-check">'
+         + '<input type="checkbox" data-event="' + escapeHtml(ev.id) + '" data-shift="' + escapeHtml(shift.key) + '">'
+         + '<span class="shift-label">' + label + '</span>'
+         + '</label></div>';
+}
+
+function eventBlock(ev) {
+    const d = toLocalDate(ev.eventDate);
+    const open = isOpen(ev);
+    const shifts = Array.isArray(ev.shifts) && ev.shifts.length
+        ? ev.shifts
+        : CFG.shiftsFor(!!ev.splitShifts);
+
+    let head = '<div class="event-head">'
+             + '<div class="event-when">' + (d ? formatDateShort(d) : 'Date TBA') + '</div>'
+             + '<div class="event-name">' + escapeHtml(ev.name);
+    if (ev.seriesOf > 1) {
+        head += ' <span class="event-day">Day ' + ev.seriesDay + ' of ' + ev.seriesOf + '</span>';
+    }
+    head += '</div></div>';
+
+    if (!open) {
+        return '<div class="event-block is-closed">' + head
+             + '<div class="event-closed">' + escapeHtml(closedReason(ev)) + '</div></div>';
+    }
+
+    let body = '';
+    if (ev.dateStatus === 'either' && Array.isArray(ev.dateAlternatives) && ev.dateAlternatives.length > 1) {
+        body += '<p class="event-alt">The contract gives two possible dates. Marking '
+              + 'yourself available holds both until it is confirmed.</p>';
+    }
+    if (ev.timesStatus === 'tba') {
+        body += '<p class="event-alt">Shift times are not final yet.</p>';
+    }
+
+    body += shifts.map(s => shiftRow(ev, s)).join('');
+
+    return '<div class="event-block">' + head + body + '</div>';
+}
+
+function renderSeason() {
+    const runs = groupIntoRuns(events);
+
+    const html = runs.map(run => {
+        if (!run.series) {
+            return '<section class="card event-card">' + eventBlock(run.events[0]) + '</section>';
+        }
+
+        const openCount = run.events.filter(isOpen).length;
+        const first = toLocalDate(run.events[0].eventDate);
+        const last  = toLocalDate(run.events[run.events.length - 1].eventDate);
+        const span  = first && last
+            ? formatDateShort(first) + ' to ' + formatDateShort(last)
+            : 'Dates to be confirmed';
+
+        return '<section class="card event-card">'
+             + '<details' + (openCount ? '' : '') + '>'
+             + '<summary class="run-summary">'
+             + '<span class="run-name">' + escapeHtml(run.series) + '</span>'
+             + '<span class="run-span">' + span + '</span>'
+             + '<span class="run-count">' + run.events.length + ' days'
+             + (openCount === 0 ? ', none open' : '') + '</span>'
+             + '</summary>'
+             + run.events.map(eventBlock).join('')
+             + '</details></section>';
+    }).join('');
+
+    document.getElementById('event-list').innerHTML = html;
+
+    document.getElementById('commitment-text').textContent = CFG.COMMITMENT_TEXT;
+    document.getElementById('commitment-label').textContent = CFG.COMMITMENT_CHECKBOX;
+
+    updateCommitmentVisibility();
+}
+
+/**
+ * The commitment card appears only once something is ticked. Showing a
+ * consent control before there is anything to consent to trains people to
+ * tick it without reading.
+ */
+function updateCommitmentVisibility() {
+    const anyChecked = document.querySelectorAll('#event-list input[type="checkbox"]:checked').length > 0;
+    document.getElementById('commitment-card').hidden = !anyChecked;
+}
+
+// ---------------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------------
+
+async function loadRoster(email) {
+    const snap = await getDocs(query(
+        collection(db, CFG.COLLECTIONS.USERS),
+        where('email', '==', String(email || '').trim().toLowerCase()),
+        limit(1)
+    ));
+    return snap.empty ? null : { ref: snap.docs[0].ref, id: snap.docs[0].id, data: snap.docs[0].data() };
+}
+
+async function loadEvents() {
+    const snap = await getDocs(query(
+        collection(db, CFG.COLLECTIONS.EVENTS),
+        where('season', '==', season)
+    ));
+
+    const list = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+
+    // Sorted client-side rather than with orderBy so that events carrying a
+    // null eventDate, the four TBA entries on the 2026-2027 contract, sort to
+    // the end instead of being dropped by the index.
+    list.sort((a, b) => {
+        const da = toLocalDate(a.eventDate);
+        const dbb = toLocalDate(b.eventDate);
+        if (!da && !dbb) { return String(a.name || '').localeCompare(String(b.name || '')); }
+        if (!da) { return 1; }
+        if (!dbb) { return -1; }
+        return da - dbb;
+    });
+
+    return list;
+}
+
+/**
+ * Loads this volunteer's existing declarations across the season.
+ *
+ * A collection group query reads every signups subcollection in one round
+ * trip rather than one read per event, which on a 57 event season is the
+ * difference between 1 and 57. It needs a composite index on
+ * (userEmail, season); if that index is missing Firestore throws with a
+ * console link to create it, and the fallback below keeps the page usable in
+ * the meantime.
+ */
+async function loadMySignups() {
+    const map = new Map();
+
+    try {
+        const snap = await getDocs(query(
+            collectionGroup(db, CFG.COLLECTIONS.SIGNUPS),
+            where('userEmail', '==', me.email),
+            where('season', '==', season)
+        ));
+        snap.docs.forEach(d => {
+            const data = d.data();
+            map.set(data.eventId + '|' + data.shiftKey, {
+                id: d.id, ref: d.ref, state: data.state, groupKey: data.groupKey
+            });
+        });
+        return map;
+
+    } catch (error) {
+        log.warn('Collection group query unavailable, falling back to per event reads.', error);
+    }
+
+    // Fallback. Slower, but it does not depend on an index existing.
+    for (const ev of events) {
+        try {
+            const snap = await getDocs(query(
+                collection(db, CFG.COLLECTIONS.EVENTS, ev.id, CFG.COLLECTIONS.SIGNUPS),
+                where('userEmail', '==', me.email)
+            ));
+            snap.docs.forEach(d => {
+                const data = d.data();
+                map.set(ev.id + '|' + data.shiftKey, {
+                    id: d.id, ref: d.ref, state: data.state, groupKey: data.groupKey
+                });
+            });
+        } catch (error) {
+            log.error('Could not read declarations for ' + ev.id, error);
+        }
+    }
+
+    return map;
+}
+
+async function start() {
+    const state = await initializeProtectedPage('signup');
+
+    if (state.needsAuth) {
+        window.location.replace('/auth/signin.html?next=%2Fsignup');
+        return;
+    }
+
+    if (!state.authorized) {
+        fail('Your sign in worked, but we could not match it to a Lions Sports Club '
+           + 'record. That usually means the address you used is not the one we have '
+           + 'on file.');
+        return;
+    }
+
+    let roster;
+    try {
+        roster = await loadRoster(state.user.email);
+    } catch (error) {
+        log.error('Roster lookup failed on the signup page.', error);
+        fail('We could not load your record just now. Refresh the page, and if it '
+           + 'keeps happening let us know.');
+        return;
+    }
+
+    if (!roster) {
+        fail('Your sign in worked, but there is no Lions Sports Club record for that '
+           + 'address yet.');
+        return;
+    }
+
+    // Archived records are excluded from staffing entirely, so the sheet is not
+    // shown to them at all rather than shown and then refused on submit.
+    if (!CFG.isStaffable(roster.data)) {
+        fail('Your record is archived, so the signup sheet is closed to you. If that '
+           + 'is wrong, let us know and we will reactivate it.');
+        return;
+    }
+
+    me = {
+        email: String(state.user.email).trim().toLowerCase(),
+        name: roster.data.name || '',
+        record: roster.data,
+        personId: roster.id,
+        tier: CFG.priorityTier(roster.data)
+    };
+
+    season = CFG.seasonFor(new Date());
+
+    try {
+        events = await loadEvents();
+    } catch (error) {
+        log.error('Season load failed.', error);
+        fail('We could not load the season just now. Refresh the page, and if it '
+           + 'keeps happening let us know.');
+        return;
+    }
+
+    window.LIONS_NAV.setAuth({ signedIn: true, active: 'signup',
+                               onSignOut: signOutAndReturn });
+
+    if (!events.length) {
+        show('empty');
+        return;
+    }
+
+    mySignups = await loadMySignups();
+
+    document.getElementById('identity-name').textContent = me.name || 'Lions volunteer';
+    document.getElementById('season-intro').textContent =
+        'Season ' + season + '. Tick every shift you can work. We assign about a week '
+      + 'ahead and email you either way.';
+
+    renderPermitChip();
+    renderSeason();
+    show('season');
+
+    log.log('Signup page ready, ' + events.length + ' events, ' + mySignups.size + ' existing declarations.');
+}
+
+/**
+ * The volunteer's own permit state, shown once at the top rather than per
+ * event. Evaluated against today; per-event validity is evaluated at
+ * assignment time by the administrator surface, because a permit can lapse
+ * between declaration and a March event.
+ */
+function renderPermitChip() {
+    const chip = document.getElementById('identity-permit');
+
+    if (CFG.isMinor(me.record)) {
+        chip.hidden = true;
+        return;
+    }
+
+    const status = CFG.licenseStatusFor(me.record, new Date());
+
+    const labels = {
+        valid:      ['Alcohol permit on file', ''],
+        expiring:   ['Permit expiring', 'is-expiring'],
+        expired:    ['Permit expired', 'is-expired'],
+        incomplete: ['Permit incomplete', 'is-expiring'],
+        none:       ['', '']
+    };
+
+    const entry = labels[status] || labels.none;
+    if (!entry[0]) {
+        chip.hidden = true;
+        return;
+    }
+    chip.textContent = entry[0];
+    chip.className = 'chip ' + entry[1];
+}
+
+// ---------------------------------------------------------------------------
+// Declaring
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the document a volunteer is permitted to create.
+ *
+ * Exactly 20 keys. The rule rejects anything with 25 or more, and rejects the
+ * whole write rather than trimming it. Count the keys before adding one.
+ */
+function signupPayload(ev, shift, groupKey) {
+    return {
+        season:               season,
+        eventId:              ev.id,
+        shiftKey:             shift.key,
+        groupKey:             groupKey,
+        userEmail:            me.email,
+        personId:             me.personId,
+        name:                 me.name,
+        phone:                me.record.phone || '',
+        relationshipAtSignup: window.RELATIONSHIP_CONFIG
+                                ? window.RELATIONSHIP_CONFIG.normalize(me.record.relationship)
+                                : (me.record.relationship || ''),
+        priorityTier:         me.tier,
+        isGuest:              false,
+        hasLicenseAtSignup:   me.record.hasLicense === 'yes',
+        licenseExpiresAt:     me.record.licenseExpiration || null,
+        state:                CFG.STATES.AVAILABLE,
+        commitmentAckAt:      serverTimestamp(),
+        commitmentAckVersion: CFG.COMMITMENT_VERSION,
+        createdAt:            serverTimestamp(),
+        createdBy:            me.email,
+        updatedAt:            serverTimestamp(),
+        updatedBy:            me.email
+    };
+}
+
+/**
+ * Which group a declaration lands in.
+ *
+ * A volunteer with a permit valid through the event date can staff a licensed
+ * slot; everyone else goes to the unlicensed group. This is a starting
+ * classification for the assignment screen, not a restriction: the
+ * administrator moves people between groups freely.
+ */
+function groupFor(ev) {
+    const eventDate = toLocalDate(ev.eventDate) || new Date();
+    return CFG.canWorkLicensedSlot(me.record, eventDate) ? 'licensed' : 'unlicensed';
+}
+
+document.getElementById('season-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearBanner();
+
+    const boxes = Array.from(
+        document.querySelectorAll('#event-list input[type="checkbox"]:checked'));
+
+    if (!boxes.length) {
+        announce('Tick at least one shift before submitting.', 'warning');
+        return;
+    }
+
+    if (!document.getElementById('commitment-ack').checked) {
+        announce('Please confirm you will hold these dates before submitting.', 'error');
+        document.getElementById('commitment-ack').focus();
+        return;
+    }
+
+    const submit = document.getElementById('submit-availability');
+    const reset  = document.getElementById('reset-selection');
+    submit.disabled = true;
+    reset.disabled = true;
+    submit.textContent = 'Submitting';
+
+    const written = [];
+    const failed = [];
+
+    // Written one at a time rather than in a batch. A batch that trips the
+    // rules fails entirely and tells the volunteer nothing about which shift
+    // caused it; individually, a single bad row is reported by name and the
+    // rest still land.
+    for (const box of boxes) {
+        const ev = events.find(e => e.id === box.dataset.event);
+        if (!ev) { continue; }
+
+        const shifts = Array.isArray(ev.shifts) && ev.shifts.length
+            ? ev.shifts
+            : CFG.shiftsFor(!!ev.splitShifts);
+        const shift = shifts.find(s => s.key === box.dataset.shift);
+        if (!shift) { continue; }
+
+        try {
+            const ref = await addDoc(
+                collection(db, CFG.COLLECTIONS.EVENTS, ev.id, CFG.COLLECTIONS.SIGNUPS),
+                signupPayload(ev, shift, groupFor(ev)));
+
+            mySignups.set(ev.id + '|' + shift.key, {
+                id: ref.id, ref: ref, state: CFG.STATES.AVAILABLE, groupKey: groupFor(ev)
+            });
+            written.push(ev.name + ' ' + shift.label);
+
+        } catch (error) {
+            log.error('Declaration failed for ' + ev.id + ' ' + shift.key, error);
+            failed.push(ev.name + ' ' + shift.label);
+        }
+    }
+
+    submit.disabled = false;
+    reset.disabled = false;
+    submit.textContent = 'Submit availability';
+
+    if (written.length) {
+        await lionsAuth.logAuditEvent('signup_availability_declared',
+            { season: season, count: written.length });
+    }
+
+    document.getElementById('commitment-ack').checked = false;
+    renderSeason();
+
+    if (failed.length && written.length) {
+        announce('Saved ' + written.length + ' of ' + (written.length + failed.length)
+               + '. These did not save: ' + failed.join(', ') + '. Email ' + SUPPORT
+               + ' and we will add them.', 'warning');
+    } else if (failed.length) {
+        announce('Nothing saved. Email ' + SUPPORT + ' and we will add you.', 'error');
+    } else {
+        announce('Thank you. ' + written.length
+               + (written.length === 1 ? ' shift' : ' shifts')
+               + ' recorded. We will email you once the schedule is set.', 'success');
+    }
+});
+
+document.getElementById('reset-selection').addEventListener('click', () => {
+    document.querySelectorAll('#event-list input[type="checkbox"]:checked')
+        .forEach(b => { b.checked = false; });
+    document.getElementById('commitment-ack').checked = false;
+    updateCommitmentVisibility();
+    clearBanner();
+});
+
+document.getElementById('event-list').addEventListener('change', (event) => {
+    if (event.target.matches('input[type="checkbox"]')) {
+        updateCommitmentVisibility();
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Cancelling
+// ---------------------------------------------------------------------------
+
+/**
+ * Self-service cancellation, permitted outside the four day cutoff.
+ *
+ * The cutoff is enforced here and nowhere else. The security rule allows a
+ * volunteer to delete their own signup at any time, so a determined person
+ * could cancel inside the window from a console. That is a rules gap recorded
+ * in the handoff, not something this page can close.
+ */
+document.getElementById('event-list').addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-cancel]');
+    if (!button) { return; }
+
+    const key = button.dataset.cancel;
+    const existing = mySignups.get(key);
+    if (!existing) { return; }
+
+    const ev = events.find(e => e.id === key.split('|')[0]);
+    const eventDate = ev ? toLocalDate(ev.eventDate) : null;
+
+    if (eventDate && !CFG.canSelfCancel(eventDate)) {
+        announce('That event is inside the ' + CFG.CANCELLATION_CUTOFF_DAYS
+               + ' day window, so it has to go through us. Email ' + SUPPORT
+               + ' with the reason and we will sort the cover.', 'warning');
+        return;
+    }
+
+    button.disabled = true;
+    clearBanner();
+
+    try {
+        await deleteDoc(existing.ref);
+        mySignups.delete(key);
+        await lionsAuth.logAuditEvent('signup_availability_withdrawn',
+            { season: season, eventId: ev ? ev.id : null });
+        renderSeason();
+        announce('Removed. You are no longer down for that shift.', 'success');
+
+    } catch (error) {
+        log.error('Cancellation failed.', error);
+        button.disabled = false;
+        announce('We could not remove that. Email ' + SUPPORT + ' and we will do it.', 'error');
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Sign out
+// ---------------------------------------------------------------------------
+
+async function signOutAndReturn() {
+    await lionsAuth.signOut();
+    window.location.replace('/auth/signin.html');
+}
+
+document.getElementById('problem-signout').addEventListener('click', signOutAndReturn);
+
+start();
+</script>
+
+</body>
+
+</html>

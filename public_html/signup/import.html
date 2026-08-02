@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Event Import - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=2">
+    <link rel="stylesheet" href="/css/lions-signup.css?v=1">
+
+    <style>
+        /*
+         * The dry run report is columnar, so wrapping it would destroy the
+         * alignment that makes fifty rows readable. Confining the scroll to the
+         * block keeps the page itself from scrolling sideways on a phone.
+         * Scoped here rather than added to lions-app.css because this file is
+         * deleted from the server once the season is imported.
+         */
+        #report {
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-bg">
+
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         which is the single definition on this property and mirrors
+         $nav_items in /includes/header.php on lionssports.club. Delete
+         this element and that file when the shared PHP include lands. -->
+    <header id="site-header" data-nav="signup"></header>
+
+    <main class="page page--wide">
+
+        <!-- Resolving the session ------------------------------------------ -->
+        <section id="view-loading" class="view is-active">
+            <div class="loading">
+                <div class="spinner" role="status" aria-label="Loading"></div>
+                <p>Checking your access.</p>
+            </div>
+        </section>
+
+        <!-- Signed in but not permitted ------------------------------------ -->
+        <section id="view-problem" class="view">
+            <div class="page-head">
+                <h1>Event Import</h1>
+                <hr class="hr-accent">
+            </div>
+            <div class="card">
+                <p id="problem-message">Something went wrong.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-secondary" id="problem-signout">Sign out</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- The tool -------------------------------------------------------- -->
+        <section id="view-tool" class="view">
+
+            <div class="page-head">
+                <h1>Event Import</h1>
+                <hr class="hr-accent">
+                <p>One-time load of the 2026-2027 Sodexo commitment sheet into
+                   Lions-Events. Run the dry run, read it, then write. Delete this
+                   file from the server when the season is in.</p>
+            </div>
+
+            <div id="tool-banner" class="banner" hidden role="status"></div>
+
+            <section class="card">
+                <h2>Scope</h2>
+                <p id="scope-summary"></p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-secondary" id="btn-dry-run">Run dry run</button>
+                    <button type="button" class="btn" id="btn-write" disabled>Write to Firestore</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Report</h2>
+                <pre id="report" aria-live="polite">Nothing has run yet.</pre>
+            </section>
+
+        </section>
+
+    </main>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ======================================================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
+</div><!-- /page-bg -->
+
+<script src="/js/lions-log.js?v=1"></script>
+<script src="/js/lions-nav.js?v=1" defer></script>
+<script src="/relationship-config.js?v=3"></script>
+<script src="/signup/signup-config.js?v=1"></script>
+
+<script type="module">
+/**
+ * signup/import.html
+ *
+ * One-time loader for the 2026-2027 Sodexo commitment sheet into Lions-Events.
+ * Specified in claude/Launch-Plan-Signups-Open.md. Temporary by design: upload
+ * it, run it once, delete it from the server. Nothing else references it.
+ *
+ * WHY A PAGE RATHER THAN A NODE SCRIPT
+ *
+ * A Node script needs the Firebase Admin SDK and a service-account key, which
+ * means a second credential to create, store outside the docroot, and later
+ * revoke. This page reuses the auth chain that is already deployed and already
+ * proven, and firestore.rules already grants create on Lions-Events to
+ * isEventSupervisor, which fundraising@lionssports.club satisfies through
+ * isSystemAdmin. No new credential exists at any point.
+ *
+ * WHY THE SEED IS EMBEDDED RATHER THAN FETCHED
+ *
+ * _deploy/seed/los-events-2026-2027-seed.json lives outside the docroot. Making
+ * it fetchable would mean uploading a second file into the web root and
+ * remembering to delete two things instead of one. The constant below is the
+ * seed file copied verbatim, generated mechanically from it rather than
+ * retyped, so it can be diffed against the source with a plain text compare.
+ *
+ * WHAT IS DELIBERATELY NOT COPIED FROM THE SEED
+ *
+ *   _defaults.shiftTemplate  Revision-1 thinking: an AM/PM split with a third
+ *                            "standby" group. Revision 2 made standby a signup
+ *                            state and a single all-day shift the default, so
+ *                            shifts come from SIGNUP_CONFIG.shiftsFor(false).
+ *   _issue, _note,           Transcription annotations for a human reader. The
+ *   _suggested,              document below is built field by field rather than
+ *   _seasonPending           by copying the seed entry, so an annotation cannot
+ *                            reach Firestore even if a new one is added later.
+ *
+ * DATE HANDLING
+ *
+ * Scope is decided by string comparison on ISO dates, never by constructing a
+ * Date. Passing a bare YYYY-MM-DD to the Date constructor parses it as UTC, and
+ * Indianapolis is four hours behind in summer, so 2026-08-22 would read as
+ * August 21 and the first Colts game would fall out of scope. ISO strings sort
+ * lexicographically in date order, which makes the comparison both correct and
+ * obvious. Where a real Date is needed, toLocalDate builds it from the parts.
+ */
+
+import { lionsAuth, initializeProtectedPage } from '/auth/lions-auth.js';
+
+// Must match the version lions-auth.js imports. A second version loads a
+// second copy of the SDK and a second set of module-level instances.
+import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    setDoc,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const log = window.LIONS_LOG || { log() {}, warn() {}, error(...a) { console.error(...a); } };
+const CFG = window.SIGNUP_CONFIG;
+const SUPPORT = 'fundraising@lionssports.club';
+
+const db = getFirestore(getApp());
+
+// ---------------------------------------------------------------------------
+// Scope
+// ---------------------------------------------------------------------------
+
+/**
+ * The sheet starts at the first Colts game. Jason, 2026-08-01: families need to
+ * plan around the season, and nothing before this date is worked by the club.
+ * Excludes Gen Con, four days at the end of July, and DCI, three days in early
+ * August, which he works alone.
+ *
+ * To seed Colts home games only, add a name test to isInScope. To open a
+ * shorter window, raise IMPORT_THROUGH from null to an ISO date.
+ */
+const IMPORT_FROM = '2026-08-22';
+const IMPORT_THROUGH = null;
+
+/**
+ * The four events the contract carries with no date at all: Monster Jam days 1
+ * and 2, the Bleed Blue Blood Drive, and one unnamed March entry. They are
+ * seeded because the signup page renders them as closed with the reason "Date
+ * not set, expected Jan or Feb 2027", which is more useful to a family planning
+ * a year than their silent absence. They accept no declarations until a date
+ * lands on them.
+ */
+const INCLUDE_UNDATED = true;
+
+/**
+ * Season for events that carry no date, and the value every dated event in
+ * scope is expected to derive to. A mismatch is reported by the dry run rather
+ * than written, because a season that disagrees with the one the signup page
+ * queries for produces an event that exists and is invisible.
+ */
+const SEASON = '2026-2027';
+
+const SEED = {
+        "_meta": {
+            "source": "LOS Events 20262027.pdf (Sodexo Live! 2026-2027 Lucas Oil Stadium commitment sheet)",
+            "transcribedOn": "2026-07-27",
+            "eventCount": 57,
+            "withConfirmedTime": 12,
+            "withTbdTime": 45,
+            "withTbdDate": 4,
+            "venue": "Lucas Oil Stadium",
+            "_seasonWarning": "Contract is titled 2026-2027 but its first two events fall on Jul 30 and Jul 31 2026, BEFORE the Aug 1 boundary Jason locked. Season field left null on those two pending his decision. See _openIssues.",
+            "_openIssues": [
+                {
+                    "id": "SEASON-BOUNDARY",
+                    "severity": "blocking",
+                    "detail": "Aug 1 to Jul 31 boundary places Gen Con Jul 30-31 2026 into season 2025-2026, splitting the front off the 2026-2027 contract. Recommend moving the boundary to Jul 1 to Jun 30."
+                },
+                {
+                    "id": "DATE-JAN9",
+                    "severity": "needs confirmation",
+                    "detail": "Contract reads 'Sunday, January 9th'. January 9 2027 is a SATURDAY. January 10 2027 is the Sunday. Colts games are normally Sunday, so the date is likely Jan 10."
+                },
+                {
+                    "id": "DATE-FDIC",
+                    "severity": "needs confirmation",
+                    "detail": "FDIC block reads Mon Apr 12, Tue Apr 13, Wed Apr 15, Thu Apr 16, Fri Apr 17, Sat Apr 18. Those weekday labels match Apr 12,13,14,15,16,17 exactly. April 14 appears to have been omitted and 18 added. Best reading is a six-day run Apr 12-17 2027. Dates below use the contract's numbers with the conflict flagged."
+                }
+            ]
+        },
+        "_defaults": {
+            "venue": "Lucas Oil Stadium",
+            "shiftTemplate": [
+                {
+                    "key": "AM",
+                    "label": "Morning",
+                    "startTime": "08:00",
+                    "endTime": "16:30",
+                    "groups": [
+                        {
+                            "key": "licensed",
+                            "label": "Alcohol License Required",
+                            "capacity": 4,
+                            "requiresLicense": true
+                        },
+                        {
+                            "key": "unlicensed",
+                            "label": "No License Needed",
+                            "capacity": 4,
+                            "requiresLicense": false
+                        },
+                        {
+                            "key": "standby",
+                            "label": "Standby",
+                            "capacity": null,
+                            "requiresLicense": false
+                        }
+                    ]
+                },
+                {
+                    "key": "PM",
+                    "label": "Evening",
+                    "startTime": "15:30",
+                    "endTime": "23:30",
+                    "groups": [
+                        {
+                            "key": "licensed",
+                            "label": "Alcohol License Required",
+                            "capacity": 4,
+                            "requiresLicense": true
+                        },
+                        {
+                            "key": "unlicensed",
+                            "label": "No License Needed",
+                            "capacity": 4,
+                            "requiresLicense": false
+                        },
+                        {
+                            "key": "standby",
+                            "label": "Standby",
+                            "capacity": null,
+                            "requiresLicense": false
+                        }
+                    ]
+                }
+            ]
+        },
+        "events": [
+            {
+                "eventDate": "2026-07-30",
+                "name": "Gen Con",
+                "series": "Gen Con",
+                "seriesDay": 1,
+                "seriesOf": 4,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba",
+                "_seasonPending": true
+            },
+            {
+                "eventDate": "2026-07-31",
+                "name": "Gen Con",
+                "series": "Gen Con",
+                "seriesDay": 2,
+                "seriesOf": 4,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba",
+                "_seasonPending": true
+            },
+            {
+                "eventDate": "2026-08-01",
+                "name": "Gen Con",
+                "series": "Gen Con",
+                "seriesDay": 3,
+                "seriesOf": 4,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-08-02",
+                "name": "Gen Con",
+                "series": "Gen Con",
+                "seriesDay": 4,
+                "seriesOf": 4,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-08-06",
+                "name": "DCI (Drum Corps)",
+                "series": "DCI",
+                "seriesDay": 1,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-08-07",
+                "name": "DCI (Drum Corps)",
+                "series": "DCI",
+                "seriesDay": 2,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-08-08",
+                "name": "DCI (Drum Corps)",
+                "series": "DCI",
+                "seriesDay": 3,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-08-22",
+                "name": "Colts vs. Falcons",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-08-29",
+                "name": "Colts vs. Lions",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "15:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-09-09",
+                "name": "Bruno Mars Concert",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-09-13",
+                "name": "Colts vs. Ravens",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-09-26",
+                "name": "Circle City Classic",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "14:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-09-27",
+                "name": "Colts vs. Texans",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-10-10",
+                "name": "Ed Sheeran Concert",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-16",
+                "name": "BOA Regionals",
+                "series": "BOA Regionals",
+                "seriesDay": 1,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-17",
+                "name": "BOA Regionals",
+                "series": "BOA Regionals",
+                "seriesDay": 2,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-18",
+                "name": "Colts vs. Titans",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-10-21",
+                "name": "FFA",
+                "series": "FFA",
+                "seriesDay": 1,
+                "seriesOf": 4,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-22",
+                "name": "FFA",
+                "series": "FFA",
+                "seriesDay": 2,
+                "seriesOf": 4,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-23",
+                "name": "FFA",
+                "series": "FFA",
+                "seriesDay": 3,
+                "seriesOf": 4,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-10-24",
+                "name": "FFA",
+                "series": "FFA",
+                "seriesDay": 4,
+                "seriesOf": 4,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-07",
+                "name": "ISSMA",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-08",
+                "name": "Colts vs. Cowboys",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-11-12",
+                "name": "BOA Grand Nationals",
+                "series": "BOA Grand Nationals",
+                "seriesDay": 1,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-13",
+                "name": "BOA Grand Nationals",
+                "series": "BOA Grand Nationals",
+                "seriesDay": 2,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-14",
+                "name": "BOA Grand Nationals",
+                "series": "BOA Grand Nationals",
+                "seriesDay": 3,
+                "seriesOf": 3,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-15",
+                "name": "Colts vs. Dolphins",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-11-20",
+                "name": "IU Men's Basketball Game",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-27",
+                "name": "IHSAA State Football",
+                "series": "IHSAA State Football",
+                "seriesDay": 1,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-28",
+                "name": "IHSAA State Football",
+                "series": "IHSAA State Football",
+                "seriesDay": 2,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-11-29",
+                "name": "Colts vs. Giants",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-12-05",
+                "name": "Big Ten Football Championship",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "15:30",
+                "dateStatus": "confirmed",
+                "timesStatus": "confirmed"
+            },
+            {
+                "eventDate": "2026-12-10",
+                "name": "PRI",
+                "series": "PRI",
+                "seriesDay": 1,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-12-11",
+                "name": "PRI",
+                "series": "PRI",
+                "seriesDay": 2,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-12-12",
+                "name": "PRI",
+                "series": "PRI",
+                "seriesDay": 3,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2026-12-26",
+                "name": "Colts vs. Bengals",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "either",
+                "timesStatus": "confirmed",
+                "dateAlternatives": [
+                    "2026-12-26",
+                    "2026-12-27"
+                ],
+                "_note": "Contract reads 'Sat./Sun., December 26th or 27th'."
+            },
+            {
+                "eventDate": "2027-01-09",
+                "name": "Colts vs. Jaguars",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": "13:00",
+                "dateStatus": "conflict",
+                "timesStatus": "confirmed",
+                "_issue": "DATE-JAN9"
+            },
+            {
+                "eventDate": "2027-01-12",
+                "name": "Mid-America Pools",
+                "series": "Mid-America Pools",
+                "seriesDay": 1,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-01-13",
+                "name": "Mid-America Pools",
+                "series": "Mid-America Pools",
+                "seriesDay": 2,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-01-14",
+                "name": "Mid-America Pools",
+                "series": "Mid-America Pools",
+                "seriesDay": 3,
+                "seriesOf": 3,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": null,
+                "name": "Monster Jam",
+                "series": "Monster Jam",
+                "seriesDay": 1,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "tba",
+                "timesStatus": "tba",
+                "dateWindow": "Jan or Feb 2027"
+            },
+            {
+                "eventDate": null,
+                "name": "Monster Jam",
+                "series": "Monster Jam",
+                "seriesDay": 2,
+                "seriesOf": 2,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "tba",
+                "timesStatus": "tba",
+                "dateWindow": "Jan or Feb 2027"
+            },
+            {
+                "eventDate": null,
+                "name": "Bleed Blue Blood Drive",
+                "series": null,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "tba",
+                "timesStatus": "tba",
+                "dateWindow": "Jan or Feb 2027"
+            },
+            {
+                "eventDate": "2027-02-24",
+                "name": "Combine",
+                "series": "Combine",
+                "seriesDay": 1,
+                "seriesOf": 5,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-02-25",
+                "name": "Combine",
+                "series": "Combine",
+                "seriesDay": 2,
+                "seriesOf": 5,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-02-26",
+                "name": "Combine",
+                "series": "Combine",
+                "seriesDay": 3,
+                "seriesOf": 5,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-02-27",
+                "name": "Combine",
+                "series": "Combine",
+                "seriesDay": 4,
+                "seriesOf": 5,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-02-28",
+                "name": "Combine",
+                "series": "Combine",
+                "seriesDay": 5,
+                "seriesOf": 5,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-02-28",
+                "name": "Colts Kicking the Stigma",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba",
+                "_note": "Same day as Combine day 5."
+            },
+            {
+                "eventDate": null,
+                "name": "New Event",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "tba",
+                "timesStatus": "tba",
+                "dateWindow": "March 2027",
+                "_note": "Unnamed on the contract."
+            },
+            {
+                "eventDate": "2027-03-06",
+                "name": "Supercross",
+                "series": null,
+                "isSmallEvent": false,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-04-12",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 1,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-04-13",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 2,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "confirmed",
+                "timesStatus": "tba"
+            },
+            {
+                "eventDate": "2027-04-15",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 3,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "conflict",
+                "timesStatus": "tba",
+                "_issue": "DATE-FDIC",
+                "_suggested": "2027-04-14"
+            },
+            {
+                "eventDate": "2027-04-16",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 4,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "conflict",
+                "timesStatus": "tba",
+                "_issue": "DATE-FDIC",
+                "_suggested": "2027-04-15"
+            },
+            {
+                "eventDate": "2027-04-17",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 5,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "conflict",
+                "timesStatus": "tba",
+                "_issue": "DATE-FDIC",
+                "_suggested": "2027-04-16"
+            },
+            {
+                "eventDate": "2027-04-18",
+                "name": "FDIC",
+                "series": "FDIC",
+                "seriesDay": 6,
+                "seriesOf": 6,
+                "isSmallEvent": true,
+                "gateTime": null,
+                "dateStatus": "conflict",
+                "timesStatus": "tba",
+                "_issue": "DATE-FDIC",
+                "_suggested": "2027-04-17"
+            }
+        ]
+    };
+
+// ---------------------------------------------------------------------------
+// Views
+// ---------------------------------------------------------------------------
+
+const views = {
+    loading: document.getElementById('view-loading'),
+    problem: document.getElementById('view-problem'),
+    tool:    document.getElementById('view-tool')
+};
+
+function show(name) {
+    Object.keys(views).forEach(k => views[k].classList.toggle('is-active', k === name));
+}
+
+function fail(message) {
+    document.getElementById('problem-message').textContent = message;
+    show('problem');
+}
+
+function announce(message, kind) {
+    const b = document.getElementById('tool-banner');
+    b.textContent = message;
+    b.className = 'banner is-' + kind;
+    b.hidden = false;
+}
+
+/**
+ * The report holds two independent blocks.
+ *
+ * The run log is what actually happened, one line per document, and it must
+ * survive the re-read that follows a write. An earlier shape kept a single
+ * buffer that renderPlan cleared, which erased the record of every failed
+ * document at the exact moment it became useful.
+ */
+const report = {
+    runLines: [],
+    planLines: [],
+    clearRun() { this.runLines = []; this.flush(); },
+    addRun(line) { this.runLines.push(line); this.flush(); },
+    setPlan(lines) { this.planLines = lines; this.flush(); },
+    flush() {
+        const blocks = [];
+        if (this.runLines.length) {
+            blocks.push('LAST RUN\n' + this.runLines.join('\n'));
+        }
+        if (this.planLines.length) {
+            blocks.push(this.planLines.join('\n'));
+        }
+        document.getElementById('report').textContent =
+            blocks.length ? blocks.join('\n\n') : 'Nothing has run yet.';
+    }
+};
+
+// ---------------------------------------------------------------------------
+// Dates
+// ---------------------------------------------------------------------------
+
+/** Reads a stored ISO date into a LOCAL date at midnight. See the file header. */
+function toLocalDate(value) {
+    if (!value) { return null; }
+    const m = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Building the documents
+// ---------------------------------------------------------------------------
+
+function isInScope(ev) {
+    if (!ev.eventDate) { return INCLUDE_UNDATED; }
+    if (ev.eventDate < IMPORT_FROM) { return false; }
+    if (IMPORT_THROUGH && ev.eventDate > IMPORT_THROUGH) { return false; }
+    return true;
+}
+
+function slugify(value) {
+    return String(value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Document id, derived from the event rather than auto-generated.
+ *
+ * An auto id makes a second run impossible to reconcile without querying, and
+ * makes the Firestore console unreadable. Date plus name is unique across the
+ * contract except for the two undated Monster Jam days and any future run
+ * sharing a date, so the series day is appended whenever the event belongs to a
+ * multi-day run.
+ */
+function documentIdFor(ev) {
+    let id = (ev.eventDate || 'tba') + '-' + slugify(ev.name);
+    if (ev.seriesOf > 1) {
+        id += '-day-' + ev.seriesDay;
+    }
+    return id;
+}
+
+function seasonFor(ev) {
+    if (!ev.eventDate) { return SEASON; }
+    return CFG.seasonFor(toLocalDate(ev.eventDate));
+}
+
+/**
+ * The document the signup page reads.
+ *
+ * Built field by field, not copied from the seed entry, so the annotation keys
+ * cannot leak and so every field the page reads is visible in one place. The
+ * page reads: season, name, eventDate, dateStatus, dateWindow, dateAlternatives,
+ * timesStatus, series, seriesDay, seriesOf, splitShifts, shifts and status.
+ * venue, gateTime and isSmallEvent are carried for the assignment surface.
+ */
+function eventDocument(ev, actorEmail) {
+    const document_ = {
+        season:       seasonFor(ev),
+        name:         ev.name,
+        eventDate:    ev.eventDate || null,
+        dateStatus:   ev.dateStatus,
+        timesStatus:  ev.timesStatus,
+        gateTime:     ev.gateTime || null,
+        venue:        (SEED._defaults && SEED._defaults.venue) || CFG.VENUE_DEFAULT,
+        series:       ev.series || null,
+        seriesDay:    ev.seriesOf > 1 ? ev.seriesDay : null,
+        seriesOf:     ev.seriesOf > 1 ? ev.seriesOf : null,
+        isSmallEvent: ev.isSmallEvent === true,
+        splitShifts:  false,
+        shifts:       CFG.shiftsFor(false),
+        status:       'published',
+        importedAt:   serverTimestamp(),
+        importedBy:   actorEmail
+    };
+
+    if (Array.isArray(ev.dateAlternatives) && ev.dateAlternatives.length) {
+        document_.dateAlternatives = ev.dateAlternatives.slice();
+    }
+    if (ev.dateWindow) {
+        document_.dateWindow = ev.dateWindow;
+    }
+
+    return document_;
+}
+
+// ---------------------------------------------------------------------------
+// What is already there
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads the whole collection once rather than one existence check per event.
+ *
+ * Fifty separate gets cost fifty round trips and would still miss a document
+ * written earlier by hand under an auto id. One read of the collection catches
+ * both: the id set defends against re-running this tool, the name and date set
+ * defends against a duplicate that arrived by any other route.
+ */
+async function loadExisting() {
+    const snap = await getDocs(collection(db, CFG.COLLECTIONS.EVENTS));
+    const ids = new Set();
+    const keys = new Set();
+
+    snap.docs.forEach(d => {
+        ids.add(d.id);
+        const data = d.data();
+        keys.add(String(data.name || '').trim().toLowerCase() + '|' + (data.eventDate || ''));
+    });
+
+    return { ids, keys, total: snap.size };
+}
+
+function existingKeyFor(ev) {
+    return String(ev.name).trim().toLowerCase() + '|' + (ev.eventDate || '');
+}
+
+// ---------------------------------------------------------------------------
+// Planning
+// ---------------------------------------------------------------------------
+
+/**
+ * Decides, for every event on the contract, what would happen and why.
+ * The same plan drives the dry run and the write, so what is reported is
+ * exactly what is written.
+ */
+function buildPlan(existing, actorEmail) {
+    const plan = { write: [], skipExists: [], outOfScope: [], seasonMismatch: [] };
+    const seenIds = new Set();
+
+    SEED.events.forEach(ev => {
+        if (!isInScope(ev)) {
+            plan.outOfScope.push(ev);
+            return;
+        }
+
+        const id = documentIdFor(ev);
+        const document_ = eventDocument(ev, actorEmail);
+
+        if (document_.season !== SEASON) {
+            plan.seasonMismatch.push({ id, ev, document: document_ });
+            return;
+        }
+
+        if (existing.ids.has(id) || existing.keys.has(existingKeyFor(ev)) || seenIds.has(id)) {
+            plan.skipExists.push({ id, ev });
+            return;
+        }
+
+        seenIds.add(id);
+        plan.write.push({ id, ev, document: document_ });
+    });
+
+    return plan;
+}
+
+function describe(entry) {
+    const ev = entry.ev;
+    const shifts = entry.document
+        ? entry.document.shifts.map(s => s.key + ' ' + s.startTime + '-' + s.endTime).join(', ')
+        : '';
+    return '  ' + (ev.eventDate || 'date TBA').padEnd(12)
+         + ev.name.padEnd(32)
+         + ev.dateStatus.padEnd(10)
+         + (shifts ? shifts : '')
+         + '\n      id: ' + entry.id;
+}
+
+function renderPlan(plan, existing) {
+    const out = [];
+
+    out.push('Contract events:         ' + SEED.events.length);
+    out.push('Already in Lions-Events: ' + existing.total);
+    out.push('Scope:                   ' + IMPORT_FROM + ' onward'
+           + (INCLUDE_UNDATED ? ', undated events included' : ', undated events excluded'));
+    out.push('');
+
+    out.push('WOULD WRITE (' + plan.write.length + ')');
+    plan.write.forEach(entry => out.push(describe(entry)));
+    if (!plan.write.length) { out.push('  none'); }
+    out.push('');
+
+    out.push('SKIPPED, ALREADY PRESENT (' + plan.skipExists.length + ')');
+    plan.skipExists.forEach(entry => out.push(describe(entry)));
+    if (!plan.skipExists.length) { out.push('  none'); }
+    out.push('');
+
+    out.push('OUT OF SCOPE (' + plan.outOfScope.length + ')');
+    plan.outOfScope.forEach(ev =>
+        out.push('  ' + (ev.eventDate || 'date TBA').padEnd(12) + ev.name));
+    out.push('');
+
+    if (plan.seasonMismatch.length) {
+        out.push('SEASON MISMATCH, NOT WRITTEN (' + plan.seasonMismatch.length + ')');
+        plan.seasonMismatch.forEach(entry =>
+            out.push('  ' + (entry.ev.eventDate || 'date TBA').padEnd(12)
+                   + entry.ev.name.padEnd(32) + 'derived ' + entry.document.season
+                   + ', expected ' + SEASON));
+        out.push('');
+    }
+
+    const conflicts = plan.write.filter(e => e.ev.dateStatus === 'conflict').length;
+    const tba = plan.write.filter(e => e.ev.dateStatus === 'tba').length;
+    out.push('Of the ' + plan.write.length + ' to write, ' + conflicts
+           + ' carry dateStatus conflict and ' + tba + ' carry dateStatus tba.');
+    out.push('Those ' + (conflicts + tba) + ' render as closed and accept no declarations.');
+
+    report.setPlan(out);
+}
+
+// ---------------------------------------------------------------------------
+// Running
+// ---------------------------------------------------------------------------
+
+let me = null;
+let plan = null;
+
+async function refreshPlan() {
+    const existing = await loadExisting();
+    plan = buildPlan(existing, me.email);
+    renderPlan(plan, existing);
+    return plan;
+}
+
+document.getElementById('btn-dry-run').addEventListener('click', async () => {
+    const button = document.getElementById('btn-dry-run');
+    const write = document.getElementById('btn-write');
+    button.disabled = true;
+    write.disabled = true;
+
+    try {
+        await refreshPlan();
+        announce('Dry run complete. Nothing was written. Read the report, then write.',
+                 'success');
+        write.disabled = plan.write.length === 0;
+    } catch (error) {
+        log.error('Dry run failed.', error);
+        announce('The dry run failed. Open the console with ?debug=1 for the reason.',
+                 'error');
+    } finally {
+        button.disabled = false;
+    }
+});
+
+document.getElementById('btn-write').addEventListener('click', async () => {
+    if (!plan || !plan.write.length) {
+        announce('Run the dry run first.', 'warning');
+        return;
+    }
+
+    const dry = document.getElementById('btn-dry-run');
+    const button = document.getElementById('btn-write');
+    button.disabled = true;
+    dry.disabled = true;
+    button.textContent = 'Writing';
+
+    const written = [];
+    const failed = [];
+
+    report.clearRun();
+
+    // Written one at a time rather than in a batch. A batch that trips the
+    // rules fails entirely and names nothing; individually, a bad document is
+    // reported by id and the rest still land.
+    for (const entry of plan.write) {
+        try {
+            await setDoc(doc(db, CFG.COLLECTIONS.EVENTS, entry.id), entry.document);
+            written.push(entry.id);
+            report.addRun('written  ' + entry.id);
+        } catch (error) {
+            log.error('Import failed for ' + entry.id, error);
+            failed.push(entry.id);
+            report.addRun('FAILED   ' + entry.id + '  '
+                        + (error && error.code ? error.code : 'unknown'));
+        }
+    }
+
+    button.textContent = 'Write to Firestore';
+    dry.disabled = false;
+
+    if (written.length) {
+        await lionsAuth.logAuditEvent('events_imported',
+            { season: SEASON, count: written.length });
+    }
+
+    // Re-read rather than trusting the in-memory plan, so the count shown is
+    // what Firestore actually holds.
+    try {
+        await refreshPlan();
+    } catch (error) {
+        log.error('Could not re-read the collection after writing.', error);
+    }
+
+    if (failed.length && written.length) {
+        announce('Wrote ' + written.length + ', ' + failed.length
+               + ' failed. The report names them.', 'warning');
+    } else if (failed.length) {
+        announce('Nothing was written. The report names the failures.', 'error');
+    } else {
+        announce('Wrote ' + written.length + ' events. Delete /signup/import.html from '
+               + 'the server now.', 'success');
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Start
+// ---------------------------------------------------------------------------
+
+async function start() {
+    // Gated on the dashboard system, which is System Administrator only. The
+    // signup system would let any volunteer open this page, and although
+    // firestore.rules would refuse their writes, a page that offers a control
+    // it will then deny is worse than one that is not offered.
+    const state = await initializeProtectedPage('dashboard');
+
+    if (state.needsAuth) {
+        window.location.replace('/auth/signin.html?next=%2Fsignup%2Fimport.html');
+        return;
+    }
+
+    if (!state.authorized) {
+        fail('This tool is limited to the administrator account. Sign in as '
+           + SUPPORT + ' to use it.');
+        return;
+    }
+
+    me = { email: String(state.user.email).trim().toLowerCase(), role: state.role };
+
+    window.LIONS_NAV.setAuth({ signedIn: true, active: 'signup',
+                               onSignOut: signOutAndReturn });
+
+    document.getElementById('scope-summary').textContent =
+        'Season ' + SEASON + '. ' + SEED.events.length + ' events on the contract, '
+      + 'seeding everything from ' + IMPORT_FROM + ' onward. Shifts come from '
+      + 'SIGNUP_CONFIG.shiftsFor(false), one all day shift per event.';
+
+    show('tool');
+    log.log('Import tool ready for ' + me.email + '.');
+}
+
+async function signOutAndReturn() {
+    await lionsAuth.signOut();
+    window.location.replace('/auth/signin.html');
+}
+
+document.getElementById('problem-signout').addEventListener('click', signOutAndReturn);
+
+start();
+</script>
+
+</body>
+
+</html>

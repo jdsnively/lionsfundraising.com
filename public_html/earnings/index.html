@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Earnings</title>
+    <!-- Protected favicon implementation -->
+    <link rel="icon" type="image/png" id="dynamicFavicon">
+    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
+    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            /* Primary Brand Colors - Core Palette */
+            --navy-blue: #1a365d;
+            --navy-blue-light: #2c5282;
+            --navy-blue-dark: #1a202c;
+
+            /* Neutral Grays - Essential Hierarchy */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            /* Semantic Colors - Functional States */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+
+            /* Typography - Professional System */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-display: 'Playfair Display', 'Times New Roman', serif;
+
+            /* Flat Design - No Shadows */
+            --border-light: 1px solid var(--gray-200);
+            --border-medium: 2px solid var(--gray-300);
+            --border-focus: 2px solid var(--navy-blue);
+
+            /* Border Radius - Consistent System */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* Spacing - Harmonious Scale */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+
+            /* Enhanced Transition System */
+            --transition-ultra-fast: 0.15s ease-out;
+            --transition-fast: 0.2s ease-out;
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--navy-blue);
+            min-height: 100vh;
+            color: var(--gray-700);
+            position: relative;
+            padding: var(--space-6);
+        }
+
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            padding-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - var(--space-12));
+            border: var(--border-light);
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .login-container {
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .login-header {
+            margin-bottom: var(--space-8);
+        }
+
+        .login-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-4);
+            font-weight: 600;
+        }
+
+        .login-subtitle {
+            color: var(--gray-500);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Earnings Page */
+        .earnings {
+            text-align: center;
+        }
+
+        .earnings-header {
+            margin-bottom: var(--space-8);
+        }
+
+        .earnings-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-6);
+            font-weight: 600;
+        }
+
+        .earnings-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-12);
+        }
+
+        .earnings-card {
+            background: var(--navy-blue);
+            color: var(--white);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            text-align: center;
+            transition: transform var(--transition-fast);
+        }
+
+        .earnings-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .earnings-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: var(--space-2);
+            font-family: var(--font-display);
+        }
+
+        .earnings-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 1.2rem;
+        }
+
+        .profile-section {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            border: var(--border-light);
+            text-align: left;
+        }
+
+        .profile-section h2 {
+            font-family: var(--font-display);
+            color: var(--navy-blue);
+            margin-bottom: var(--space-6);
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            position: relative;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--navy-blue);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: var(--space-3);
+            border: var(--border-medium);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-700);
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            min-height: 44px;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .form-group input:read-only {
+            background: var(--gray-100);
+            cursor: not-allowed;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            background: var(--navy-blue);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            min-height: 44px;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .btn:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--gray-500);
+            border-color: var(--gray-500);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-700);
+            border-color: var(--gray-700);
+        }
+
+        .btn-success {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+            margin-top: var(--space-6);
+        }
+
+        .footer {
+            background: transparent;
+            border: none;
+            padding: var(--space-8);
+            text-align: center;
+            margin-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--white) !important;
+            text-decoration: none;
+            font-size: 0.925rem;
+            font-weight: 400;
+            transition: color var(--transition-fast);
+            font-family: var(--font-primary);
+        }
+
+        .footer a:hover {
+            color: var(--warning) !important;
+            text-decoration: underline;
+        }
+
+        .footer-brand {
+            margin-top: var(--space-4);
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--gray-500);
+        }
+
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4) 0;
+            border: 2px solid var(--error);
+            font-weight: 600;
+            padding: var(--space-4);
+            text-align: center;
+        }
+
+        /* Dialogs */
+        .dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .dialog-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 90%;
+            border: var(--border-light);
+            text-align: center;
+        }
+
+        .dialog-content h3 {
+            font-family: var(--font-display);
+            color: var(--navy-blue);
+            margin-bottom: var(--space-4);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .dialog-content p {
+            color: var(--gray-700);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+            margin-top: var(--space-6);
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+
+            .main-container {
+                padding: var(--space-4);
+                padding-top: var(--space-8);
+            }
+
+            .earnings-title {
+                font-size: 1.75rem;
+            }
+
+            .earnings-stats {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+
+            .earnings-number {
+                font-size: 2.5rem;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .footer-nav {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="headerContainer"></div>
+
+    <div class="main-container">
+        <!-- Login screen -->
+        <div id="loginScreen" class="login-screen hidden">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1 class="login-title">Earnings Access</h1>
+                    <p class="login-subtitle">View your Lions fundraising earnings and profile</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" autocomplete="email" required placeholder="Enter your registered email address">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn" style="width: 100%; margin-top: var(--space-4);">
+                            Send Magic Link
+                        </button>
+                    </div>
+                    <div id="loginError" class="error hidden"></div>
+                    <div id="loginSuccess" class="loading hidden">Magic link sent! Check your email and click the link to access your earnings.</div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Earnings page -->
+        <div id="earningsPage" class="earnings hidden">
+            <div class="earnings-header">
+                <h1 class="earnings-title">Earnings Dashboard</h1>
+
+                <div class="earnings-stats">
+                    <div class="earnings-card">
+                        <div class="earnings-number" id="totalEarnings">$0.00</div>
+                        <div class="earnings-label">My Earnings</div>
+                    </div>
+                    <div class="earnings-card hidden" id="groupEarningsCard">
+                        <div class="earnings-number" id="groupEarnings">$0.00</div>
+                        <div class="earnings-label" id="groupEarningsLabel">Group Earnings</div>
+                    </div>
+                    <div class="earnings-card hidden" id="totalUsersCard">
+                        <div class="earnings-number" id="totalUsers">-</div>
+                        <div class="earnings-label">Total Users</div>
+                    </div>
+                    <div class="earnings-card hidden" id="totalGroupsCard">
+                        <div class="earnings-number" id="totalGroups">-</div>
+                        <div class="earnings-label">Active Groups</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Controls -->
+            <div id="adminControls" class="profile-section hidden">
+                <h2>Group Management</h2>
+                <div class="profile-grid">
+                    <div class="form-group">
+                        <label for="searchUsers">Search Users</label>
+                        <input type="text" id="searchUsers" placeholder="Name or email...">
+                    </div>
+                    <div class="form-group">
+                        <label for="filterGroup">Filter by Group</label>
+                        <select id="filterGroup">
+                            <option value="">All Users</option>
+                            <option value="unassigned">Unassigned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newGroupName">Create New Group</label>
+                        <input type="text" id="newGroupName" placeholder="Enter group name...">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <button type="button" class="btn btn-success" id="createGroupBtn">Create Group</button>
+                            <button type="button" class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table (Admin Only) -->
+            <div id="usersTable" class="profile-section hidden">
+                <h2>Users & Group Assignments</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                        <thead>
+                            <tr style="background: var(--gray-100);">
+                                <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Name</th>
+                                <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Email</th>
+                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Current Group</th>
+                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Earnings</th>
+                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-500);">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="loadingMessage" class="loading">Loading your earnings data...</div>
+        </div>
+    </div>
+
+    <!-- Group Assignment Dialog -->
+    <div id="groupAssignDialog" class="dialog hidden">
+        <div class="dialog-content">
+            <h3>Assign to Group</h3>
+            <p id="assignMessage">Assign user to a group</p>
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                <label for="selectGroup">Select Group</label>
+                <select id="selectGroup">
+                    <option value="">Remove from group</option>
+                </select>
+            </div>
+            <div class="dialog-buttons">
+                <button class="btn btn-success" id="assignGroupBtn">Assign</button>
+                <button class="btn btn-secondary" id="cancelAssignBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <nav class="footer-nav">
+            <a href="/">Home</a>
+            <a href="/events">Events</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/reimbursement">Reimbursement</a>
+            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
+        </nav>
+        <div class="footer-brand">
+            © 2025 Lions Sports Club. All rights reserved.<br>
+            Giving God The Glory Through Sports
+        </div>
+    </footer>
+
+    <!-- Load Universal Authentication -->
+    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+
+    <!-- Load Universal Header System -->
+    <script src="https://lionsfundraising.com/universal-header.js"></script>
+
+    <script type="module">
+        // Earnings Dashboard - Financial Focus with Group Management
+        console.log('💰 Earnings Dashboard: Financial accounting with group management');
+
+        // Global application state
+        let currentUser = null;
+        let userRecord = null;
+        let allUsers = [];
+        let filteredUsers = [];
+        let allGroups = [];
+        let isAdmin = false;
+        let db = null;
+        let currentAssignUser = null;
+
+        // Performance optimization
+        let searchTimeout = null;
+
+        // Global functions
+        window.assignToGroup = assignToGroup;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('💰 Earnings dashboard loading...');
+            
+            try {
+                setupEventListeners();
+                
+                // Setup universal header
+                setTimeout(async () => {
+                    if (window.LIONS_HEADER) {
+                        await window.LIONS_HEADER.setupPage('headerContainer');
+                        setTimeout(() => {
+                            if (window.LIONS_HEADER?.updateUserInterfaceSmooth) {
+                                window.LIONS_HEADER.updateUserInterfaceSmooth();
+                            }
+                        }, 100);
+                    }
+                }, 50);
+                
+                // Check authentication
+                if (window.LIONS_AUTH?.isAuthenticated()) {
+                    currentUser = window.LIONS_AUTH.getCurrentUser();
+                    determineUserRole();
+                    console.log('✅ User authenticated, role:', isAdmin ? 'Admin' : 'User');
+                    showEarningsPage();
+                } else {
+                    console.log('🚪 No authentication, showing login');
+                    showLoginPage();
+                }
+                
+                // Auth state listener
+                if (window.LIONS_AUTH?.onAuthStateChanged) {
+                    window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
+                }
+                
+            } catch (error) {
+                console.error('❌ Earnings dashboard initialization failed:', error);
+                showError('Page failed to load. Please refresh.');
+            }
+        });
+
+        function determineUserRole() {
+            if (!currentUser) return;
+            isAdmin = currentUser.email?.toLowerCase() === 'fundraising@lionsfootballclub.com';
+        }
+
+        function handleAuthStateChange(action, userData) {
+            console.log('💰 Auth state change received', action, userData);
+            
+            currentUser = userData;
+            
+            if (action === 'login' && currentUser) {
+                determineUserRole();
+                console.log('✅ User authenticated, showing earnings');
+                showEarningsPage();
+            } else if (action === 'logout') {
+                console.log('🚪 User logged out, showing login');
+                showLoginPage();
+            }
+        }
+
+        function showLoginPage() {
+            document.getElementById('earningsPage').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            
+            setTimeout(() => {
+                const emailInput = document.getElementById('email');
+                if (emailInput) emailInput.focus();
+            }, 50);
+        }
+
+        function showEarningsPage() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('earningsPage').classList.remove('hidden');
+            
+            // Get Firestore reference
+            db = window.LIONS_AUTH?.firestore;
+            
+            // Configure UI based on role
+            configureUserInterface();
+            
+            // Load data
+            if (isAdmin) {
+                loadAllUsersData();
+            } else {
+                loadUserData();
+            }
+        }
+
+        function configureUserInterface() {
+            if (isAdmin) {
+                // Show admin controls and users table
+                document.getElementById('adminControls').classList.remove('hidden');
+                document.getElementById('usersTable').classList.remove('hidden');
+                document.getElementById('totalUsersCard').classList.remove('hidden');
+                document.getElementById('totalGroupsCard').classList.remove('hidden');
+                
+                // Update title
+                document.querySelector('.earnings-title').textContent = 'Earnings Administration';
+            } else {
+                // Show only personal earnings
+                // Check if user has group and show group earnings card if needed
+                // This will be handled in loadUserData()
+            }
+        }
+
+        async function loadUserData() {
+            if (!currentUser) return;
+
+            try {
+                console.log('💰 Loading personal data for:', currentUser.email);
+                
+                // PERFORMANCE FIX: Get Firestore with same pattern as dashboard
+                if (!db) {
+                    db = window.LIONS_AUTH?.firestore;
+                }
+                
+                // PERFORMANCE FIX: If still no Firestore, wait briefly
+                if (!db) {
+                    let attempts = 0;
+                    const maxAttempts = 6; // 3 seconds max
+                    
+                    while (!db && attempts < maxAttempts) {
+                        if (window.LIONS_AUTH?.firestore) {
+                            db = window.LIONS_AUTH.firestore;
+                            console.log('✅ Firestore obtained from universal auth');
+                            break;
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        attempts++;
+                        console.log(`⏳ Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
+                    }
+                }
+                
+                if (!db) {
+                    throw new Error('Firestore not available from universal auth');
+                }
+
+                const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+
+                // Find user's record by email
+                const snapshot = await getDocs(query(
+                    collection(db, 'Lions-Fundraising-Users'),
+                    where('email', '==', currentUser.email.toLowerCase())
+                ));
+
+                if (snapshot.empty) {
+                    showError('No registration found for your email address. Please contact the administrator.');
+                    return;
+                }
+
+                userRecord = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                console.log('✅ User record loaded:', userRecord.name);
+                
+                // Update personal earnings
+                updatePersonalEarnings();
+                
+                // Check for group membership
+                if (userRecord.groupId) {
+                    await loadGroupEarnings();
+                }
+                
+                document.getElementById('loadingMessage').classList.add('hidden');
+
+            } catch (error) {
+                console.error('❌ Error loading user data:', error);
+                showError('Failed to load your data. Please try again.');
+            }
+        }
+
+        async function loadAllUsersData() {
+            if (!isAdmin) return;
+
+            try {
+                console.log('💰 Loading all users data for admin...');
+                
+                // PERFORMANCE FIX: Get Firestore with same pattern as dashboard
+                if (!db) {
+                    db = window.LIONS_AUTH?.firestore;
+                }
+                
+                // PERFORMANCE FIX: If still no Firestore, wait briefly
+                if (!db) {
+                    let attempts = 0;
+                    const maxAttempts = 6; // 3 seconds max
+                    
+                    while (!db && attempts < maxAttempts) {
+                        if (window.LIONS_AUTH?.firestore) {
+                            db = window.LIONS_AUTH.firestore;
+                            console.log('✅ Firestore obtained from universal auth');
+                            break;
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        attempts++;
+                        console.log(`⏳ Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
+                    }
+                }
+                
+                if (!db) {
+                    throw new Error('Firestore not available from universal auth');
+                }
+
+                const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+
+                // Load all users
+                const usersSnapshot = await getDocs(query(
+                    collection(db, 'Lions-Fundraising-Users'),
+                    orderBy('name', 'asc')
+                ));
+
+                allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                filteredUsers = [...allUsers];
+                
+                // Load groups
+                await loadGroups();
+                
+                console.log('✅ Admin data loaded:', allUsers.length, 'users');
+                
+                // Update displays
+                updateAdminStats();
+                displayUsersTable();
+                updateGroupDropdowns();
+                
+                document.getElementById('loadingMessage').classList.add('hidden');
+
+            } catch (error) {
+                console.error('❌ Error loading admin data:', error);
+                showError('Failed to load data. Please try again.');
+                
+                // Show permission error for admin if needed
+                if (error.code === 'permission-denied') {
+                    showError('Permission denied. Please contact administrator to grant database access for this account.');
+                } else if (error.code === 'unauthenticated') {
+                    showError('Authentication expired. Please log in again.');
+                }
+            }
+        }
+
+        async function loadGroups() {
+            try {
+                // Extract unique groups from users
+                const groups = new Map();
+                
+                allUsers.forEach(user => {
+                    if (user.groupId && user.groupName) {
+                        groups.set(user.groupId, {
+                            id: user.groupId,
+                            name: user.groupName,
+                            members: []
+                        });
+                    }
+                });
+
+                // Count members for each group
+                allUsers.forEach(user => {
+                    if (user.groupId && groups.has(user.groupId)) {
+                        groups.get(user.groupId).members.push(user);
+                    }
+                });
+
+                allGroups = Array.from(groups.values());
+                console.log('✅ Groups loaded:', allGroups.length);
+                
+            } catch (error) {
+                console.error('❌ Error loading groups:', error);
+            }
+        }
+
+        async function loadGroupEarnings() {
+            if (!userRecord.groupId) return;
+
+            try {
+                // Find all users in the same group
+                const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+
+                const groupSnapshot = await getDocs(query(
+                    collection(db, 'Lions-Fundraising-Users'),
+                    where('groupId', '==', userRecord.groupId)
+                ));
+
+                const groupMembers = groupSnapshot.docs.map(doc => doc.data());
+                
+                // Calculate group earnings (placeholder for Phase 1)
+                const groupTotal = 0; // Phase 2/3: Sum actual earnings
+                
+                // Show group earnings card
+                document.getElementById('groupEarningsCard').classList.remove('hidden');
+                document.getElementById('groupEarningsLabel').textContent = `${userRecord.groupName} Earnings`;
+                document.getElementById('groupEarnings').textContent = `${groupTotal.toFixed(2)}`;
+                
+            } catch (error) {
+                console.error('❌ Error loading group earnings:', error);
+            }
+        }
+
+        function updatePersonalEarnings() {
+            // Phase 1: Placeholder
+            // Phase 2/3: Calculate from treasurer minus reimbursements
+            document.getElementById('totalEarnings').textContent = '$0.00';
+        }
+
+        function updateAdminStats() {
+            document.getElementById('totalUsers').textContent = allUsers.length;
+            document.getElementById('totalGroups').textContent = allGroups.length;
+            document.getElementById('totalEarnings').textContent = '$0.00'; // Total system earnings
+        }
+
+        function displayUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-500);">No users found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredUsers.map(user => {
+                const groupName = user.groupName || 'Unassigned';
+                const earnings = '$0.00'; // Phase 1 placeholder
+                
+                return `
+                    <tr style="border-bottom: var(--border-light);">
+                        <td style="padding: var(--space-3);">${user.name || 'N/A'}</td>
+                        <td style="padding: var(--space-3);">${user.email || 'N/A'}</td>
+                        <td style="padding: var(--space-3); text-align: center;">${groupName}</td>
+                        <td style="padding: var(--space-3); text-align: center;">${earnings}</td>
+                        <td style="padding: var(--space-3); text-align: center;">
+                            <button class="btn" style="padding: var(--space-1) var(--space-2); font-size: 0.75rem;" 
+                                    onclick="assignToGroup('${user.id}', '${user.name}')">
+                                Assign Group
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateGroupDropdowns() {
+            const filterSelect = document.getElementById('filterGroup');
+            const assignSelect = document.getElementById('selectGroup');
+            
+            // Update filter dropdown
+            let filterOptions = '<option value="">All Users</option><option value="unassigned">Unassigned</option>';
+            allGroups.forEach(group => {
+                filterOptions += `<option value="${group.id}">${group.name}</option>`;
+            });
+            filterSelect.innerHTML = filterOptions;
+            
+            // Update assign dropdown
+            let assignOptions = '<option value="">Remove from group</option>';
+            allGroups.forEach(group => {
+                assignOptions += `<option value="${group.id}">${group.name}</option>`;
+            });
+            assignSelect.innerHTML = assignOptions;
+        }
+
+        // Search and filtering
+        function searchUsersDebounced() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchUsers, 300);
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
+            const groupFilter = document.getElementById('filterGroup').value;
+
+            filteredUsers = allUsers.filter(user => {
+                // Search filter
+                if (searchTerm) {
+                    const matchesSearch = user.name?.toLowerCase().includes(searchTerm) ||
+                                        user.email?.toLowerCase().includes(searchTerm);
+                    if (!matchesSearch) return false;
+                }
+
+                // Group filter
+                if (groupFilter) {
+                    if (groupFilter === 'unassigned') {
+                        if (user.groupId) return false;
+                    } else {
+                        if (user.groupId !== groupFilter) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            displayUsersTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchUsers').value = '';
+            document.getElementById('filterGroup').value = '';
+            filteredUsers = [...allUsers];
+            displayUsersTable();
+        }
+
+        // Group management
+        async function createGroup() {
+            const groupName = document.getElementById('newGroupName').value.trim();
+            
+            if (!groupName) {
+                showError('Please enter a group name.');
+                return;
+            }
+
+            // Check if group already exists
+            if (allGroups.find(g => g.name.toLowerCase() === groupName.toLowerCase())) {
+                showError('A group with this name already exists.');
+                return;
+            }
+
+            // Generate group ID
+            const groupId = groupName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            
+            // Add to groups array
+            allGroups.push({
+                id: groupId,
+                name: groupName,
+                members: []
+            });
+
+            updateGroupDropdowns();
+            updateAdminStats();
+            
+            document.getElementById('newGroupName').value = '';
+            console.log('✅ Group created:', groupName);
+        }
+
+        function assignToGroup(userId, userName) {
+            currentAssignUser = { id: userId, name: userName };
+            document.getElementById('assignMessage').textContent = `Assign "${userName}" to a group`;
+            document.getElementById('groupAssignDialog').classList.remove('hidden');
+        }
+
+        async function executeGroupAssignment() {
+            if (!currentAssignUser || !db) return;
+
+            const groupId = document.getElementById('selectGroup').value;
+            const groupName = groupId ? allGroups.find(g => g.id === groupId)?.name : null;
+
+            try {
+                const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+                
+                // Update user record
+                await updateDoc(doc(db, 'Lions-Fundraising-Users', currentAssignUser.id), {
+                    groupId: groupId || null,
+                    groupName: groupName || null
+                });
+
+                // Update local data
+                const userIndex = allUsers.findIndex(u => u.id === currentAssignUser.id);
+                if (userIndex !== -1) {
+                    allUsers[userIndex].groupId = groupId || null;
+                    allUsers[userIndex].groupName = groupName || null;
+                }
+
+                // Refresh displays
+                await loadGroups();
+                searchUsers();
+                updateAdminStats();
+                
+                hideGroupAssignDialog();
+                console.log('✅ User assigned to group:', currentAssignUser.name, '→', groupName || 'Unassigned');
+
+            } catch (error) {
+                console.error('❌ Error assigning group:', error);
+                showError('Failed to assign group. Please try again.');
+            }
+        }
+
+        function hideGroupAssignDialog() {
+            document.getElementById('groupAssignDialog').classList.add('hidden');
+            currentAssignUser = null;
+        }
+
+        async function handleMagicLinkLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const errorElement = document.getElementById('loginError');
+            const successElement = document.getElementById('loginSuccess');
+
+            try {
+                errorElement.classList.add('hidden');
+                successElement.classList.add('hidden');
+
+                if (!email) {
+                    throw new Error('Please enter your email address.');
+                }
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    throw new Error('Please enter a valid email address.');
+                }
+
+                const result = await window.LIONS_AUTH.sendMagicLink(email);
+                
+                if (result.success) {
+                    successElement.classList.remove('hidden');
+                    document.getElementById('loginForm').style.display = 'none';
+                } else {
+                    throw new Error(result.error || 'Failed to send magic link');
+                }
+                
+            } catch (error) {
+                console.error('❌ Magic link error:', error);
+                errorElement.textContent = error.message;
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('loginError');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            } else {
+                alert(message);
+            }
+        }
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleMagicLinkLogin);
+            
+            // Admin controls
+            if (document.getElementById('searchUsers')) {
+                document.getElementById('searchUsers').addEventListener('input', searchUsersDebounced);
+                document.getElementById('filterGroup').addEventListener('change', searchUsers);
+                document.getElementById('createGroupBtn').addEventListener('click', createGroup);
+                document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
+            }
+            
+            // Group assignment dialog
+            document.getElementById('assignGroupBtn').addEventListener('click', executeGroupAssignment);
+            document.getElementById('cancelAssignBtn').addEventListener('click', hideGroupAssignDialog);
+        }
+
+        console.log('✅ Earnings dashboard loaded successfully - Financial focus with group management');
+    </script>
+</body>
+
+</html>

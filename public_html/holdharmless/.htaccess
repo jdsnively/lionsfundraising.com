@@ -1,0 +1,10 @@
+<FilesMatch "\.(log|json|txt|bak|old|sql)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
+<Files "config.php">
+    Require all denied
+</Files>
+<Files "debug_submit.php">
+    Require all denied
+</Files>

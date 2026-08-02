@@ -1,0 +1,58 @@
+# lionsfundraising.com, the ERP
+#
+# Rules apply from this file's directory down, so the paths below are relative
+# to the hosting account root and match the paths on the server exactly.
+#
+# The repository is the deploy image. If something must not sit on the live
+# host, it must not be tracked here either, and if something is tracked it is
+# expected to be uploaded.
+
+# Server generated, regenerated nightly by the host
+awstats/
+
+# Rotated archives and application logs. These carry participant names, email
+# addresses, phone numbers and IP addresses and must never enter version
+# control.
+#
+# Log directories are excluded by their CONTENTS rather than as directories.
+# Excluding a directory makes Git refuse to descend into it, and a negation for
+# a file inside can then never match. That is how public_html/logs/.htaccess,
+# the deny rule protecting roughly 700KB of session and audit logs, stayed out
+# of version control after being created on the server in July 2026.
+**/logs/*
+!**/logs/.htaccess
+*.log
+
+# Access rules are deployable source and are never ignored, wherever they sit.
+!**/.htaccess
+
+# Credentials. Nothing containing a key belongs in the repository. The Brevo
+# key lives above the docroot and is required in, never inlined.
+.env
+**/.env
+service-account.json
+**/service-account.json
+.htpasswd
+
+# Archives and scratch
+*.zip
+**/tmp/rate-limits/
+_to_delete/
+
+# Local environment
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Submission records written by the application
+**/holdharmless/submissions.log
+**/holdharmless/agreements.log
+**/hfc/orders.log
+
+# Retired copies kept on disk for reference, never deployed
+lionsfundraising_BAK/
+
+# Credentials file at the account root. Never committed.
+lions-secrets.php

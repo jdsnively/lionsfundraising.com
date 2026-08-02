@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Sign In - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-auth-card.css?v=1">
+</head>
+
+<body>
+
+    <main class="card">
+
+        <img class="brand-mark" src="/media/lsc_head_128.png" width="84" height="76"
+             alt="Lions Sports Club">
+        <p class="brand-name">Lions Sports Club</p>
+
+        <!-- Request a link ------------------------------------------- -->
+        <section id="view-request" class="view is-active">
+            <h1>Sign in</h1>
+            <p>Enter the email address Lions Sports Club has on file and we will
+               send you a sign-in link. There is no password to remember.</p>
+
+            <form id="signin-form" novalidate>
+                <div class="field">
+                    <label for="signin-email">Email address</label>
+                    <input type="email" id="signin-email" name="email" required
+                           autocomplete="email" inputmode="email"
+                           autocapitalize="none" spellcheck="false">
+                </div>
+                <button type="submit" class="btn" id="signin-submit">Send sign-in link</button>
+            </form>
+
+            <div class="banner is-error" id="signin-error" hidden></div>
+        </section>
+
+        <!-- Link sent ------------------------------------------------- -->
+        <section id="view-sent" class="view" aria-live="polite">
+            <div class="banner is-success" id="sent-banner"></div>
+            <h1>Check your email</h1>
+            <p>Open the link on this device if you can. It expires after a short
+               time and can only be used once.</p>
+            <p>If it has not arrived in a few minutes, look in your junk or spam
+               folder and mark it as safe so the next one reaches your inbox.</p>
+            <button type="button" class="btn btn-secondary" id="sent-retry">Use a different address</button>
+        </section>
+
+        <p class="footnote">
+            Not registered yet? <a href="/register">Register here</a>, or email
+            <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a>.
+        </p>
+
+    </main>
+
+    <!-- Console gate. Must load before any Lions script so that diagnostic
+         output is suppressed on a production page load. -->
+    <script src="/js/lions-log.js?v=1"></script>
+
+    <script type="module">
+        import { lionsAuth } from './lions-auth.js';
+
+        const views = {
+            request: document.getElementById('view-request'),
+            sent:    document.getElementById('view-sent')
+        };
+
+        const form   = document.getElementById('signin-form');
+        const input  = document.getElementById('signin-email');
+        const button = document.getElementById('signin-submit');
+        const error  = document.getElementById('signin-error');
+
+        function show(name) {
+            Object.keys(views).forEach(key => {
+                views[key].classList.toggle('is-active', key === name);
+            });
+        }
+
+        /**
+         * Carries the page the visitor was trying to reach through the sign-in
+         * round trip, so that an emailed invitation to a specific event returns
+         * them to that event rather than to the front page. Only a same-origin
+         * path is accepted; lions-auth.js validates it again before use.
+         */
+        function requestedDestination() {
+            const next = new URLSearchParams(window.location.search).get('next');
+            return next && next.startsWith('/') && !next.startsWith('//') ? next : null;
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            error.hidden = true;
+            button.disabled = true;
+            button.textContent = 'Sending';
+
+            const result = await lionsAuth.requestAccess(
+                input.value,
+                'signin',
+                requestedDestination()
+            );
+
+            button.disabled = false;
+            button.textContent = 'Send sign-in link';
+
+            if (result.success) {
+                document.getElementById('sent-banner').textContent = result.message;
+                show('sent');
+                return;
+            }
+
+            error.textContent = result.error;
+            error.hidden = false;
+            input.focus();
+        });
+
+        document.getElementById('sent-retry').addEventListener('click', () => {
+            input.value = '';
+            show('request');
+            input.focus();
+        });
+    </script>
+
+</body>
+
+</html>

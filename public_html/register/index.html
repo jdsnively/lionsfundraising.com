@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Sports Club - Register</title>
+
+    <!-- Protected favicon implementation - EXACT MATCH TO DASHBOARD -->
+    <link rel="icon" type="image/png" id="dynamicFavicon">
+    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
+    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* PRIMARY BRAND COLORS - EXACT MATCH TO DASHBOARD */
+            --navy-blue: #1a365d;
+            --navy-blue-light: #2c5282;
+            --navy-blue-dark: #1a202c;
+
+            /* NEUTRAL GRAYS - EXACT MATCH TO DASHBOARD */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f4f4f5;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            /* SEMANTIC COLORS - EXACT MATCH TO DASHBOARD */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+
+            /* TYPOGRAPHY - EXACT MATCH TO DASHBOARD */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-display: 'Playfair Display', 'Times New Roman', serif;
+
+            /* FLAT DESIGN - EXACT MATCH TO DASHBOARD */
+            --border-light: 1px solid var(--gray-200);
+            --border-medium: 2px solid var(--gray-300);
+            --border-focus: 2px solid var(--navy-blue);
+
+            /* BORDER RADIUS - EXACT MATCH TO DASHBOARD */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* SPACING - EXACT MATCH TO DASHBOARD */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+
+            /* LOGO DATA - EXACT MATCH TO DASHBOARD */
+            --logo-data: url('https://lionsfundraising.com/media/lsc_head.png');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--navy-blue);
+            min-height: 100vh;
+            color: var(--gray-700);
+            position: relative;
+            padding: var(--space-6);
+        }
+
+        /* MAIN CONTAINER - EXACT MATCH TO DASHBOARD (1600px) */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - calc(var(--space-6) * 2) - calc(var(--space-4) * 2) - 120px);
+            border: var(--border-light);
+        }
+
+        /* Enhanced Logo Protection - RESTORED */
+        .image-protected {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Print Protection - RESTORED */
+        @media print {
+            .logo {
+                filter: blur(2px) !important;
+                opacity: 0.3 !important;
+            }
+
+            #dynamicFavicon,
+            #dynamicFaviconShortcut,
+            #dynamicFaviconApple {
+                display: none !important;
+            }
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            text-align: center;
+            margin-bottom: var(--space-16);
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--navy-blue);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            line-height: 1.1;
+        }
+
+        /* REGISTRATION FORM */
+        .registration-section {
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
+            margin-bottom: var(--space-12);
+            border: var(--border-medium);
+            border-color: var(--warning);
+        }
+
+        /* People Management with Individual Colors */
+        .people-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .person-section {
+            background: var(--white);
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-8);
+            border: 3px solid;
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .person-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .person-title {
+            font-family: var(--font-display);
+            color: var(--navy-blue);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .remove-person-btn {
+            background: var(--error);
+            color: var(--white);
+            border: none;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .remove-person-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--space-6);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-3);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: var(--space-4) var(--space-6);
+            border: var(--border-medium);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: var(--white);
+            color: var(--gray-700);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--navy-blue);
+        }
+
+        /* Phone number validation styling */
+        .form-group input.phone-error {
+            border-color: var(--error);
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        /* License Section */
+        .license-section {
+            background: var(--gray-50);
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            margin-top: var(--space-6);
+            border: var(--border-light);
+        }
+
+        .license-section h4 {
+            color: var(--navy-blue);
+            margin-bottom: var(--space-6);
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: var(--space-6);
+            margin-top: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            cursor: pointer;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+            background: var(--white);
+            border: var(--border-medium);
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .radio-option:hover {
+            background: var(--gray-50);
+            border-color: var(--navy-blue);
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin: 0;
+            accent-color: var(--navy-blue);
+            transform: scale(1.2);
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* File Upload */
+        .upload-section {
+            margin: var(--space-6) 0;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .upload-area {
+            text-align: center;
+            padding: var(--space-6);
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            background: var(--gray-50);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--navy-blue);
+            background: var(--gray-100);
+        }
+
+        .upload-area.has-file {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-2);
+            display: block;
+        }
+
+        .upload-text {
+            font-weight: 600;
+            color: var(--navy-blue);
+            margin-bottom: var(--space-1);
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-name {
+            color: var(--success);
+            font-weight: 500;
+            margin-top: var(--space-2);
+            font-size: 0.9rem;
+        }
+
+        /* BUTTON STYLES - EXACT MATCH TO DASHBOARD */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-family: var(--font-primary);
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--navy-blue);
+            color: var(--white);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+        }
+
+        .btn-primary:hover {
+            background: var(--navy-blue-dark);
+            border-color: var(--navy-blue-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-500);
+            color: var(--white);
+            border: var(--border-medium);
+            border-color: var(--gray-500);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-700);
+            border-color: var(--gray-700);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: var(--white);
+            border: var(--border-medium);
+            border-color: var(--info);
+        }
+
+        .btn-info:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+            border: var(--border-medium);
+            border-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .add-person-btn {
+            background: var(--success);
+            color: var(--white);
+            padding: var(--space-4) var(--space-8);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: var(--space-8);
+            transition: all 0.2s ease;
+        }
+
+        .add-person-btn:hover {
+            background: #059669;
+        }
+
+        .submit-btn {
+            background: var(--navy-blue);
+            color: var(--white);
+            padding: var(--space-6) var(--space-12);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            margin-top: var(--space-8);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: var(--navy-blue-dark);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Register More People Button */
+        .register-more-btn {
+            background: var(--gray-500);
+            color: var(--white);
+            padding: var(--space-4) var(--space-8);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: var(--space-6);
+            transition: all 0.2s ease;
+        }
+
+        .register-more-btn:hover {
+            background: var(--gray-700);
+        }
+
+        /* Messages */
+        .message {
+            margin-top: var(--space-6);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: var(--gray-200);
+            color: var(--navy-blue);
+            border: var(--border-medium);
+            border-color: var(--navy-blue);
+            font-size: 1.1rem;
+            padding: var(--space-8);
+            font-family: var(--font-display);
+            line-height: 1.4;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: var(--border-medium);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .message.loading {
+            background: var(--gray-50);
+            color: var(--navy-blue);
+            border: var(--border-medium);
+            border-color: var(--gray-300);
+        }
+
+        /* License Notice */
+        .license-notice {
+            background: var(--gray-50);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-6);
+            text-align: center;
+            border: var(--border-light);
+        }
+
+        .license-notice-text {
+            color: var(--gray-700);
+            font-size: 1rem;
+            margin-bottom: var(--space-4);
+            font-weight: 500;
+        }
+
+        /* Email Setup Instructions */
+        .email-instructions {
+            background: var(--info);
+            color: var(--white);
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-6);
+            text-align: center;
+            border: var(--border-medium);
+            border-color: var(--info);
+        }
+
+        .email-instructions-text {
+            font-size: 1rem;
+            margin-bottom: var(--space-4);
+            font-weight: 500;
+        }
+
+        /* FOOTER - EXACT MATCH TO DASHBOARD */
+        .footer {
+            background: transparent;
+            border: none;
+            padding: var(--space-8);
+            text-align: center;
+            margin-top: var(--space-12);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-6);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--white) !important;
+            text-decoration: none;
+            font-size: 0.925rem;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            font-family: var(--font-primary);
+        }
+
+        .footer a:hover {
+            color: var(--warning) !important;
+            text-decoration: underline;
+        }
+
+        .footer-brand {
+            margin-top: var(--space-4);
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 90%;
+            border: var(--border-light);
+        }
+
+        .modal-content h3 {
+            color: var(--navy-blue);
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .modal-content p {
+            color: var(--gray-700);
+            margin-bottom: var(--space-6);
+            line-height: 1.5;
+        }
+
+        .modal-phone-display {
+            background: var(--gray-50);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: var(--space-4) 0;
+            border: var(--border-light);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-buttons .btn {
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        /* Duplicate Registration Dialog */
+        .duplicate-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .duplicate-content {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 90%;
+            border: var(--border-light);
+            text-align: center;
+        }
+
+        .duplicate-content h3 {
+            color: var(--error);
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .duplicate-content p {
+            color: var(--gray-700);
+            margin-bottom: var(--space-4);
+            line-height: 1.5;
+        }
+
+        .duplicate-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--space-6);
+        }
+
+        .btn-continue {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-continue:hover {
+            background: #d97706;
+        }
+
+        .btn-cancel {
+            background: var(--gray-500);
+            color: var(--white);
+        }
+
+        .btn-cancel:hover {
+            background: var(--gray-700);
+        }
+
+        /* RESPONSIVE DESIGN - EXACT MATCH TO DASHBOARD */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+
+            .main-container {
+                padding: var(--space-6);
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .radio-group {
+                flex-direction: column;
+            }
+
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .person-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+
+            .footer-nav {
+                flex-direction: column;
+                gap: var(--space-3);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Firebase Connection Status */
+        .firebase-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .firebase-status.connecting {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .firebase-status.connected {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .firebase-status.error {
+            background: var(--error);
+            color: var(--white);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Firebase Connection Status -->
+    <div id="firebaseStatus" class="firebase-status connecting">
+        🔄 Connecting to Firebase...
+    </div>
+
+    <!-- Universal Header Container -->
+    <div id="headerContainer"></div>
+
+    <div class="main-container">
+        <main>
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <h1 class="hero-title">Register Now</h1>
+            </section>
+
+            <!-- Registration Form -->
+            <section class="registration-section" id="registrationSection">
+                <form id="registrationForm" method="post">
+                    <div id="peopleSection" class="people-section">
+                        <!-- Person 1 will be added by JavaScript -->
+                    </div>
+
+                    <button type="button" class="add-person-btn" onclick="addPerson()">
+                        ➕ Add Another Person
+                    </button>
+
+                    <button type="submit" class="submit-btn">Submit Registration</button>
+                </form>
+
+                <div id="message"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- FOOTER - OUTSIDE MAIN CONTAINER -->
+    <footer class="footer">
+        <nav class="footer-nav">
+            <a href="/">Home</a>
+            <a href="/events">Events</a>
+            <a href="/reimbursement">Reimbursement</a>
+            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
+        </nav>
+        <div class="footer-brand">
+            © 2025 Lions Sports Club. All rights reserved.<br>
+            Giving God The Glory Through Sports
+        </div>
+    </footer>
+
+    <!-- Phone Number Validation Modal -->
+    <div id="phoneValidationModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>📞 Verify Phone Number</h3>
+            <p>The phone number you entered doesn't appear to be 10 digits:</p>
+            <div id="phoneDisplay" class="modal-phone-display"></div>
+            <p>Please verify this is correct or go back to fix it.</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="hidePhoneModal()">Go Back & Fix</button>
+                <button type="button" class="btn btn-primary" onclick="confirmPhoneNumber()">This is Correct</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate Registration Dialog -->
+    <div id="duplicateDialog" class="duplicate-dialog hidden">
+        <div class="duplicate-content">
+            <h3>Registration Error</h3>
+            <p id="duplicateMessage"></p>
+            <p>If this is you, you have already registered. If this is not you, then please click continue to register.
+            </p>
+            <div class="duplicate-buttons">
+                <button class="btn btn-continue" onclick="continueDuplicateRegistration()">Continue Registration</button>
+                <button class="btn btn-cancel" onclick="cancelDuplicateRegistration()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Universal Systems -->
+    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+    <script src="https://lionsfundraising.com/universal-header.js"></script>
+    <script src="https://lionsfundraising.com/relationship-config.js"></script>
+
+    <!-- FIXED FIREBASE INTEGRATION - NO DUPLICATE INITIALIZATION -->
+    <script>
+        // 🔧 SURGICAL FIX: Wait for universal-auth.js to initialize Firebase
+        // Remove duplicate Firebase initialization - use auth system instead
+        
+        // NUCLEAR LOGO PROTECTION - RESTORED EXACT MATCH TO DASHBOARD
+        function protectLogo() {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function () {
+                console.log('✅ Logo image loaded successfully');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                ctx.drawImage(img, 0, 0);
+
+                // Apply light protection overlay
+                ctx.globalCompositeOperation = 'overlay';
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.02)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.globalCompositeOperation = 'source-over';
+
+                const dataURL = canvas.toDataURL('image/png');
+                document.documentElement.style.setProperty('--logo-data', `url("${dataURL}")`);
+
+                // Set protected favicon using same data
+                const favicon = document.getElementById('dynamicFavicon');
+                const faviconShortcut = document.getElementById('dynamicFaviconShortcut');
+                const faviconApple = document.getElementById('dynamicFaviconApple');
+
+                if (favicon) favicon.href = dataURL;
+                if (faviconShortcut) faviconShortcut.href = dataURL;
+                if (faviconApple) faviconApple.href = dataURL;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log('✅ Logo protection applied and favicon set');
+            };
+
+            img.onerror = function () {
+                console.warn('⚠️ Logo failed to load from external source, using fallback');
+                
+                // Create a simple fallback logo
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 60;
+                canvas.height = 60;
+                
+                // Draw Lions logo fallback
+                ctx.fillStyle = '#1a365d';
+                ctx.fillRect(0, 0, 60, 60);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('L', 30, 30);
+                
+                const fallbackDataURL = canvas.toDataURL('image/png');
+                document.documentElement.style.setProperty('--logo-data', `url("${fallbackDataURL}")`);
+
+                const favicon = document.getElementById('dynamicFavicon');
+                const faviconShortcut = document.getElementById('dynamicFaviconShortcut');
+                const faviconApple = document.getElementById('dynamicFaviconApple');
+
+                if (favicon) favicon.href = fallbackDataURL;
+                if (faviconShortcut) faviconShortcut.href = fallbackDataURL;
+                if (faviconApple) faviconApple.href = fallbackDataURL;
+
+                console.log('✅ Fallback logo applied');
+            };
+
+            // Enterprise-level URL obfuscation - RESTORED EXACT MATCH TO DASHBOARD
+            const t = new Date().getTime();
+            const r = Math.floor(Math.random() * 1000);
+            const s = [104,116,116,112,115,58,47,47].map(c => String.fromCharCode(c)).join('');
+            const d = [108,105,111,110,115,102,117,110,100,114,97,105,115,105,110,103].map(c => String.fromCharCode(c)).join('');
+            const e = String.fromCharCode(46) + [99,111,109].map(c => String.fromCharCode(c)).join('');
+            const p = [47,109,101,100,105,97,47].map(c => String.fromCharCode(c)).join('');
+            const f = [108,115,99,95,104,101,97,100].map(c => String.fromCharCode(c)).join('');
+            const x = String.fromCharCode(46) + [112,110,103].map(c => String.fromCharCode(c)).join('');
+            
+            const segments = [s, d, e, p, f, x];
+            const url = segments.join('');
+            
+            const key = (t + r) % 255;
+            const encoded = url.split('').map((c, i) => c.charCodeAt(0) ^ (key + i)).join(',');
+            
+            const decoded = encoded.split(',').map((n, i) => 
+                String.fromCharCode(parseInt(n) ^ (key + i))
+            ).join('');
+            
+            img.src = decoded;
+            console.log('🔄 Loading protected resource...');
+        }
+
+        function enhancedLogoProtection() {
+            const logoElements = document.querySelectorAll('.logo');
+            logoElements.forEach(element => {
+                element.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('selectstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('dragstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.addEventListener('touchstart', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, { passive: false });
+
+                element.classList.add('image-protected');
+            });
+        }
+
+        // 🔧 ENHANCED FIREBASE ACCESS PATTERN - Proper service waiting
+        async function waitForFirebaseAuth() {
+            const statusDiv = document.getElementById('firebaseStatus');
+            
+            try {
+                // Wait for LIONS_AUTH to be available
+                if (!window.LIONS_AUTH) {
+                    throw new Error('LIONS_AUTH not available');
+                }
+
+                // Wait for basic initialization
+                await window.LIONS_AUTH.waitForInitialization();
+                
+                // 🔧 IMPROVED: Use the new waitForFirebaseServices method
+                statusDiv.textContent = '🔄 Waiting for Firebase services...';
+                const firebaseReady = await window.LIONS_AUTH.waitForFirebaseServices();
+                
+                if (!firebaseReady || !window.LIONS_AUTH.firestore || !window.LIONS_AUTH.auth) {
+                    console.log('🔄 Firebase services not ready, trying fallback initialization...');
+                    return await initializeFirebaseFallback(statusDiv);
+                }
+                
+                // Set up global Firebase access through auth system
+                window.db = window.LIONS_AUTH.firestore;
+                window.auth = window.LIONS_AUTH.auth;
+                
+                // Import Firestore functions and make them available globally
+                const { collection, doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+                window.collection = collection;
+                window.doc = doc;
+                window.setDoc = setDoc;
+                window.getDoc = getDoc;
+                
+                statusDiv.className = 'firebase-status connected';
+                statusDiv.textContent = '✅ Firebase Connected via Auth';
+                setTimeout(() => statusDiv.style.display = 'none', 2000);
+                
+                console.log('✅ Firebase services accessed through LIONS_AUTH');
+                return true;
+                
+            } catch (error) {
+                console.error('Firebase connection error:', error);
+                console.log('🔄 Trying fallback Firebase initialization...');
+                return await initializeFirebaseFallback(statusDiv);
+            }
+        }
+        
+        // 🔧 FALLBACK: Direct Firebase initialization if auth system fails
+        async function initializeFirebaseFallback(statusDiv) {
+            try {
+                statusDiv.textContent = '🔄 Trying direct Firebase connection...';
+                
+                // Direct Firebase initialization as fallback
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js');
+                const { getFirestore, collection, doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js');
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAexNeRq7viHV5ATcaQu6yA3ZC-veo7UjY",
+                    authDomain: "lionsfundraising-1f854.firebaseapp.com",
+                    projectId: "lionsfundraising-1f854",
+                    storageBucket: "lionsfundraising-1f854.firebasestorage.app",
+                    messagingSenderId: "220154119704",
+                    appId: "1:220154119704:web:c570853fabb7e6d59b656d",
+                    measurementId: "G-GGK1VHTH0D"
+                };
+
+                // Try to use existing app first, otherwise create new one
+                let app;
+                try {
+                    const { getApp } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js');
+                    app = getApp(); // Get existing app
+                } catch (e) {
+                    app = initializeApp(firebaseConfig); // Create new app
+                }
+                
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+                
+                // Make services available globally
+                window.db = db;
+                window.auth = auth;
+                window.collection = collection;
+                window.doc = doc;
+                window.setDoc = setDoc;
+                window.getDoc = getDoc;
+                
+                statusDiv.className = 'firebase-status connected';
+                statusDiv.textContent = '✅ Firebase Connected (Direct)';
+                setTimeout(() => statusDiv.style.display = 'none', 2000);
+                
+                console.log('✅ Firebase services initialized directly (fallback)');
+                return true;
+                
+            } catch (fallbackError) {
+                console.error('Fallback Firebase initialization failed:', fallbackError);
+                statusDiv.className = 'firebase-status error';
+                statusDiv.textContent = '❌ Firebase Connection Failed';
+                
+                // Show error but don't completely block page
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+                
+                return false;
+            }
+        }
+
+        // Configuration
+        const CONFIG = {
+            COLORS: [
+                '#f59e0b',    // Warning Orange (primary accent)
+                '#10b981',    // Success Green 
+                '#ef4444',    // Error Red
+                '#3b82f6',    // Info Blue
+                '#1a365d',    // Navy Blue Dark
+                '#2c5282',    // Navy Blue Light
+                '#6b7280',    // Gray 500
+                '#374151'     // Gray 700
+            ],
+            MAX_PEOPLE: 50
+        };
+
+        // Enhanced Registration Form Class with RESTORED CONFIRMATION
+        class RegistrationForm {
+            constructor() {
+                this.personCount = 0;
+                this.familyAdminEmail = null;
+                this.registeredPeople = [];
+                this.duplicateAttempt = false;
+                this.duplicatePersonData = null;
+                this.pendingSubmission = null;
+                this.registrationComplete = false;
+                this.firebaseReady = false;
+                this.init();
+            }
+
+            async init() {
+                // Wait for Firebase to be ready
+                this.firebaseReady = await waitForFirebaseAuth();
+                this.setupEventListeners();
+                this.addPerson(); // Add first person
+            }
+
+            setupEventListeners() {
+                document.getElementById('registrationForm').addEventListener('submit', (e) => {
+                    this.handleFormSubmit(e);
+                });
+            }
+
+            // Phone number validation
+            validatePhoneNumber(phone) {
+                // Remove all non-digit characters
+                const cleanPhone = phone.replace(/\D/g, '');
+                return cleanPhone.length === 10;
+            }
+
+            showPhoneValidationModal(phone, personName) {
+                document.getElementById('phoneDisplay').textContent = phone;
+                document.querySelector('#phoneValidationModal h3').textContent = `📞 Verify Phone Number for ${personName}`;
+                document.getElementById('phoneValidationModal').classList.remove('hidden');
+            }
+
+            // Person management with individual colors (PRESERVED FUNCTIONALITY)
+            addPerson() {
+                if (this.personCount >= CONFIG.MAX_PEOPLE) {
+                    alert(`Maximum ${CONFIG.MAX_PEOPLE} people allowed per registration.`);
+                    return;
+                }
+
+                this.personCount++;
+                const personDiv = document.createElement('div');
+                personDiv.className = 'person-section';
+                personDiv.id = `person-${this.personCount}`;
+                
+                // Apply unique border color for visual differentiation
+                const colorIndex = (this.personCount - 1) % CONFIG.COLORS.length;
+                personDiv.style.borderColor = CONFIG.COLORS[colorIndex];
+                
+                personDiv.innerHTML = this.createPersonHTML(this.personCount);
+                document.getElementById('peopleSection').appendChild(personDiv);
+                this.setupPersonEventListeners(this.personCount);
+            }
+
+            createPersonHTML(personNum) {
+                const showRemoveBtn = personNum > 1;
+                
+                return `
+                    <div class="person-header">
+                        <h3 class="person-title">Person ${personNum}</h3>
+                        ${showRemoveBtn ? `<button type="button" class="remove-person-btn" onclick="registrationForm.removePerson(${personNum})">Remove</button>` : ''}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="name${personNum}">Full Name:</label>
+                        <input type="text" id="name${personNum}" name="name${personNum}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email${personNum}">Email Address:</label>
+                        <input type="email" id="email${personNum}" name="email${personNum}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone${personNum}">Phone Number:</label>
+                        <input type="tel" id="phone${personNum}" name="phone${personNum}" required 
+                               placeholder="555-123-4567" 
+                               onblur="registrationForm.validatePhoneOnBlur(${personNum})">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="relationship${personNum}">This person is a:</label>
+                        <select id="relationship${personNum}" name="relationship${personNum}" required>
+                            ${this.generateRelationshipOptions()}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shirtSize${personNum}">Adult Shirt Size:</label>
+                        <select id="shirtSize${personNum}" name="shirtSize${personNum}" required>
+                            <option value="">Select shirt size</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="2X">2X</option>
+                            <option value="3X">3X</option>
+                            <option value="NA">NA</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age${personNum}">This person is:</label>
+                        <select id="age${personNum}" name="age${personNum}" required onchange="registrationForm.handleAgeChange(${personNum})">
+                            <option value="">Select age range</option>
+                            <option value="16 to 17">16 to 17</option>
+                            <option value="18 to 20">18 to 20</option>
+                            <option value="21 and over">21 and over</option>
+                        </select>
+                    </div>
+                    
+                    <div class="license-section hidden" id="licenseSection${personNum}">
+                        <h4>Alcohol License Information</h4>
+                        
+                        <div class="form-group">
+                            <label>Do you currently have an active alcohol license?</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="hasLicenseYes${personNum}" name="hasLicense${personNum}" value="yes" onchange="registrationForm.handleLicenseChange(${personNum})">
+                                    <label for="hasLicenseYes${personNum}">Yes</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="hasLicenseNo${personNum}" name="hasLicense${personNum}" value="no" onchange="registrationForm.handleLicenseChange(${personNum})">
+                                    <label for="hasLicenseNo${personNum}">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden" id="licenseDetails${personNum}">
+                            <div class="form-group">
+                                <label for="licenseNumber${personNum}">License number:</label>
+                                <input type="text" id="licenseNumber${personNum}" name="licenseNumber${personNum}">
+                            </div>
+                            <div class="form-group">
+                                <label for="licenseExpiration${personNum}">Expiration date:</label>
+                                <input type="date" id="licenseExpiration${personNum}" name="licenseExpiration${personNum}">
+                            </div>
+                            <div class="form-group">
+                                <label>Have you completed alcohol training?</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="trainingYes${personNum}" name="training${personNum}" value="yes">
+                                        <label for="trainingYes${personNum}">Yes</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="trainingNo${personNum}" name="training${personNum}" value="no">
+                                        <label for="trainingNo${personNum}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="upload-section">
+                                <div class="upload-grid">
+                                    <div class="upload-area" onclick="document.getElementById('licenseFile${personNum}').click()">
+                                        <span class="upload-icon">📄</span>
+                                        <div class="upload-text">Upload License</div>
+                                        <div class="upload-hint">PDF, JPG, PNG (max 10MB)</div>
+                                        <input type="file" id="licenseFile${personNum}" class="file-input" accept=".pdf,.jpg,.jpeg,.png" onchange="registrationForm.handleFileUpload(${personNum}, 'license')">
+                                        <div class="file-name" id="licenseFileName${personNum}"></div>
+                                    </div>
+                                    
+                                    <div class="upload-area" onclick="document.getElementById('trainingFile${personNum}').click()">
+                                        <span class="upload-icon">🎓</span>
+                                        <div class="upload-text">Upload Training Certificate</div>
+                                        <div class="upload-hint">PDF, JPG, PNG (max 10MB)</div>
+                                        <input type="file" id="trainingFile${personNum}" class="file-input" accept=".pdf,.jpg,.jpeg,.png" onchange="registrationForm.handleFileUpload(${personNum}, 'training')">
+                                        <div class="file-name" id="trainingFileName${personNum}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden" id="willingSection${personNum}">
+                            <div class="form-group">
+                                <label>Would you be willing to obtain an alcohol license?</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="willingYes${personNum}" name="willing${personNum}" value="yes">
+                                        <label for="willingYes${personNum}">Yes</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="willingNo${personNum}" name="willing${personNum}" value="no">
+                                        <label for="willingNo${personNum}">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            generateRelationshipOptions() {
+                if (typeof RELATIONSHIP_CONFIG !== 'undefined' && RELATIONSHIP_CONFIG) {
+                    return RELATIONSHIP_CONFIG.generateOptions(true);
+                } else {
+                    // Fallback if config not loaded
+                    return `<option value="">Select relationship</option>
+                            <option value="Lions Player/Cheerleader">Lions Player/Cheerleader</option>
+                            <option value="Lions Parent">Lions Parent</option>
+                            <option value="Lions Sibling">Lions Sibling</option>
+                            <option value="Lions Booster">Lions Booster</option>
+                            <option value="Lions Alumni">Lions Alumni</option>
+                            <option value="En Pointe Booster">En Pointe Booster</option>
+                            <option value="InGrace Homeschool">InGrace Homeschool</option>
+                            <option value="Other Church/Mission">Other Church/Mission</option>
+                            <option value="Test">Test</option>
+                            <option value="Valor Football">Valor Football</option>`;
+                }
+            }
+
+            setupPersonEventListeners(personNum) {
+                // Event listeners handled by onchange attributes in HTML
+            }
+
+            validatePhoneOnBlur(personNum) {
+                const phoneInput = document.getElementById(`phone${personNum}`);
+                const phone = phoneInput.value.trim();
+                
+                if (phone && !this.validatePhoneNumber(phone)) {
+                    phoneInput.classList.add('phone-error');
+                } else {
+                    phoneInput.classList.remove('phone-error');
+                }
+            }
+
+            removePerson(personNum) {
+                document.getElementById(`person-${personNum}`).remove();
+            }
+
+            handleAgeChange(personNum) {
+                const ageValue = document.getElementById(`age${personNum}`).value;
+                const licenseSection = document.getElementById(`licenseSection${personNum}`);
+                
+                if (ageValue === '21 and over') {
+                    licenseSection.classList.remove('hidden');
+                } else {
+                    licenseSection.classList.add('hidden');
+                    this.clearLicenseFields(personNum);
+                }
+            }
+
+            handleLicenseChange(personNum) {
+                const hasLicense = document.querySelector(`input[name="hasLicense${personNum}"]:checked`)?.value;
+                const detailsSection = document.getElementById(`licenseDetails${personNum}`);
+                const willingSection = document.getElementById(`willingSection${personNum}`);
+                
+                if (hasLicense === 'yes') {
+                    detailsSection.classList.remove('hidden');
+                    willingSection.classList.add('hidden');
+                } else if (hasLicense === 'no') {
+                    detailsSection.classList.add('hidden');
+                    willingSection.classList.remove('hidden');
+                }
+            }
+
+            clearLicenseFields(personNum) {
+                const hasLicenseRadios = document.querySelectorAll(`input[name="hasLicense${personNum}"]`);
+                const willingRadios = document.querySelectorAll(`input[name="willing${personNum}"]`);
+                
+                hasLicenseRadios.forEach(radio => radio.checked = false);
+                willingRadios.forEach(radio => radio.checked = false);
+                
+                document.getElementById(`licenseDetails${personNum}`).classList.add('hidden');
+                document.getElementById(`willingSection${personNum}`).classList.add('hidden');
+            }
+
+            handleFileUpload(personNum, fileType) {
+                const fileInput = document.getElementById(`${fileType}File${personNum}`);
+                const fileName = document.getElementById(`${fileType}FileName${personNum}`);
+                const uploadArea = fileInput.closest('.upload-area');
+                
+                if (fileInput.files && fileInput.files[0]) {
+                    fileName.textContent = fileInput.files[0].name;
+                    uploadArea.classList.add('has-file');
+                } else {
+                    fileName.textContent = '';
+                    uploadArea.classList.remove('has-file');
+                }
+            }
+
+            // Form submission with RESTORED CONFIRMATION FLOW
+            async handleFormSubmit(event) {
+                event.preventDefault();
+                
+                const submitBtn = document.querySelector('.submit-btn');
+                const originalText = submitBtn.textContent;
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Submitting...';
+                    this.showMessage('Submitting registration...', 'loading');
+
+                    // 🔧 FIXED: Check Firebase connection through auth system
+                    if (!this.firebaseReady || !window.db) {
+                        throw new Error('Database connection not available. Please refresh the page and try again.');
+                    }
+
+                    const formData = new FormData(event.target);
+                    const people = [];
+
+                    // Collect data for each person
+                    const personElements = document.querySelectorAll('.person-section');
+                    for (let i = 0; i < personElements.length; i++) {
+                        const personId = personElements[i].id.split('-')[1];
+                        const personData = this.createPersonData(formData, personId);
+                        people.push(personData);
+                    }
+
+                    // Validate phone numbers and show modal if needed
+                    for (const person of people) {
+                        if (!this.validatePhoneNumber(person.phone)) {
+                            this.pendingSubmission = { people, formData };
+                            this.showPhoneValidationModal(person.phone, person.name);
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalText;
+                            return;
+                        }
+                    }
+
+                    // Validate required fields
+                    for (const person of people) {
+                        if (!person.name || !person.email || !person.phone || !person.relationship) {
+                            throw new Error(`Missing required information for ${person.name || 'one of the people'}`);
+                        }
+                    }
+
+                    // Set family admin (first person registered)
+                    if (people.length > 0) {
+                        this.familyAdminEmail = people[0].email;
+                    }
+
+                    // Save to Firebase using EXACT working pattern
+                    await this.saveRegistrations(people, []);
+                    
+                    // Mark registration as complete
+                    this.registrationComplete = true;
+                    this.registeredPeople = people;
+                    
+                    // Show RESTORED confirmation (not account setup)
+                    this.showRegistrationSuccess();
+                    
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    this.showMessage(this.getErrorMessage(error), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            }
+
+            createPersonData(formData, personId) {
+                const personData = {
+                    name: formData.get(`name${personId}`),
+                    email: formData.get(`email${personId}`),
+                    phone: formData.get(`phone${personId}`),
+                    relationship: formData.get(`relationship${personId}`),
+                    ageRange: formData.get(`age${personId}`),
+                    shirtSize: formData.get(`shirtSize${personId}`),
+                    hasLOSShirt: false,
+                    timestamp: new Date(),
+                    registrationId: Date.now() + '-' + personId
+                };
+
+                // Add license information if 21+
+                if (formData.get(`age${personId}`) === '21 and over') {
+                    personData.hasLicense = formData.get(`hasLicense${personId}`);
+                    
+                    if (formData.get(`hasLicense${personId}`) === 'yes') {
+                        personData.licenseNumber = formData.get(`licenseNumber${personId}`);
+                        personData.licenseExpiration = formData.get(`licenseExpiration${personId}`);
+                        personData.alcoholTrainingCompleted = formData.get(`training${personId}`);
+                        personData.licenseFile = document.getElementById(`licenseFile${personId}`).files[0];
+                        personData.trainingFile = document.getElementById(`trainingFile${personId}`).files[0];
+                    } else {
+                        personData.willingToObtainLicense = formData.get(`willing${personId}`);
+                    }
+                }
+
+                return personData;
+            }
+
+            // Firebase save using EXACT working pattern
+            async saveRegistrations(people, uploadResults) {
+                // 🔧 FIXED: Use Firebase through auth system
+                if (!window.db || !window.setDoc || !window.doc || !window.collection || !window.getDoc) {
+                    throw new Error('Firebase services not available');
+                }
+
+                const usedNames = new Set();
+                
+                // If this is a duplicate attempt and we have stored data, use different naming
+                if (this.duplicateAttempt && this.duplicatePersonData) {
+                    for (const person of people) {
+                        const uploadResult = uploadResults.find(r => r.personName === person.name);
+                        if (uploadResult) {
+                            person.uploadResult = uploadResult;
+                        }
+                        
+                        // Force a unique document ID for duplicate attempts
+                        let docId = person.name + '_' + Date.now();
+                        let counter = 2;
+                        while (usedNames.has(docId)) {
+                            docId = person.name + '_' + Date.now() + '_' + counter;
+                            counter++;
+                        }
+                        usedNames.add(docId);
+                        
+                        try {
+                            const firebaseData = this.createFirebaseData(person);
+                            const docRef = window.doc(window.collection(window.db, 'Lions-Fundraising-Users'), docId);
+                            await window.setDoc(docRef, firebaseData);
+                        } catch (error) {
+                            throw error;
+                        }
+                    }
+                    return;
+                }
+                
+                // Normal registration attempt
+                for (const person of people) {
+                    const uploadResult = uploadResults.find(r => r.personName === person.name);
+                    if (uploadResult) {
+                        person.uploadResult = uploadResult;
+                    }
+                    
+                    let docId = person.name;
+                    let counter = 2;
+                    while (usedNames.has(docId)) {
+                        docId = `${person.name} ${counter}`;
+                        counter++;
+                    }
+                    usedNames.add(docId);
+                    
+                    try {
+                        const firebaseData = this.createFirebaseData(person);
+                        const docRef = window.doc(window.collection(window.db, 'Lions-Fundraising-Users'), docId);
+                        await window.setDoc(docRef, firebaseData);
+                        console.log(`Successfully saved ${person.name} to Firebase`);
+                        
+                    } catch (error) {
+                        // Check if this might be a duplicate name issue
+                        if (error.code === 'permission-denied' && person.name && person.email) {
+                            // Try to get the existing document to show the masked email
+                            try {
+                                const existingDocRef = window.doc(window.collection(window.db, 'Lions-Fundraising-Users'), person.name);
+                                const existingDoc = await window.getDoc(existingDocRef);
+                                
+                                let existingEmail = person.email; // fallback to current email
+                                if (existingDoc.exists()) {
+                                    const existingData = existingDoc.data();
+                                    if (existingData && existingData.email) {
+                                        existingEmail = existingData.email;
+                                    }
+                                }
+                                
+                                // Store the data and show duplicate dialog
+                                this.duplicatePersonData = { people, uploadResults };
+                                this.showDuplicateDialog(person.name, existingEmail);
+                                return; // Don't throw error, let user decide
+                            } catch (fetchError) {
+                                // If we can't fetch the existing document, fall back to showing current email
+                                this.duplicatePersonData = { people, uploadResults };
+                                this.showDuplicateDialog(person.name, person.email);
+                                return;
+                            }
+                        }
+                        throw error;
+                    }
+                }
+
+                console.log(`Successfully saved ${people.length} registrations to Firebase`);
+            }
+
+            createFirebaseData(person) {
+                // Create clean data object for Firebase
+                const firebaseData = {
+                    name: person.name,
+                    email: person.email,
+                    phone: person.phone,
+                    relationship: person.relationship,
+                    ageRange: person.ageRange,
+                    shirtSize: person.shirtSize,
+                    hasLOSShirt: person.hasLOSShirt || false,
+                    registrationTimestamp: new Date(),
+                    registrationId: person.registrationId
+                };
+
+                // Add license information if 21+
+                if (person.ageRange === '21 and over') {
+                    firebaseData.hasLicense = person.hasLicense || 'no';
+                    
+                    if (person.hasLicense === 'yes') {
+                        firebaseData.licenseNumber = person.licenseNumber || '';
+                        firebaseData.licenseExpiration = person.licenseExpiration || '';
+                        firebaseData.alcoholTrainingCompleted = person.alcoholTrainingCompleted || 'no';
+                    } else {
+                        firebaseData.willingToObtainLicense = person.willingToObtainLicense || 'no';
+                    }
+                }
+
+                return firebaseData;
+            }
+
+            // RESTORED CONFIRMATION FLOW (no immediate account setup)
+            showRegistrationSuccess() {
+                const namesList = this.formatNamesList(this.registeredPeople.map(p => p.name));
+                const willingPeople = this.registeredPeople.filter(person => person.willingToObtainLicense === 'yes');
+                
+                // Show alcohol license info if anyone wants it
+                let licenseNotice = '';
+                if (willingPeople.length > 0) {
+                    licenseNotice = `
+                        <div class="license-notice">
+                            <div class="license-notice-text">
+                                Need help obtaining your alcohol license?
+                            </div>
+                            <a href="/sodexo-atc" class="btn btn-info" target="_blank">
+                                🍺 Alcohol License Info
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                // Email setup instructions instead of immediate setup
+                const emailInstructions = `
+                    <div class="email-instructions">
+                        <div class="email-instructions-text">
+                            📧 Account setup instructions have been sent to your email address.
+                        </div>
+                        <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                            Check your email to set up your Lions account for reimbursements and events.
+                        </div>
+                    </div>
+                `;
+                
+                const successMessage = `🎉 Registration complete!<br><br>You registered ${namesList}.`;
+                
+                const buttonHTML = `
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" class="register-more-btn" onclick="registrationForm.showRegisterMore()">
+                            ➕ Register More People
+                        </button>
+                    </div>
+                `;
+                
+                // Send email instructions (simulate - in real implementation this would trigger actual emails)
+                // this.sendAccountSetupEmails();
+                
+                this.showMessage(`${successMessage}${licenseNotice}${buttonHTML}`, 'success');
+            }
+
+            // Simulate sending email instructions
+            sendAccountSetupEmails() {
+                // In real implementation, this would trigger backend email sending
+                const primaryEmail = this.registeredPeople[0].email;
+                console.log(`📧 Sending account setup instructions to: ${primaryEmail}`);
+                
+                // Here you would call your email service
+                // Example: sendEmail(primaryEmail, 'Lions Account Setup', emailTemplate);
+            }
+
+            showRegisterMore() {
+                // Reset form but keep family admin context
+                document.getElementById('registrationForm').style.display = 'block';
+                
+                document.getElementById('peopleSection').innerHTML = '';
+                this.personCount = 0;
+                
+                // Show recently registered people
+                if (this.registeredPeople.length > 0) {
+                    let recentList = '<div style="margin-bottom: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 12px;">';
+                    recentList += '<h4 style="color: var(--navy-blue); margin-bottom: 1rem;">Recently Registered:</h4>';
+                    recentList += '<ul style="list-style: none; padding: 0;">';
+                    this.registeredPeople.forEach(person => {
+                        recentList += `<li style="padding: 0.5rem; background: white; margin-bottom: 0.5rem; border-radius: 8px;">
+                            <strong>${person.name}</strong> - ${person.relationship} (${person.email})
+                        </li>`;
+                    });
+                    recentList += '</ul></div>';
+                    
+                    document.getElementById('peopleSection').innerHTML = recentList;
+                }
+                
+                this.addPerson();
+                document.getElementById('message').innerHTML = '';
+                
+                // Scroll to registration
+                document.getElementById('registrationSection').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showDuplicateDialog(name, email) {
+                const maskedEmail = this.maskEmail(email);
+                document.getElementById('duplicateMessage').textContent = 
+                    `Someone named "${name}" with email ${maskedEmail} has already registered.`;
+                document.getElementById('duplicateDialog').classList.remove('hidden');
+            }
+
+            hideDuplicateDialog() {
+                document.getElementById('duplicateDialog').classList.add('hidden');
+            }
+
+            maskEmail(email) {
+                if (!email || !email.includes('@')) return email;
+                const [username, domain] = email.split('@');
+                const maskedUsername = username.substring(0, 2) + '*'.repeat(Math.max(0, username.length - 2));
+                return `${maskedUsername}@${domain}`;
+            }
+
+            getErrorMessage(error) {
+                let message = 'Registration failed. ';
+                
+                switch (error.code) {
+                    case 'permission-denied':
+                        // Check if it's likely a duplicate registration
+                        if (error.message && error.message.includes('document')) {
+                            return 'It looks like someone with this name has already registered. If you need to update your registration, please contact support.';
+                        }
+                        return message + 'Database permissions issue. Please contact support.';
+                    case 'unavailable':
+                        return message + 'Database temporarily unavailable. Please try again.';
+                    case 'already-exists':
+                        return 'Someone with this name has already registered. If you need to update your registration, please contact support.';
+                    default:
+                        // Check for duplicate name errors in message
+                        if (error.message && (error.message.includes('already exists') || error.message.includes('duplicate'))) {
+                            return 'Someone with this name has already registered. If you need to update your registration, please contact support.';
+                        }
+                        if (error.message.includes('Firebase') || error.message.includes('Database')) {
+                            return message + 'Database connection issue. Please check your internet connection and try again.';
+                        } else if (error.message.includes('Missing required')) {
+                            return error.message;
+                        } else {
+                            return message + 'Please try again. If the problem persists, contact support.';
+                        }
+                }
+            }
+
+            formatNamesList(names) {
+                if (names.length === 1) return names[0];
+                if (names.length === 2) return `${names[0]} and ${names[1]}`;
+                
+                const lastPerson = names.pop();
+                return `${names.join(', ')}, and ${lastPerson}`;
+            }
+
+            showMessage(text, type) {
+                const messageDiv = document.getElementById('message');
+                messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+            }
+        }
+
+        // Global functions for onclick handlers
+        function addPerson() {
+            if (window.registrationForm) {
+                window.registrationForm.addPerson();
+            }
+        }
+
+        function hidePhoneModal() {
+            document.getElementById('phoneValidationModal').classList.add('hidden');
+        }
+
+        function confirmPhoneNumber() {
+            hidePhoneModal();
+            const form = window.registrationForm;
+            if (form.pendingSubmission) {
+                // Continue with the submission
+                form.saveRegistrations(form.pendingSubmission.people, [])
+                    .then(() => {
+                        form.registrationComplete = true;
+                        form.registeredPeople = form.pendingSubmission.people;
+                        form.showRegistrationSuccess(); // Show restored confirmation
+                        form.pendingSubmission = null;
+                    })
+                    .catch(error => {
+                        console.error('Registration error:', error);
+                        form.showMessage(form.getErrorMessage(error), 'error');
+                        const submitBtn = document.querySelector('.submit-btn');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Registration';
+                    });
+            }
+        }
+
+        function continueDuplicateRegistration() {
+            const form = window.registrationForm;
+            if (form && form.duplicatePersonData) {
+                form.duplicateAttempt = true;
+                form.hideDuplicateDialog();
+                
+                // Re-attempt registration with stored data
+                form.saveRegistrations(form.duplicatePersonData.people, form.duplicatePersonData.uploadResults)
+                    .then(() => {
+                        form.registrationComplete = true;
+                        form.registeredPeople = form.duplicatePersonData.people;
+                        form.showRegistrationSuccess(); // Show restored confirmation
+                    })
+                    .catch(error => {
+                        console.error('Duplicate registration error:', error);
+                        form.showMessage('Registration failed. Please try again or contact support.', 'error');
+                    })
+                    .finally(() => {
+                        document.querySelector('.submit-btn').disabled = false;
+                        form.duplicateAttempt = false;
+                        form.duplicatePersonData = null;
+                    });
+            }
+        }
+
+        function cancelDuplicateRegistration() {
+            const form = window.registrationForm;
+            if (form) {
+                form.hideDuplicateDialog();
+                form.duplicatePersonData = null;
+                form.duplicateAttempt = false;
+                
+                // Re-enable submit button
+                const submitBtn = document.querySelector('.submit-btn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Registration';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            // RESTORED: Run logo protection FIRST
+            protectLogo();
+            enhancedLogoProtection();
+            
+            // Set up universal header system
+            await window.LIONS_HEADER.setupPage('headerContainer');
+            
+            // 🔧 FIXED: Initialize the enhanced registration form with proper Firebase handling
+            window.registrationForm = new RegistrationForm();
+            
+            // Force header update after short delay to ensure auth state is loaded
+            setTimeout(() => {
+                if (window.LIONS_HEADER && window.LIONS_HEADER.forceUpdate) {
+                    window.LIONS_HEADER.forceUpdate();
+                }
+            }, 300);
+            
+            console.log('✅ Registration page initialized with Firebase conflict resolution');
+        });
+    </script>
+</body>
+
+</html>

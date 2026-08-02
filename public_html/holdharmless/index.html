@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hold Harmless Agreement - Homeschool Football Classic</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.4;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .event-info {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .agreement-text {
+            font-size: 12px;
+            text-align: justify;
+            margin-bottom: 30px;
+            line-height: 1.3;
+        }
+
+        .agreement-text p {
+            margin-bottom: 12px;
+        }
+
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .signature-section {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .signature-option {
+            display: block;
+            margin-bottom: 8px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .signature-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .signature-option input {
+            margin-right: 8px;
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .checkbox-group {
+            margin: 20px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hold Harmless Agreement</h1>
+            <div class="event-info">
+                <strong>THE EVENT:</strong> Homeschool Football Classic August 23, 2025 at Lucas Oil Stadium
+            </div>
+        </div>
+
+        <div class="agreement-text">
+            <p>In consideration of the below named individual the Participant and my right to participate in the Event,
+                I agree as follows:</p>
+
+            <p><strong>1)</strong> I authorize the Participant to participate in the Event.</p>
+
+            <p><strong>2)</strong> I acknowledge that the Participant's participation in the Event involves risk of
+                serious bodily injury, death, and/or property damage. I assume and accept all risk of bodily injury,
+                death, property damage and other harm connected with the Participant's participation in the Event. I
+                acknowledge that I am responsible for any and all medical expenses due to the Participant's illness or
+                injury in connection with the Event.</p>
+
+            <p><strong>3)</strong> I acknowledge that the Event may involve strenuous and hazardous physical activities
+                and I certify that the Participant is in excellent physical health and has no physical limitations,
+                medical ailments, physical or mental disabilities that would prevent the Participant from participating
+                in the Event. I grant permission to the Event parties to provide the Participant with emergency medical
+                treatment if needed.</p>
+
+            <p><strong>4)</strong> I hereby indemnify, hold harmless, agree not to sue, and release the Parties:
+                Homeschool Football Classic (Domestic Non Profit Corporation), including without limitation, any
+                participating agencies, their officers, directors, members, employees, volunteers, owners, agents,
+                affiliates and corporate sponsors both as organizations and each person individually from any and all
+                liability for all claims, demands, losses, damages and costs, including reasonable attorneys' fees, that
+                arise out of or in connection with any personal injury, even injury resulting in death, property damage,
+                and/or other loss suffered by the Participant in connection with Participant's participation in the
+                Event. In addition, I hereby waive any and all right of recovery, claims, actions or cause of action
+                against the Parties for any loss or damage which is insured against (or which is required hereunder to
+                be insured against), regardless of cause or origin, including negligence of the Parties, and I covenant
+                that no insurers shall hold any right of subrogation against the Parties. If my respective insurer does
+                not permit such a waiver without an appropriate endorsement to my insurance policies, then I covenant
+                and agree to notify my insurer of the waiver set forth herein and to secure from such insurer and
+                appropriate endorsement to its respective insurance policy with respect to such waiver.</p>
+
+            <p><strong>5)</strong> I authorize the Parties to take photographs and videotapes of the Participant and to
+                record the Participant's voice, conversation and other sounds during and in connection with the Event. I
+                acknowledge that the Parties shall own exclusively all copyright and other rights in and to such tapes,
+                photography, and recordings and may use them forever and throughout the world in any manner without
+                compensation to me or the Participant. I authorize the Parties to use the Participant's name, voice,
+                likeness, and any biographical facts provided to the Event in advertising and promoting the Parties
+                without further compensation.</p>
+
+            <p><strong>6)</strong> I acknowledge that I am to be in attendance for the duration of the Event and that I
+                am solely responsible for the Participant, he/she is under the direct supervision of my party and is my
+                responsibility during the Event.</p>
+
+            <p><strong>7)</strong> I certify that I am the parent or legal guardian of the Participant, should the
+                Participant not be of a legal age to sign this release.</p>
+
+            <p><strong>8)</strong> I acknowledge that by signing this release I will be forever prevented from suing or
+                otherwise claiming against the Parties for any property loss or personal injury that may be sustained
+                while participating in or preparing for the Event. This release shall be governed and construed in
+                accordance with the laws of the state of Ohio.</p>
+
+            <p><strong>9)</strong> I acknowledge that I have read and understand this release fully, understand its
+                contents, and I am aware that by signing this release I am waiving certain legal rights which me or my
+                heirs, next of kin, executors, administrators and assigns may have against the Parties.</p>
+
+            <p><strong>10)</strong> I have signed this release of my own free will and I affirm that I am the Parent or
+                Legal Guardian of the Participant with authority to give this authorization to his/her participation in
+                the Event and confirmation of the above Agreement, Release, Waiver, and Indemnity.</p>
+        </div>
+
+        <div class="form-section">
+            <h2 style="margin-bottom: 20px;">Complete Your Information</h2>
+            <p style="margin-bottom: 20px; color: #666; font-style: italic;">
+                <strong>Note:</strong> All fields marked with * are required before you can submit the form.
+            </p>
+
+            <form id="holdHarmlessForm">
+                <div class="form-group">
+                    <label for="participantName">Participant Full Name *</label>
+                    <input type="text" id="participantName" name="participantName" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="participantDOB">Participant Date of Birth *</label>
+                        <input type="date" id="participantDOB" name="participantDOB" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signatureDate">Today's Date *</label>
+                        <input type="date" id="signatureDate" name="signatureDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="guardianName">Parent/Guardian Full Name *</label>
+                    <input type="text" id="guardianName" name="guardianName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address *</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                </div>
+
+                <div class="signature-section">
+                    <label><strong>Parent/Guardian Signature *</strong></label>
+                    <p style="margin-bottom: 15px; color: #666; font-size: 14px;">Type your full name and choose a
+                        signature style:</p>
+
+                    <input type="text" id="typedSignature" placeholder="Type your full name here" style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 4px;" required>
+
+                    <label style="font-weight: normal; margin-bottom: 10px; display: block;">Choose signature style:</label>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="cursive" checked> 
+                                <span style="font-family: 'Brush Script MT', cursive; font-size: 18px;">Cursive Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="script"> 
+                                <span style="font-family: 'Lucida Handwriting', cursive; font-size: 16px;">Script Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="elegant"> 
+                                <span style="font-family: 'Edwardian Script ITC', cursive; font-size: 20px;">Elegant Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="flowing"> 
+                                <span style="font-family: 'Monotype Corsiva', cursive; font-size: 18px;">Flowing Style</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="classic"> 
+                                <span style="font-family: 'Freestyle Script', cursive; font-size: 20px;">Classic Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="modern"> 
+                                <span style="font-family: 'Segoe Script', cursive; font-size: 16px;">Modern Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="bold"> 
+                                <span style="font-family: 'Brush Script MT', cursive; font-size: 20px; font-weight: bold;">Bold Style</span>
+                            </label>
+                            <label class="signature-option">
+                                <input type="radio" name="signatureStyle" value="formal"> 
+                                <span style="font-family: 'Times New Roman', serif; font-size: 18px; font-style: italic;">Formal Style</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="signaturePreview"
+                        style="border: 2px solid #007bff; padding: 20px; background: #f8f9fa; font-size: 24px; min-height: 60px; text-align: center; border-radius: 4px;">
+                        Preview will appear here...
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="acknowledge" name="acknowledge" required>
+                        I acknowledge that I have read and understand this release fully, understand its contents, and I am aware that by signing this release I am waiving certain legal rights. *
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitButton">Submit Hold Harmless Agreement</button>
+            </form>
+
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            SIGNATURE_COORDINATES: {
+                x: 210,
+                y: 212,
+                width: 280,
+                height: 35
+            },
+            BACKEND_ENDPOINT: 'submit_agreement.php',
+            SIGNATURE_FONTS: {
+                cursive: '32px "Brush Script MT", cursive',
+                script: '28px "Lucida Handwriting", cursive',
+                elegant: '36px "Edwardian Script ITC", cursive',
+                flowing: '34px "Monotype Corsiva", cursive',
+                classic: '36px "Freestyle Script", cursive',
+                modern: '30px "Segoe Script", cursive',
+                bold: 'bold 34px "Brush Script MT", cursive',
+                formal: 'italic 30px "Times New Roman", serif'
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', initializeForm);
+
+        function initializeForm() {
+            setCurrentDate();
+            setupEventListeners();
+        }
+
+        function setCurrentDate() {
+            // Avoid timezone issues by setting date string directly
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+            
+            document.getElementById('signatureDate').value = dateString;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('typedSignature').addEventListener('input', updateSignaturePreview);
+            document.querySelectorAll('input[name="signatureStyle"]').forEach(radio => {
+                radio.addEventListener('change', updateSignaturePreview);
+            });
+            document.getElementById('holdHarmlessForm').addEventListener('submit', handleFormSubmission);
+            
+            // Date validation will only happen during form submission
+            document.getElementById('participantDOB').addEventListener('input', validateDateOfBirth);
+        }
+
+        function validateDateOfBirth(isFormSubmission = false) {
+            // Completely disable validation unless explicitly called during form submission
+            if (!isFormSubmission) {
+                return true;
+            }
+            
+            const dobInput = document.getElementById('participantDOB');
+            const dobValue = dobInput.value;
+            
+            if (!dobValue) return true;
+            
+            // Parse the date and check for invalid values - only during form submission
+            const dateParts = dobValue.split('-');
+            if (dateParts.length !== 3) return true; // Let HTML5 handle format validation
+            
+            const year = parseInt(dateParts[0]);
+            
+            // Only check for obviously invalid years like 20006
+            if (year > 9999 || year.toString().length > 4) {
+                dobInput.setCustomValidity(`Invalid year: ${year}. Please enter a valid 4-digit year.`);
+                dobInput.reportValidity();
+                return false;
+            }
+            
+            // Clear any custom validity if date is valid
+            dobInput.setCustomValidity('');
+            return true;
+        }
+
+        function updateSignaturePreview() {
+            const typedName = document.getElementById('typedSignature').value;
+            const style = document.querySelector('input[name="signatureStyle"]:checked').value;
+            const preview = document.getElementById('signaturePreview');
+            
+            if (!typedName) {
+                preview.textContent = 'Preview will appear here...';
+                preview.style.color = '#666';
+                return;
+            }
+            
+            preview.textContent = typedName;
+            preview.style.color = 'black';
+            
+            const styleConfig = {
+                cursive: { fontFamily: "'Brush Script MT', cursive", fontSize: '24px' },
+                script: { fontFamily: "'Lucida Handwriting', cursive", fontSize: '20px' },
+                elegant: { fontFamily: "'Edwardian Script ITC', cursive", fontSize: '26px' },
+                flowing: { fontFamily: "'Monotype Corsiva', cursive", fontSize: '24px' },
+                classic: { fontFamily: "'Freestyle Script', cursive", fontSize: '26px' },
+                modern: { fontFamily: "'Segoe Script', cursive", fontSize: '22px' },
+                bold: { fontFamily: "'Brush Script MT', cursive", fontSize: '26px', fontWeight: 'bold' },
+                formal: { fontFamily: "'Times New Roman', serif", fontSize: '22px', fontStyle: 'italic' }
+            };
+            
+            // Apply base style first
+            Object.assign(preview.style, styleConfig[style]);
+            
+            // Check if name is too long and adjust preview accordingly
+            const maxWidth = 180; // Approximate preview container width
+            const testDiv = document.createElement('div');
+            testDiv.style.position = 'absolute';
+            testDiv.style.visibility = 'hidden';
+            testDiv.style.whiteSpace = 'nowrap';
+            Object.assign(testDiv.style, styleConfig[style]);
+            testDiv.textContent = typedName;
+            document.body.appendChild(testDiv);
+            
+            const textWidth = testDiv.offsetWidth;
+            document.body.removeChild(testDiv);
+            
+            // If text is too wide, show smaller preview with warning
+            if (textWidth > maxWidth) {
+                const scaleFactor = maxWidth / textWidth;
+                const newSize = parseInt(styleConfig[style].fontSize) * scaleFactor;
+                preview.style.fontSize = Math.max(12, newSize) + 'px';
+                preview.title = 'Font size will be automatically reduced to fit signature area';
+            } else {
+                preview.title = '';
+            }
+        }
+
+        async function handleFormSubmission(event) {
+            event.preventDefault();
+
+            // Validate date of birth before proceeding
+            if (!validateDateOfBirth(true)) {
+                showStatus('Please correct the date of birth before submitting.', 'error');
+                return;
+            }
+
+            const signatureData = generateSignatureImage();
+            if (!signatureData) {
+                showStatus('Please type your name and choose a signature style.', 'error');
+                return;
+            }
+
+            const formData = collectFormData(signatureData);
+            
+            try {
+                setSubmitButtonState(true);
+                showStatus('Processing submission...', 'success');
+                await processSubmission(formData);
+                showStatus('Hold Harmless Agreement submitted successfully!', 'success');
+                resetForm();
+            } catch (error) {
+                console.error('Submission error:', error);
+                showStatus('Error processing submission. Please try again.', 'error');
+            } finally {
+                setSubmitButtonState(false);
+            }
+        }
+
+        function collectFormData(signatureData) {
+            return {
+                participantName: document.getElementById('participantName').value,
+                participantDOB: document.getElementById('participantDOB').value,
+                guardianName: document.getElementById('guardianName').value,
+                address: document.getElementById('address').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                signatureDate: document.getElementById('signatureDate').value,
+                signature: signatureData
+            };
+        }
+
+        function generateSignatureImage() {
+            const typedName = document.getElementById('typedSignature').value.trim();
+            if (!typedName) return null;
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Create transparent background (no fill)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Set signature text properties - LEFT ALIGNED
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            
+            const style = document.querySelector('input[name="signatureStyle"]:checked').value;
+            
+            // Get the base font configuration
+            const baseFontConfig = CONFIG.SIGNATURE_FONTS[style];
+            const maxWidth = CONFIG.SIGNATURE_COORDINATES.width - 10; // Leave 10px padding
+            
+            // Calculate optimal font size to fit within signature area
+            const optimalFont = calculateOptimalFontSize(ctx, typedName, baseFontConfig, maxWidth);
+            ctx.font = optimalFont;
+            
+            ctx.fillText(typedName, 10, canvas.height / 2);
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        function calculateOptimalFontSize(ctx, text, baseFontConfig, maxWidth) {
+            // Extract base font size from the font string (e.g., "32px" from "32px Arial")
+            const baseSizeMatch = baseFontConfig.match(/(\d+)px/);
+            const baseSize = baseSizeMatch ? parseInt(baseSizeMatch[1]) : 32;
+            
+            // Extract font family (everything after the size)
+            const fontFamily = baseFontConfig.replace(/^\d+px\s*/, '').replace(/^bold\s*\d+px\s*/, '');
+            const isBold = baseFontConfig.includes('bold');
+            const isItalic = baseFontConfig.includes('italic');
+            
+            let fontSize = baseSize;
+            const minFontSize = 18; // Balanced minimum - readable but prevents truncation
+            
+            // Test different font sizes until text fits
+            while (fontSize >= minFontSize) {
+                const fontString = buildFontString(fontSize, fontFamily, isBold, isItalic);
+                ctx.font = fontString;
+                
+                const textWidth = ctx.measureText(text).width;
+                
+                if (textWidth <= maxWidth) {
+                    return fontString; // Found optimal size
+                }
+                
+                fontSize -= 2; // Reduce by 2px each iteration
+            }
+            
+            // If even minimum size is too big, use minimum
+            return buildFontString(minFontSize, fontFamily, isBold, isItalic);
+        }
+
+        function buildFontString(size, family, bold, italic) {
+            let fontString = '';
+            if (bold) fontString += 'bold ';
+            if (italic) fontString += 'italic ';
+            fontString += `${size}px ${family}`;
+            return fontString;
+        }
+
+        async function processSubmission(formData) {
+            const { PDFDocument } = PDFLib;
+            
+            try {
+                const existingPdfBytes = await loadPdfTemplate();
+                const pdfDoc = await PDFDocument.load(existingPdfBytes);
+                const form = pdfDoc.getForm();
+                
+                fillFormFields(form, formData);
+                await addSignatureToPdf(pdfDoc, formData.signature);
+                
+                // Multiple approaches to lock the PDF completely
+                try {
+                    // Method 1: Flatten all form fields
+                    form.flatten();
+                    
+                    // Method 2: Remove form from PDF (stronger locking)
+                    const pages = pdfDoc.getPages();
+                    const newPdfDoc = await PDFDocument.create();
+                    
+                    // Copy each page as static content (no form fields)
+                    for (let i = 0; i < pages.length; i++) {
+                        const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
+                        newPdfDoc.addPage(copiedPage);
+                    }
+                    
+                    // Use the new PDF without any form capabilities
+                    const lockedPdfBytes = await newPdfDoc.save();
+                    const pdfBlob = new Blob([lockedPdfBytes], { type: 'application/pdf' });
+                    
+                    downloadPdf(pdfBlob, formData.participantName);
+                    await submitToServer(pdfBlob, formData);
+                    
+                } catch (lockError) {
+                    console.warn('Advanced locking failed, using basic flattening:', lockError);
+                    
+                    // Fallback: just use flattened version
+                    const pdfBytes = await pdfDoc.save();
+                    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    
+                    downloadPdf(pdfBlob, formData.participantName);
+                    await submitToServer(pdfBlob, formData);
+                }
+                
+            } catch (error) {
+                throw new Error(`PDF processing failed: ${error.message}`);
+            }
+        }
+
+        async function loadPdfTemplate() {
+            try {
+                const response = await fetch('hold_harmless_template.pdf');
+                if (!response.ok) {
+                    const pdfDoc = await PDFDocument.create();
+                    pdfDoc.addPage([612, 792]);
+                    return await pdfDoc.save();
+                }
+                return await response.arrayBuffer();
+            } catch (error) {
+                const pdfDoc = await PDFDocument.create();
+                pdfDoc.addPage([612, 792]);
+                return await pdfDoc.save();
+            }
+        }
+
+        function fillFormFields(form, formData) {
+            const fieldMappings = [
+                { fieldName: 'Name', value: formData.participantName },
+                { fieldName: 'DOB', value: formatDate(formData.participantDOB) },
+                { fieldName: 'Guardian', value: formData.guardianName },
+                { fieldName: 'Address', value: formData.address },
+                { fieldName: 'Email', value: formData.email },
+                { fieldName: 'Phone', value: formData.phone },
+                { fieldName: 'Date', value: formatDate(formData.signatureDate) }
+            ];
+
+            fieldMappings.forEach(mapping => {
+                try {
+                    const field = form.getTextField(mapping.fieldName);
+                    field.setText(mapping.value);
+                    
+                    // Realistic font sizing for central Indiana demographics
+                    const textLength = mapping.value.length;
+                    const fieldName = mapping.fieldName;
+                    let fontSize = 12; // Standard readable size
+                    
+                    // Address field - realistic Indianapolis/Indiana addresses
+                    if (fieldName === 'Address') {
+                        if (textLength > 70) fontSize = 9;        // Very long rural addresses (rare)
+                        else if (textLength > 55) fontSize = 10;  // Long addresses 
+                        else if (textLength > 45) fontSize = 11;  // Slightly long addresses
+                        // 45 characters or less stays at 12pt (most addresses)
+                    }
+                    // Email field - realistic personal/business emails
+                    else if (fieldName === 'Email') {
+                        if (textLength > 50) fontSize = 9;        // Long business emails (rare)
+                        else if (textLength > 40) fontSize = 10;  // Moderately long emails
+                        // 40 characters or less stays at 12pt (most emails)
+                    }
+                    // Name fields - realistic American names, including hyphenated
+                    else if (fieldName === 'Name' || fieldName === 'Guardian') {
+                        if (textLength > 40) fontSize = 9;        // Long hyphenated names (rare)
+                        else if (textLength > 30) fontSize = 10;  // Moderately long names
+                        // 30 characters or less stays at 12pt (most names)
+                    }
+                    // Date and phone fields - always short
+                    else {
+                        // These stay at 12pt - dates and phones are standardized
+                    }
+                    
+                    field.setFontSize(fontSize);
+                    field.setAlignment(0);
+                } catch (error) {
+                    console.warn(`Field '${mapping.fieldName}' not found:`, error);
+                }
+            });
+        }
+
+        async function addFieldImagesToPdf(pdfDoc, formData) {
+            const fieldData = [
+                { fieldName: 'Name', value: formData.participantName },
+                { fieldName: 'DOB', value: formatDate(formData.participantDOB) },
+                { fieldName: 'Guardian', value: formData.guardianName },
+                { fieldName: 'Address', value: formData.address },
+                { fieldName: 'Email', value: formData.email },
+                { fieldName: 'Phone', value: formData.phone },
+                { fieldName: 'Date', value: formatDate(formData.signatureDate) }
+            ];
+
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+
+            for (const field of fieldData) {
+                const fieldImage = generateFieldImage(field.value, CONFIG.FIELD_COORDINATES[field.fieldName]);
+                if (fieldImage) {
+                    try {
+                        const image = await pdfDoc.embedPng(fieldImage);
+                        firstPage.drawImage(image, CONFIG.FIELD_COORDINATES[field.fieldName]);
+                    } catch (error) {
+                        console.warn(`Failed to add ${field.fieldName} image:`, error);
+                    }
+                }
+            }
+        }
+
+        function generateFieldImage(text, coordinates) {
+            if (!text) return null;
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = coordinates.width * 2; // Higher resolution
+            canvas.height = coordinates.height * 2;
+            const ctx = canvas.getContext('2d');
+            
+            // Clear background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Set text properties
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            
+            // Calculate optimal font size to fit
+            let fontSize = 20; // Start with larger font for higher resolution
+            ctx.font = `${fontSize}px Arial`;
+            
+            // Reduce font size until text fits
+            while (ctx.measureText(text).width > canvas.width - 10 && fontSize > 8) {
+                fontSize -= 1;
+                ctx.font = `${fontSize}px Arial`;
+            }
+            
+            // Draw the text
+            ctx.fillText(text, 5, canvas.height / 2);
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        async function addSignatureToPdf(pdfDoc, signatureData) {
+            if (!signatureData || signatureData === 'data:,') return;
+            
+            try {
+                const signatureImage = await pdfDoc.embedPng(signatureData);
+                const pages = pdfDoc.getPages();
+                const firstPage = pages[0];
+                
+                firstPage.drawImage(signatureImage, CONFIG.SIGNATURE_COORDINATES);
+                
+                // Clear signature text field if it exists
+                try {
+                    const form = pdfDoc.getForm();
+                    const sigField = form.getTextField('Signature');
+                    sigField.setText('');
+                } catch (error) {
+                    // Signature field doesn't exist - that's fine
+                }
+                
+            } catch (error) {
+                console.warn('Signature embedding failed:', error);
+            }
+        }
+
+        function downloadPdf(pdfBlob, participantName) {
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Hold_Harmless_Agreement_${participantName.replace(/\s+/g, '_')}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        async function submitToServer(pdfBlob, formData) {
+            const submitData = new FormData();
+            submitData.append('pdf', pdfBlob, `Hold_Harmless_Agreement_${formData.participantName.replace(/\s+/g, '_')}.pdf`);
+            submitData.append('participantName', formData.participantName);
+            submitData.append('guardianName', formData.guardianName);
+            submitData.append('email', formData.email);
+            submitData.append('phone', formData.phone);
+            submitData.append('address', formData.address);
+
+            const response = await fetch(CONFIG.BACKEND_ENDPOINT, {
+                method: 'POST',
+                body: submitData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Server processing failed');
+            }
+
+            return result;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            // Handle both YYYY-MM-DD format and already formatted dates
+            if (dateString.includes('-')) {
+                const parts = dateString.split('-');
+                if (parts.length === 3) {
+                    // If it's already in MM-DD-YYYY format, return as-is
+                    if (parts[0].length <= 2) {
+                        return dateString;
+                    }
+                    // If it's in YYYY-MM-DD format, convert to MM-DD-YYYY
+                    const year = parts[0];
+                    const month = parts[1];
+                    const day = parts[2];
+                    return `${month.padStart(2, '0')}-${day.padStart(2, '0')}-${year}`;
+                }
+            }
+            
+            return dateString; // Return as-is if format is unexpected
+        }
+
+        function setSubmitButtonState(disabled) {
+            const button = document.getElementById('submitButton');
+            button.disabled = disabled;
+            button.textContent = disabled ? 'Processing...' : 'Submit Hold Harmless Agreement';
+        }
+
+        function resetForm() {
+            document.getElementById('holdHarmlessForm').reset();
+            setCurrentDate(); // Use our timezone-safe function
+            updateSignaturePreview();
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+
+</html>
