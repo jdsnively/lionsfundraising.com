@@ -43,33 +43,56 @@
     background: var(--lions-blue-wash);
 }
 
+/* Phone first. The date is an eyebrow above the name, which is how a list of
+   dated things is read on a narrow screen, and the two only share a line once
+   there is room for the name to stay whole beside it. The previous rule put
+   them side by side at every width and squeezed the name, which is the thing
+   people are actually scanning for. */
 .event-head {
     display: flex;
-    align-items: baseline;
-    gap: var(--lions-space-4);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--lions-space-1);
+}
+
+@media (min-width: 620px) {
+    .event-head {
+        flex-direction: row;
+        align-items: baseline;
+        gap: var(--lions-space-4);
+    }
 }
 
 .event-when {
     font-family: var(--lions-font-heading);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--lions-blue);
-    min-width: 8.5rem;
 }
 
+@media (min-width: 620px) {
+    .event-when { min-width: 8.5rem; }
+}
+
+/* Sized up from 1.0625rem. This is the line a volunteer scans a season of
+   fifty entries for, on a phone, and it was the same weight as the shift label
+   underneath it. */
 .event-name {
     font-family: var(--lions-font-heading);
-    font-size: 1.0625rem;
+    font-size: 1.25rem;
     font-weight: 600;
+    line-height: 1.25;
     color: var(--lions-ink);
+}
+
+@media (min-width: 620px) {
+    .event-name { font-size: 1.375rem; }
 }
 
 .event-day {
     font-family: var(--lions-font-body);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     font-weight: 400;
     color: var(--lions-gray-text);
 }
@@ -77,7 +100,8 @@
 .event-closed,
 .event-alt {
     margin-top: var(--lions-space-2);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
     color: var(--lions-gray-text);
 }
 
@@ -109,8 +133,8 @@
 }
 
 .shift-check input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
     accent-color: var(--lions-blue);
     cursor: pointer;
@@ -122,13 +146,14 @@
 }
 
 .shift-label {
-    font-size: 0.9375rem;
+    font-size: 1.0625rem;
+    line-height: 1.4;
     color: var(--lions-ink);
 }
 
 .shift-times {
     color: var(--lions-gray-text);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
 }
 
 .shift-state {
@@ -214,7 +239,7 @@ details[open] > .run-summary::before {
 
 .run-name {
     font-family: var(--lions-font-heading);
-    font-size: 1.0625rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: var(--lions-ink);
     margin-right: auto;
@@ -557,4 +582,34 @@ details > .event-block:first-of-type {
     font-size: 0.8125rem;
     background: var(--lions-blue-wash);
     border: 1px solid var(--lions-blue-edge);
+}
+
+/* -- Event editor ----------------------------------------------------------
+   Reuses .field, .field-grid, .field-note and .divider from lions-app.css, so
+   an administrator editing an event meets the same controls a volunteer meets
+   on the account page. Only the surround is new. */
+
+.admin-edit {
+    margin-top: var(--lions-space-4);
+    padding: var(--lions-space-4);
+    background: var(--lions-blue-wash);
+    border: 1px solid var(--lions-blue-edge);
+    border-radius: var(--lions-radius-sm);
+}
+
+.admin-edit h3 {
+    font-family: var(--lions-font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin: 0 0 var(--lions-space-4);
+}
+
+.admin-edit .field input,
+.admin-edit .field select {
+    max-width: 100%;
+}
+
+@media (max-width: 620px) {
+    .admin-edit .field-grid { grid-template-columns: 1fr; }
 }

@@ -62,10 +62,24 @@
             { key: 'who-we-are',  label: 'Who We Are',  href: MAIN + '/who-we-are' }
         ]},
         { key: 'join',        label: 'Join',        href: MAIN + '/join' },
-        { key: 'fundraising', label: 'Fundraising', children: [
-            { key: 'fundraising', label: 'How It Works', href: MAIN + '/fundraising' },
-            { key: 'register',    label: 'Register',     href: '/register' },
-            { key: 'signup',      label: 'Event Signup', href: '/signup' }
+        // A row carrying BOTH href and children renders as a link on desktop, so
+        // hovering opens the menu and clicking goes to the page. On a phone it
+        // stays a button, because a control that navigates and opens a panel at
+        // the same time cannot be used with a thumb, and its destination is
+        // injected as the first item of the drawer submenu instead.
+        { key: 'fundraising', label: 'Fundraising', href: MAIN + '/fundraising', children: [
+        // These five are the volunteer's actual destinations. Porting the
+        // marketing navigation onto the application removed every route the old
+        // header carried, which left /LOS and /sodexo-atc as dead ends with no
+        // way out but the back button. They live here rather than in a second
+        // application-only menu so that the chrome stays one definition on both
+        // properties, which is what ADR-006 requires. A visitor on the marketing
+        // site can reach the Lucas Oil guide too, which is no loss.
+            { key: 'home-erp',    label: 'Fundraising Home', href: '/' },
+            { key: 'signup',      label: 'Event Signup',     href: '/signup' },
+            { key: 'register',    label: 'Register',         href: '/register' },
+            { key: 'los',         label: 'Lucas Oil Guide',  href: '/LOS' },
+            { key: 'sodexo-atc',  label: 'Alcohol Permit',   href: '/sodexo-atc' }
         ]},
         { key: 'resources',   label: 'Resources', children: [
             { key: 'eventlink',     label: 'EventLink Guide',     href: MAIN + '/eventlink' },
@@ -120,11 +134,16 @@
 
         NAV_ITEMS.forEach(function (item) {
             if (item.children) {
-                out += '<li class="has-dropdown">'
-                     + '<button type="button" class="nav-dropdown-toggle'
-                     + (isActiveTrail(item, active) ? ' is-active-trail' : '') + '"'
-                     + ' aria-haspopup="true" aria-expanded="false" aria-controls="dd-' + esc(item.key) + '">'
-                     + esc(item.label) + CARET + '</button>'
+                var head = item.href
+                    ? '<a href="' + esc(item.href) + '" class="nav-dropdown-toggle'
+                      + (isActiveTrail(item, active) ? ' is-active-trail' : '') + '"'
+                      + ' aria-haspopup="true" aria-expanded="false" aria-controls="dd-'
+                      + esc(item.key) + '">' + esc(item.label) + CARET + '</a>'
+                    : '<button type="button" class="nav-dropdown-toggle'
+                      + (isActiveTrail(item, active) ? ' is-active-trail' : '') + '"'
+                      + ' aria-haspopup="true" aria-expanded="false" aria-controls="dd-'
+                      + esc(item.key) + '">' + esc(item.label) + CARET + '</button>';
+                out += '<li class="has-dropdown">' + head
                      + '<ul class="dropdown-menu" id="dd-' + esc(item.key) + '">'
                      + item.children.map(function (c) {
                          return '<li><a href="' + esc(c.href) + '" class="dropdown-link"'
@@ -153,6 +172,10 @@
                      + ' aria-expanded="false" aria-controls="m-' + esc(item.key) + '">'
                      + esc(item.label) + CARET + '</button>'
                      + '<div class="mobile-submenu" id="m-' + esc(item.key) + '">'
+                     + (item.href
+                         ? '<a href="' + esc(item.href) + '"' + currentAttr(item.key, active)
+                           + '>' + esc(item.label) + '</a>'
+                         : '')
                      + item.children.map(function (c) {
                          return '<a href="' + esc(c.href) + '"' + currentAttr(c.key, active)
                               + externalAttr(c) + '>' + esc(c.label) + '</a>';

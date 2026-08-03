@@ -41,10 +41,22 @@ $BREVO_API_KEY = LIONS_BREVO_API_KEY;
 // only the last six characters of a key in its list, those six look enough like
 // a credential to be pasted by mistake, and the API answers a bare 401 that
 // says nothing about why. Checking the shape names the cause instead.
-if (strpos($BREVO_API_KEY, 'xkeysib-') !== 0 || strlen($BREVO_API_KEY) < 80) {
+$keyLooksReal = strpos($BREVO_API_KEY, 'xkeysib-') === 0
+             && strlen($BREVO_API_KEY) >= 80
+             // A real key's middle section is 64 hexadecimal characters and
+             // uses most of the alphabet. Anything with almost no variety is a
+             // worked example that has been pasted in by mistake, which is
+             // exactly what happened on 2026-08-02: a correctly shaped run of
+             // zeros passed the length and prefix tests and was only caught by
+             // Brevo answering 401. Eight distinct characters is far below what
+             // a real key shows and far above what a filler string does.
+             && count(array_unique(str_split(substr($BREVO_API_KEY, 8, 64)))) >= 8;
+
+if (!$keyLooksReal) {
     error_log('Lions email: LIONS_BREVO_API_KEY is not a whole Brevo key. It '
             . 'must be xkeysib- then 64 hex, a dash and 16 more, about 89 '
-            . 'characters. Brevo only shows a key in full once, at creation.');
+            . 'characters, and the middle section is a jumble rather than a run '
+            . 'of one character. Brevo shows a key in full once, at creation.');
     sendResponse(false, 'Email is temporarily unavailable. Please write to '
                       . 'fundraising@lionssports.club and we will pick it up.');
 }

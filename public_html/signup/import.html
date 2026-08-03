@@ -16,7 +16,8 @@
           rel="stylesheet">
 
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
-    <link rel="stylesheet" href="/css/lions-app.css?v=2">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=3">
     <link rel="stylesheet" href="/css/lions-signup.css?v=1">
 
     <style>
@@ -84,6 +85,12 @@
             <section class="card">
                 <h2>Scope</h2>
                 <p id="scope-summary"></p>
+                <div class="btn-row">
+                    <label class="check-commit" style="min-height:auto">
+                        <input type="checkbox" id="overwrite">
+                        <span>Overwrite events that are already in Lions-Events</span>
+                    </label>
+                </div>
                 <div class="btn-row">
                     <button type="button" class="btn btn-secondary" id="btn-dry-run">Run dry run</button>
                     <button type="button" class="btn" id="btn-write" disabled>Write to Firestore</button>
@@ -237,6 +244,47 @@ const INCLUDE_UNDATED = true;
  * queries for produces an event that exists and is invisible.
  */
 const SEASON = '2026-2027';
+
+/**
+ * Shift hours, derived from the time the contract gives for the event.
+ *
+ * Jason, 2026-08-02: for a Colts game the gates open two hours before kickoff
+ * and the crew is there three hours before the gates. A one o'clock kickoff
+ * therefore starts the shift at eight, which is the number he confirmed, and
+ * the day finishes at half past four. Five hours before and three and a half
+ * hours after, expressed as minutes so the arithmetic is visible.
+ *
+ * The seed calls its field gateTime. For the Colts games it holds kickoff, not
+ * the gate, which is why the offset is five hours rather than the three he
+ * quoted. The field is not renamed here because the seed is the transcript of
+ * a contract and should keep the contract's own labels.
+ *
+ * An event with no time on the contract gets no hours at all rather than a
+ * default. Thirty eight of the fifty are in that position, they already carry
+ * timesStatus "tba", and the signup page prints no times for them. A number
+ * nobody has promised is worse than a blank, because a volunteer reads the
+ * hours and not the caveat.
+ *
+ * These are starting values. The assignment screen is where they get tuned.
+ */
+const SHIFT_STARTS_BEFORE_MINUTES = 300;
+const SHIFT_ENDS_AFTER_MINUTES = 210;
+
+function shiftClock(hhmm, offsetMinutes) {
+    const m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) { return null; }
+    const total = Number(m[1]) * 60 + Number(m[2]) + offsetMinutes;
+    if (total < 0 || total >= 24 * 60) { return null; }
+    return String(Math.floor(total / 60)).padStart(2, '0') + ':'
+         + String(total % 60).padStart(2, '0');
+}
+
+function shiftsForEvent(ev) {
+    return CFG.shiftsFor(false).map(shift => Object.assign({}, shift, {
+        startTime: shiftClock(ev.gateTime, -SHIFT_STARTS_BEFORE_MINUTES),
+        endTime:   shiftClock(ev.gateTime, SHIFT_ENDS_AFTER_MINUTES)
+    }));
+}
 
 const SEED = {
         "_meta": {
@@ -1063,7 +1111,7 @@ function eventDocument(ev, actorEmail) {
         seriesOf:     ev.seriesOf > 1 ? ev.seriesOf : null,
         isSmallEvent: ev.isSmallEvent === true,
         splitShifts:  false,
-        shifts:       CFG.shiftsFor(false),
+        shifts:       shiftsForEvent(ev),
         status:       'published',
         importedAt:   serverTimestamp(),
         importedBy:   actorEmail
@@ -1136,7 +1184,16 @@ function buildPlan(existing, actorEmail) {
             return;
         }
 
-        if (existing.ids.has(id) || existing.keys.has(existingKeyFor(ev)) || seenIds.has(id)) {
+        const present = existing.ids.has(id) || existing.keys.has(existingKeyFor(ev));
+
+        // Overwrite is opt in and off by default, because the ordinary use of
+        // this tool is a first import where silently replacing anything already
+        // there would be wrong. It exists because the first run wrote shift
+        // hours that were not right and the tool had already been deleted from
+        // the server. A setDoc replaces the event document's fields; the
+        // signups subcollection beneath it is a separate path and is untouched,
+        // so no declaration is lost by re-running this.
+        if (seenIds.has(id) || (present && !document.getElementById('overwrite').checked)) {
             plan.skipExists.push({ id, ev });
             return;
         }
@@ -1169,7 +1226,9 @@ function renderPlan(plan, existing) {
            + (INCLUDE_UNDATED ? ', undated events included' : ', undated events excluded'));
     out.push('');
 
-    out.push('WOULD WRITE (' + plan.write.length + ')');
+    out.push(document.getElementById('overwrite').checked
+        ? 'WOULD WRITE OR OVERWRITE (' + plan.write.length + ')'
+        : 'WOULD WRITE (' + plan.write.length + ')');
     plan.write.forEach(entry => out.push(describe(entry)));
     if (!plan.write.length) { out.push('  none'); }
     out.push('');
@@ -1192,6 +1251,12 @@ function renderPlan(plan, existing) {
                    + ', expected ' + SEASON));
         out.push('');
     }
+
+    const withHours = plan.write.filter(e => e.document.shifts[0].startTime).length;
+    out.push('Of the ' + plan.write.length + ' to write, ' + withHours
+           + ' carry shift hours derived from the contract time and '
+           + (plan.write.length - withHours) + ' carry none, which is what the '
+           + 'signup page shows as no times rather than a guess.');
 
     const conflicts = plan.write.filter(e => e.ev.dateStatus === 'conflict').length;
     const tba = plan.write.filter(e => e.ev.dateStatus === 'tba').length;

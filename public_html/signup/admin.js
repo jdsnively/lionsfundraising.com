@@ -64,6 +64,20 @@ let roster = new Map();            // lowercased email -> roster record
 let signupsByEvent = new Map();    // eventId -> array of { id, ref, data }
 let selectedEventId = '';
 let busy = false;
+let editing = false;
+
+/**
+ * Shift hours derived from the time the contract gives.
+ *
+ * Same offsets the importer uses, and the same reasoning: gates open two hours
+ * before kickoff and the crew is there three hours before the gates, so a one
+ * o'clock kickoff starts the shift at eight and finishes at half past four.
+ * Duplicated rather than shared because signup-config.js is loaded by the
+ * volunteer page, which has no business knowing how an administrator seeds a
+ * time. If the offsets ever move, they move in both files.
+ */
+const SHIFT_STARTS_BEFORE_MINUTES = 300;
+const SHIFT_ENDS_AFTER_MINUTES = 210;
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -432,6 +446,122 @@ function renderShift(event, shift) {
          + '</section>';
 }
 
+/** Adds or subtracts minutes from an HH:MM string, or returns '' if it cannot. */
+function clockShift(hhmm, offsetMinutes) {
+    const m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) { return ''; }
+    const total = Number(m[1]) * 60 + Number(m[2]) + offsetMinutes;
+    if (total < 0 || total >= 24 * 60) { return ''; }
+    return String(Math.floor(total / 60)).padStart(2, '0') + ':'
+         + String(total % 60).padStart(2, '0');
+}
+
+/**
+ * The event editor.
+ *
+ * Dates and times are edited as native date and time inputs, which hand back
+ * YYYY-MM-DD and HH:MM, exactly the formats already stored. No Date object is
+ * constructed anywhere in this path, so the UTC trap that has bitten this
+ * property four times cannot apply.
+ *
+ * Splitting one shift into two is refused while the event carries
+ * declarations. A declaration stores the shift key it was made against; change
+ * ALL into AM and PM and every existing row points at a shift that no longer
+ * exists, disappears from this screen, and is neither cancelled nor honoured.
+ * Refusing is not a limitation to work around later, it is the only honest
+ * answer until there is a way to move a person from one shift to another.
+ */
+function renderEditor(event) {
+    if (!editing) { return ''; }
+
+    const shifts = shiftsOf(event);
+    const declared = (signupsByEvent.get(event.id) || []).length;
+    const split = shifts.length > 1;
+
+    const statusOption = (value, label) =>
+        '<option value="' + value + '"'
+        + (event.dateStatus === value ? ' selected' : '') + '>' + label + '</option>';
+
+    // Both rows are always rendered and the second is hidden when the day is
+    // not split. Re-rendering the editor to add a row would throw away whatever
+    // had been typed into the fields above it, which is what the first version
+    // did: ticking the box reset the form and silently lost the split as well.
+    const template = split ? shifts : CFG.shiftsFor(true);
+    const row = (index, labelWhenSplit) => {
+        const shift = shifts[index] || {};
+        const hidden = index === 1 && !split;
+        return '<div class="field-grid" id="ed-row-' + index + '"'
+             + (hidden ? ' hidden' : '') + '>'
+             + '<div class="field"><label for="ed-start-' + index + '">'
+             + '<span class="ed-shift-name">'
+             + esc(index === 0 && !split ? 'All day' : labelWhenSplit)
+             + '</span> starts</label>'
+             + '<input type="time" id="ed-start-' + index + '" value="'
+             + esc(shift.startTime || '') + '"></div>'
+             + '<div class="field"><label for="ed-end-' + index + '">'
+             + '<span class="ed-shift-name">'
+             + esc(index === 0 && !split ? 'All day' : labelWhenSplit)
+             + '</span> ends</label>'
+             + '<input type="time" id="ed-end-' + index + '" value="'
+             + esc(shift.endTime || '') + '"></div>'
+             + '</div>';
+    };
+    const shiftRows = row(0, template[0].label) + row(1, template[1].label);
+
+    return '<div class="admin-edit">'
+         + '<h3>Edit this event</h3>'
+
+         + '<div class="field-grid">'
+         + '<div class="field"><label for="ed-date">Date</label>'
+         + '<input type="date" id="ed-date" value="' + esc(event.eventDate || '') + '">'
+         + '<span class="field-note">Leave empty while the date is unknown.</span></div>'
+         + '<div class="field"><label for="ed-status">Date status</label>'
+         + '<select id="ed-status">'
+         + statusOption('confirmed', 'Confirmed')
+         + statusOption('either', 'One of two dates')
+         + statusOption('conflict', 'Being confirmed with Sodexo')
+         + statusOption('tba', 'Not set yet')
+         + '</select></div>'
+         + '</div>'
+
+         + '<div class="field"><label for="ed-window">Expected window</label>'
+         + '<input type="text" id="ed-window" value="' + esc(event.dateWindow || '') + '"'
+         + ' placeholder="Jan or Feb 2027">'
+         + '<span class="field-note">Shown to volunteers only while the date is '
+         + 'not set.</span></div>'
+
+         + '<hr class="divider">'
+
+         + '<div class="field"><label for="ed-gate">Contract time</label>'
+         + '<input type="time" id="ed-gate" value="' + esc(event.gateTime || '') + '">'
+         + '<span class="field-note">Kickoff for a Colts game. Use it to fill the '
+         + 'shift below, five hours before to three and a half hours after.</span></div>'
+
+         + '<div class="btn-row"><button type="button" class="btn btn-secondary"'
+         + ' id="ed-derive">Fill the shift from that time</button></div>'
+
+         + shiftRows
+
+         + '<div class="field"><label class="check-commit" style="min-height:auto">'
+         + '<input type="checkbox" id="ed-split"' + (split ? ' checked' : '')
+         + (declared ? ' disabled' : '') + '>'
+         + '<span>Split into a morning and an evening shift</span></label>'
+         + (declared
+             ? '<span class="field-note">Locked. ' + declared + ' declaration'
+               + (declared === 1 ? '' : 's') + ' on this event were made against '
+               + 'the shift as it stands, and changing its shape would strand them.'
+               + '</span>'
+             : '')
+         + '</div>'
+
+         + '<div id="ed-error" class="admin-warn" hidden></div>'
+
+         + '<div class="btn-row">'
+         + '<button type="button" class="btn" id="ed-save">Save the event</button>'
+         + '<button type="button" class="btn btn-secondary" id="ed-cancel">Cancel</button>'
+         + '</div></div>';
+}
+
 function renderPanel() {
     const panel = document.getElementById('admin-panel');
     const event = eventById(selectedEventId);
@@ -452,7 +582,11 @@ function renderPanel() {
       + '. ' + esc(event.venue || CFG.VENUE_DEFAULT) + '.</p>'
       + (event.timesStatus === 'tba'
           ? '<p class="admin-warn">Shift times are not final for this event.</p>' : '')
+      + '<div class="btn-row"><button type="button" class="btn btn-secondary"'
+      + ' id="admin-edit-toggle">' + (editing ? 'Close the editor' : 'Edit this event')
+      + '</button></div>'
       + '</div>'
+      + renderEditor(event)
       + shiftsOf(event).map(shift => renderShift(event, shift)).join('')
       + '<div class="btn-row">'
       + '<button type="button" class="btn btn-secondary" id="admin-copy">'
@@ -555,6 +689,115 @@ function outcomeText(event) {
     return lines.join('\n');
 }
 
+/**
+ * Reads the editor, validates it, and writes the event.
+ *
+ * Validation refuses rather than corrects. A date that says confirmed with no
+ * date on it, or a shift that ends before it starts, is somebody halfway
+ * through a thought, and quietly repairing it produces an event nobody chose.
+ */
+async function saveEvent(event) {
+    const fail = (message) => {
+        const box = document.getElementById('ed-error');
+        box.textContent = message;
+        box.hidden = false;
+        return false;
+    };
+    document.getElementById('ed-error').hidden = true;
+
+    const date = document.getElementById('ed-date').value.trim();
+    const status = document.getElementById('ed-status').value;
+    const window_ = document.getElementById('ed-window').value.trim();
+    const gate = document.getElementById('ed-gate').value.trim();
+    const split = document.getElementById('ed-split').checked;
+
+    if (status !== 'tba' && !date) {
+        return fail('A date is needed unless the status is "Not set yet".');
+    }
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return fail('The date must read YYYY-MM-DD.');
+    }
+
+    const existing = shiftsOf(event);
+    const wanted = split
+        ? (existing.length > 1 ? existing : CFG.shiftsFor(true))
+        : [existing.length === 1 ? existing[0] : CFG.shiftsFor(false)[0]];
+
+    const shifts = [];
+    for (let i = 0; i < wanted.length; i++) {
+        const startField = document.getElementById('ed-start-' + i);
+        const endField = document.getElementById('ed-end-' + i);
+        const start = startField ? startField.value.trim() : '';
+        const end = endField ? endField.value.trim() : '';
+
+        if ((start && !end) || (end && !start)) {
+            return fail('Give both a start and an end for ' + wanted[i].label
+                      + ', or leave both empty.');
+        }
+        if (start && end && end <= start) {
+            return fail(wanted[i].label + ' ends before it starts.');
+        }
+
+        shifts.push(Object.assign({}, wanted[i], {
+            startTime: start || null,
+            endTime: end || null
+        }));
+    }
+
+    const patch = {
+        eventDate:   date || null,
+        dateStatus:  status,
+        gateTime:    gate || null,
+        splitShifts: shifts.length > 1,
+        shifts:      shifts,
+        // Derived rather than asked for. An event either has hours or it does
+        // not, and a status that disagrees with the times is how the signup
+        // page came to print a window nobody had promised.
+        timesStatus: shifts[0].startTime ? 'confirmed' : 'tba'
+    };
+
+    if (window_) {
+        patch.dateWindow = window_;
+    } else if (event.dateWindow) {
+        patch.dateWindow = null;
+    }
+
+    // The season is written, never derived at read time, so a date that moves
+    // across the boundary has to be rewritten with it or the event vanishes
+    // from a sheet that queries on season.
+    if (date) {
+        patch.season = CFG.seasonFor(toLocalDate(date));
+    }
+
+    if (busy) { return false; }
+    busy = true;
+
+    try {
+        await updateDoc(doc(ctx.db, CFG.COLLECTIONS.EVENTS, event.id),
+            Object.assign({}, patch, {
+                updatedAt: serverTimestamp(),
+                updatedBy: ctx.admin.email
+            }));
+
+        Object.assign(event, patch);
+        editing = false;
+        render();
+        announce(event.name + ' updated.'
+               + (patch.season !== undefined && patch.season !== ctx.season
+                   ? ' The new date puts it in season ' + patch.season
+                     + ', so it no longer appears on the ' + ctx.season + ' sheet.'
+                   : ''), 'success');
+        return true;
+
+    } catch (error) {
+        log.error('Event update failed for ' + event.id, error);
+        fail('That did not save. Nothing has changed.');
+        return false;
+    } finally {
+        busy = false;
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Wiring
 // ---------------------------------------------------------------------------
@@ -564,6 +807,7 @@ function wire() {
         const button = event.target.closest('[data-event]');
         if (!button) { return; }
         selectedEventId = button.dataset.event;
+        editing = false;
         render();
         document.getElementById('admin-panel').scrollIntoView({ block: 'start' });
     });
@@ -601,6 +845,56 @@ function wire() {
             await applyPatch(entry, { isStandLead: next },
                 (entry.data.name || entry.data.userEmail)
                 + (next ? ' is stand lead.' : ' is no longer stand lead.'));
+            return;
+        }
+
+        if (event.target.id === 'admin-edit-toggle') {
+            editing = !editing;
+            renderPanel();
+            return;
+        }
+
+        if (event.target.id === 'ed-cancel') {
+            editing = false;
+            renderPanel();
+            return;
+        }
+
+        if (event.target.id === 'ed-derive') {
+            const gate = document.getElementById('ed-gate').value.trim();
+            const start = clockShift(gate, -SHIFT_STARTS_BEFORE_MINUTES);
+            const end = clockShift(gate, SHIFT_ENDS_AFTER_MINUTES);
+            const box = document.getElementById('ed-error');
+            if (!start || !end) {
+                box.textContent = 'Set a contract time first.';
+                box.hidden = false;
+                return;
+            }
+            box.hidden = true;
+            // Only the first shift is filled. On a split day the evening shift
+            // is not five hours before anything, and guessing it would be worse
+            // than leaving it to the person who knows.
+            const startField = document.getElementById('ed-start-0');
+            const endField = document.getElementById('ed-end-0');
+            if (startField) { startField.value = start; }
+            if (endField) { endField.value = end; }
+            return;
+        }
+
+        if (event.target.id === 'ed-save') {
+            const current = eventById(selectedEventId);
+            if (current) { await saveEvent(current); }
+            return;
+        }
+
+        if (event.target.id === 'ed-split') {
+            const on = document.getElementById('ed-split').checked;
+            const second = document.getElementById('ed-row-1');
+            if (second) { second.hidden = !on; }
+            // Row zero is the whole day or the morning, depending. Renaming it
+            // in place keeps every value the administrator has already typed.
+            document.querySelectorAll('#ed-row-0 .ed-shift-name')
+                .forEach(el => { el.textContent = on ? 'Morning' : 'All day'; });
             return;
         }
 

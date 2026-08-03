@@ -12,7 +12,10 @@
     <script src="https://lionsfundraising.com/universal-auth.js"></script>
     
     <!-- Universal Header System v1.6 -->
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=1" defer></script>
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
 
     <style>
         :root {
@@ -352,10 +355,21 @@
             }
         }
     </style>
+    <style>
+        /* The Lions Blue page background the marketing site uses. This has to
+           come after the page's own style block, not before it: that block sets
+           body { background: var(--navy-blue) } and an equally specific rule
+           earlier in the source loses. Placing it last is the whole fix. One
+           property, nothing else touched. */
+        body { background: var(--lions-blue); }
+    </style>
 </head>
 <body>
     <!-- Universal Header Container -->
-    <div id="headerContainer"></div>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         the single definition on this property, mirroring $nav_items in
+         /includes/header.php on lionssports.club. -->
+    <header id="site-header" data-nav="sodexo-atc"></header>
 
     <div class="main-container">
         <div class="page-header">
@@ -456,26 +470,19 @@
                 await window.LIONS_AUTH.initialize();
                 console.log('✅ Universal Auth v4.1 initialized');
                 
-                // Setup Universal Header
-                await window.LIONS_HEADER.setupPage('headerContainer');
-                console.log('✅ Universal Header v1.6 initialized');
+                // The header renders itself from /js/lions-nav.js as soon as
+                // the shell element exists, so there is nothing to await here.
                 
                 console.log('🎉 Page initialization complete');
                 
             } catch (error) {
                 console.error('❌ Page initialization failed:', error);
-                // Fallback: still try to setup header
-                try {
-                    await window.LIONS_HEADER.setupPage('headerContainer');
-                } catch (headerError) {
-                    console.error('❌ Header fallback failed:', headerError);
-                }
             }
         }
 
         // Wait for systems to be available
         function waitForSystems() {
-            if (window.LIONS_AUTH && window.LIONS_HEADER) {
+            if (window.LIONS_AUTH) {
                 console.log('🚀 Universal systems detected, initializing...');
                 initializePage();
             } else {
@@ -505,5 +512,38 @@
         console.warn('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
         console.warn('%cThis is a browser feature intended for developers. Assets are protected.', 'color: red; font-size: 16px;');
     </script>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ======================================================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
 </body>
 </html>

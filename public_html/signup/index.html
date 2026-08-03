@@ -16,7 +16,8 @@
           rel="stylesheet">
 
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
-    <link rel="stylesheet" href="/css/lions-app.css?v=2">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=3">
     <link rel="stylesheet" href="/css/lions-signup.css?v=1">
 </head>
 
@@ -385,7 +386,12 @@ function escapeHtml(value) {
 function shiftRow(ev, shift) {
     const key = ev.id + '|' + shift.key;
     const existing = mySignups.get(key);
-    const times = shift.startTime
+
+    // Times are printed only when the event says they are settled. Showing a
+    // default alongside the words "shift times are not final yet" is worse than
+    // showing nothing: a volunteer reads the hours, not the caveat, and commits
+    // to a window nobody promised them.
+    const times = shift.startTime && ev.timesStatus !== 'tba'
         ? formatTime(shift.startTime) + ' to ' + formatTime(shift.endTime)
         : '';
     const label = shift.label + (times ? ' <span class="shift-times">' + times + '</span>' : '');
@@ -605,9 +611,29 @@ async function start() {
     }
 
     if (!roster) {
-        fail('Your sign in worked, but there is no Lions Sports Club record for that '
-           + 'address yet.');
-        return;
+        // An administrator is a Firebase Auth identity, not a registration. The
+        // role addresses in lions-auth.js were never added to
+        // Lions-Fundraising-Users, so the person who has to assign the season
+        // was refused by the page that assigns it. That is what happened to
+        // fundraising@lionsfootballclub.com on 2026-08-02.
+        //
+        // A synthetic record is used rather than skipping the roster, so every
+        // path below keeps working: an administrator can declare availability
+        // for themselves like anybody else. Priority falls to the lowest tier,
+        // which is correct, since an administrator is not a Lions family by
+        // virtue of holding the address.
+        if (!lionsAuth.canAccess('dashboard')) {
+            fail('Your sign in worked, but there is no Lions Sports Club record for '
+               + 'that address yet.');
+            return;
+        }
+
+        const address = String(state.user.email).trim().toLowerCase();
+        roster = {
+            id: address,
+            data: { name: address.split('@')[0], email: address, relationship: '' }
+        };
+        log.log('No roster record for this administrator, continuing without one.');
     }
 
     // Archived records are excluded from staffing entirely, so the sheet is not
