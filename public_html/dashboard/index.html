@@ -4,48 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lions Fundraising Dashboard</title>
-    <!-- Protected favicon implementation -->
-    <link rel="icon" type="image/png" id="dynamicFavicon">
-    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
-    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <title>Dashboard - Lions Sports Club</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- League Spartan, and only League Spartan. A page that does not request
+         it renders the SHARED header in the Arial fallback while its siblings
+         render correctly, which is the same markup showing two typefaces. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Shared chrome. lions-chrome.css carries the header, navigation, social
+         section and footer and is a port of css/site.css on the marketing site.
+         lions-app.css is deliberately NOT loaded: this page defines .btn,
+         .btn-secondary and .loading itself, and handing it the component sheet
+         to get a header would restyle controls that work. That is exactly why
+         the two files were split on 2026-08-03. -->
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
 
     <style>
         :root {
-            /* Primary Brand Colors - Core Palette */
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+            /* Brand, resolved from the palette rather than restated. Every
+               name on this block carries a --db- prefix so that none can
+               collide with the token bridge in lions-chrome.css, which owns
+               --white, --black, --dark, --blue-*, --gold, --cross-red, --gray-*
+               and --font-*. This style block comes after that stylesheet and
+               would win the cascade, repainting the shared header and footer on
+               this page alone. */
+            --db-blue: var(--blue-primary);
+            --db-blue-hover: var(--blue-hover);
+            --db-blue-active: var(--blue-active);
 
-            /* Neutral Grays - Essential Hierarchy */
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
+            /* Neutral grays. Ghost White, never pure white. */
+            --db-surface: var(--white);
+            --db-gray-50: #fafafa;
+            --db-gray-100: #f4f4f5;
+            --db-gray-200: #e5e7eb;
+            --db-gray-300: #d1d5db;
+            --db-gray-500: #6b7280;
+            --db-gray-700: #374151;
+            --db-gray-900: #111827;
 
-            /* Semantic Colors - Functional States */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
+            /* Status colours, moved onto the palette's own accessible set. */
+            --success: var(--lions-success);
+            --warning: var(--lions-warning);
+            --error: var(--lions-error);
+            --info: var(--blue-primary);
 
-            /* Typography - Professional System */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+            /* League Spartan headings, Helvetica World body, resolved through
+               the bridge. The page previously loaded two typefaces that are not
+               in the design system. */
+            --db-font-body: var(--font-body);
+            --db-font-heading: var(--font-heading);
 
             /* Flat Design - No Shadows */
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+            --border-light: 1px solid var(--db-gray-200);
+            --border-medium: 2px solid var(--db-gray-300);
+            --border-focus: 2px solid var(--db-blue);
 
             /* Border Radius - Consistent System */
             --radius-sm: 6px;
@@ -76,10 +99,10 @@
         }
 
         body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
+            font-family: var(--db-font-body);
+            background: var(--db-blue);
             min-height: 100vh;
-            color: var(--gray-700);
+            color: var(--db-gray-700);
             position: relative;
             padding: var(--space-6);
         }
@@ -87,7 +110,7 @@
         .main-container {
             max-width: 1600px;
             margin: 0 auto;
-            background: var(--white);
+            background: var(--db-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             padding-top: var(--space-12);
@@ -107,11 +130,11 @@
         }
 
         .login-container {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             border-radius: var(--radius-xl);
             padding: var(--space-12);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--db-blue);
             max-width: 500px;
             width: 100%;
         }
@@ -121,15 +144,15 @@
         }
 
         .login-title {
-            font-family: var(--font-display);
+            font-family: var(--db-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             margin-bottom: var(--space-4);
             font-weight: 600;
         }
 
         .login-subtitle {
-            color: var(--gray-500);
+            color: var(--db-gray-500);
             font-size: 1rem;
             font-weight: 500;
         }
@@ -144,9 +167,9 @@
         }
 
         .dashboard-title {
-            font-family: var(--font-display);
+            font-family: var(--db-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             margin-bottom: var(--space-6);
             font-weight: 600;
         }
@@ -159,8 +182,8 @@
         }
 
         .stat-card {
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--db-blue);
+            color: var(--db-surface);
             border: var(--border-light);
             border-radius: var(--radius-lg);
             padding: var(--space-8);
@@ -175,9 +198,9 @@
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--white);
+            color: var(--db-surface);
             margin-bottom: var(--space-2);
-            font-family: var(--font-display);
+            font-family: var(--db-font-heading);
         }
 
         .stat-label {
@@ -187,7 +210,7 @@
         }
 
         .controls {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin-bottom: var(--space-6);
@@ -213,7 +236,7 @@
 
         .form-group label {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -225,10 +248,10 @@
             padding: var(--space-3);
             border: var(--border-medium);
             border-radius: var(--radius-md);
-            background: var(--white);
-            color: var(--gray-700);
+            background: var(--db-surface);
+            color: var(--db-gray-700);
             font-size: 1rem;
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
             min-height: 44px;
             transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
@@ -236,7 +259,7 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: var(--navy-blue);
+            border-color: var(--db-blue);
             box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
         }
 
@@ -245,24 +268,24 @@
             align-items: center;
             gap: var(--space-2);
             padding: var(--space-3) var(--space-4);
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--db-blue);
+            color: var(--db-surface);
             text-decoration: none;
             border-radius: var(--radius-md);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--db-blue);
             font-weight: 600;
             font-size: 0.875rem;
             cursor: pointer;
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
             min-height: 44px;
             justify-content: center;
             transition: all var(--transition-fast);
         }
 
         .btn:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
+            background: var(--db-blue-active);
+            border-color: var(--db-blue-active);
         }
 
         .btn:disabled {
@@ -271,13 +294,13 @@
         }
 
         .btn-secondary {
-            background: var(--gray-500);
-            border-color: var(--gray-500);
+            background: var(--db-gray-500);
+            border-color: var(--db-gray-500);
         }
 
         .btn-secondary:hover {
-            background: var(--gray-700);
-            border-color: var(--gray-700);
+            background: var(--db-gray-700);
+            border-color: var(--db-gray-700);
         }
 
         .btn-success {
@@ -301,7 +324,7 @@
         }
 
         .export-section {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-4);
             margin-bottom: var(--space-6);
@@ -313,7 +336,7 @@
         }
 
         .table-container {
-            background: var(--white);
+            background: var(--db-surface);
             border-radius: var(--radius-lg);
             border: var(--border-light);
             overflow: auto;
@@ -328,11 +351,11 @@
         }
 
         .table th {
-            background: var(--gray-100);
+            background: var(--db-gray-100);
             padding: var(--space-4);
             text-align: center;
             font-weight: 600;
-            color: var(--gray-900);
+            color: var(--db-gray-900);
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -345,7 +368,7 @@
         .table td {
             padding: var(--space-4);
             border-bottom: var(--border-light);
-            color: var(--gray-700);
+            color: var(--db-gray-700);
             font-size: 0.875rem;
             text-align: center;
             white-space: nowrap;
@@ -361,7 +384,7 @@
         }
 
         .table tr:hover {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
         }
 
         .table tr:last-child td {
@@ -370,14 +393,14 @@
 
         .clickable-name {
             cursor: pointer;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             font-weight: 600;
             transition: color var(--transition-fast);
             text-decoration: none;
         }
 
         .clickable-name:hover {
-            color: var(--navy-blue-dark);
+            color: var(--db-blue-active);
             text-decoration: underline;
         }
 
@@ -399,12 +422,12 @@
             border: var(--border-medium);
             border-radius: var(--radius-sm);
             font-size: 0.875rem;
-            background: var(--white);
+            background: var(--db-surface);
         }
 
         .edit-input:focus {
             outline: none;
-            border-color: var(--navy-blue);
+            border-color: var(--db-blue);
         }
 
         .btn-edit,
@@ -420,11 +443,11 @@
         }
 
         .btn-edit {
-            color: var(--navy-blue);
+            color: var(--db-blue);
         }
 
         .btn-edit:hover {
-            background: var(--gray-100);
+            background: var(--db-gray-100);
         }
 
         .btn-edit.save {
@@ -448,14 +471,14 @@
             justify-content: space-between;
             align-items: center;
             padding: var(--space-4);
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             border-radius: var(--radius-md);
             border: var(--border-light);
         }
 
         .pagination-info {
             font-size: 0.875rem;
-            color: var(--gray-500);
+            color: var(--db-gray-500);
         }
 
         .pagination-controls {
@@ -466,7 +489,7 @@
         /* Forms */
         .add-form,
         .bulk-upload-form {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             border: var(--border-light);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
@@ -481,8 +504,8 @@
 
         .add-form h3,
         .bulk-upload-form h3 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
+            font-family: var(--db-font-heading);
+            color: var(--db-blue);
             margin-bottom: var(--space-6);
             text-align: center;
             font-size: 1.5rem;
@@ -504,7 +527,7 @@
         }
 
         .file-upload-area {
-            border: 2px dashed var(--gray-300);
+            border: 2px dashed var(--db-gray-300);
             border-radius: var(--radius-lg);
             padding: var(--space-8);
             text-align: center;
@@ -514,13 +537,13 @@
         }
 
         .file-upload-area:hover {
-            border-color: var(--navy-blue);
-            background: var(--gray-50);
+            border-color: var(--db-blue);
+            background: var(--db-gray-50);
         }
 
         .file-upload-area.dragover {
-            border-color: var(--navy-blue);
-            background: var(--gray-50);
+            border-color: var(--db-blue);
+            background: var(--db-gray-50);
         }
 
         .file-upload-input {
@@ -567,7 +590,7 @@
         }
 
         .dialog-content {
-            background: var(--white);
+            background: var(--db-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             max-width: 500px;
@@ -577,15 +600,15 @@
         }
 
         .dialog-content h3 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
+            font-family: var(--db-font-heading);
+            color: var(--db-blue);
             margin-bottom: var(--space-4);
             font-size: 1.5rem;
             font-weight: 600;
         }
 
         .dialog-content p {
-            color: var(--gray-700);
+            color: var(--db-gray-700);
             margin-bottom: var(--space-6);
             line-height: 1.6;
         }
@@ -604,6 +627,72 @@
             overflow-y: auto;
         }
 
+        /* Email gate */
+        .email-gate-dialog .dialog-content {
+            max-width: 640px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .email-gate-summary {
+            color: var(--db-gray-700);
+            line-height: 1.6;
+            margin-bottom: var(--space-6);
+        }
+
+        .email-gate-group {
+            background: var(--db-gray-50);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .email-gate-group h4 {
+            font-family: var(--db-font-heading);
+            color: var(--db-blue);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+        }
+
+        .email-gate-group ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-gate-group li {
+            color: var(--db-gray-700);
+            padding: var(--space-2) 0;
+            border-top: var(--border-light);
+            font-size: 0.9rem;
+        }
+
+        .email-gate-group li:first-child {
+            border-top: none;
+        }
+
+        .email-gate-address {
+            color: var(--db-gray-500);
+        }
+
+        .email-gate-ack {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            margin-top: var(--space-6);
+            color: var(--db-gray-700);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .email-gate-ack input {
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
         .export-options {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -612,15 +701,15 @@
         }
 
         .option-group {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             padding: var(--space-4);
             border-radius: var(--radius-lg);
             border: var(--border-light);
         }
 
         .option-group h4 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
+            font-family: var(--db-font-heading);
+            color: var(--db-blue);
             margin-bottom: var(--space-3);
             font-size: 1.1rem;
             font-weight: 600;
@@ -642,7 +731,7 @@
         .checkbox-option input[type="checkbox"] {
             width: auto;
             margin: 0;
-            accent-color: var(--navy-blue);
+            accent-color: var(--db-blue);
             transform: scale(1.2);
         }
 
@@ -657,7 +746,7 @@
         }
 
         .export-preview {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
             padding: var(--space-4);
             border-radius: var(--radius-lg);
             margin-bottom: var(--space-6);
@@ -665,14 +754,14 @@
         }
 
         .export-preview h4 {
-            color: var(--navy-blue);
+            color: var(--db-blue);
             margin-bottom: var(--space-2);
-            font-family: var(--font-display);
+            font-family: var(--db-font-heading);
             font-weight: 600;
         }
 
         .preview-text {
-            color: var(--navy-blue);
+            color: var(--db-blue);
             font-size: 0.9rem;
             font-weight: 600;
         }
@@ -696,12 +785,12 @@
         }
 
         .footer a {
-            color: var(--white) !important;
+            color: var(--db-surface) !important;
             text-decoration: none;
             font-size: 0.925rem;
             font-weight: 400;
             transition: color var(--transition-fast);
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
         }
 
         .footer a:hover {
@@ -711,7 +800,7 @@
 
         .footer-brand {
             margin-top: var(--space-4);
-            color: var(--white);
+            color: var(--db-surface);
             font-size: 0.9rem;
         }
 
@@ -722,14 +811,14 @@
         .no-results {
             text-align: center;
             padding: var(--space-8);
-            color: var(--gray-500);
+            color: var(--db-gray-500);
             font-style: italic;
         }
 
         .loading {
             text-align: center;
             padding: var(--space-8);
-            color: var(--gray-500);
+            color: var(--db-gray-500);
         }
 
         .error {
@@ -798,7 +887,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--gray-500);
+            color: var(--db-gray-500);
             font-size: 0.75rem;
             padding: var(--space-1);
             display: flex;
@@ -807,7 +896,7 @@
             z-index: 10;
             user-select: none;
             transition: color var(--transition-fast);
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
             font-weight: 600;
             min-width: 24px;
             height: 20px;
@@ -815,12 +904,12 @@
         }
 
         .password-toggle:hover {
-            color: var(--navy-blue);
+            color: var(--db-blue);
         }
 
         .password-toggle:focus {
             outline: none;
-            color: var(--navy-blue);
+            color: var(--db-blue);
         }
 
         /* Flat Eye Icon */
@@ -828,23 +917,23 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             font-size: 0.9rem;
             font-weight: normal;
-            color: var(--gray-500);
+            color: var(--db-gray-500);
             transition: color var(--transition-fast);
             display: inline-block;
         }
 
         .eye-icon.visible {
             text-decoration: line-through;
-            text-decoration-color: var(--gray-500);
+            text-decoration-color: var(--db-gray-500);
             text-decoration-thickness: 2px;
         }
 
         .password-toggle:hover .eye-icon {
-            color: var(--navy-blue);
+            color: var(--db-blue);
         }
 
         .password-toggle:hover .eye-icon.visible {
-            text-decoration-color: var(--navy-blue);
+            text-decoration-color: var(--db-blue);
         }
 
         .password-input-with-toggle {
@@ -856,17 +945,17 @@
         .forgot-password-link {
             background: none;
             border: none;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             font-size: 0.875rem;
             cursor: pointer;
             text-decoration: underline;
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
             padding: var(--space-2);
             transition: color var(--transition-fast);
         }
 
         .forgot-password-link:hover {
-            color: var(--navy-blue-dark);
+            color: var(--db-blue-active);
         }
 
         /* Mobile Dropdown Styles */
@@ -879,9 +968,9 @@
             position: absolute;
             top: 100%;
             right: 0;
-            background: var(--white);
+            background: var(--db-surface);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--db-blue);
             border-radius: var(--radius-md);
             box-shadow: 0 4px 12px rgba(26, 54, 93, 0.15);
             z-index: 1000;
@@ -907,17 +996,17 @@
             background: none;
             width: 100%;
             text-align: left;
-            font-family: var(--font-primary);
+            font-family: var(--db-font-body);
             font-size: 0.875rem;
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--db-blue);
             cursor: pointer;
             transition: background-color var(--transition-fast);
             min-height: 44px;
         }
 
         .dropdown-item:hover {
-            background: var(--gray-50);
+            background: var(--db-gray-50);
         }
 
         .dropdown-item:first-child {
@@ -930,7 +1019,7 @@
 
         .dropdown-separator {
             height: 1px;
-            background: var(--gray-200);
+            background: var(--db-gray-200);
             margin: 0;
         }
 
@@ -987,7 +1076,7 @@
             }
         }
 
-        /* Mobile styles (≤480px) */
+        /* Mobile styles, 480px and below */
         @media (max-width: 480px) {
             body {
                 padding: var(--space-4);
@@ -1050,8 +1139,8 @@
                 padding: var(--space-2) var(--space-3);
                 font-size: 0.8rem;
                 white-space: nowrap;
-                background: var(--gray-500);
-                border-color: var(--gray-500);
+                background: var(--db-gray-500);
+                border-color: var(--db-gray-500);
             }
 
             .dashboard-title {
@@ -1157,11 +1246,15 @@
             }
         }
 
-        /* ENHANCED: Loading skeleton for smooth transitions */
+        /* Loading skeleton. Flat, per the design system: no gradient, so it
+           pulses in opacity rather than sweeping a highlight across itself. */
         .skeleton {
-            background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
-            background-size: 200% 100%;
+            background: var(--db-gray-200);
             animation: loading 1.5s infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton { animation: none; }
         }
 
         @keyframes loading {
@@ -1213,16 +1306,23 @@
 </head>
 
 <body>
-    <div id="headerContainer"></div>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js, which is
+         the single definition on this property and mirrors $nav_items in
+         /includes/header.php on lionssports.club. universal-header.js is frozen
+         and is no longer loaded here: read at v1.9 it carries the retired navy
+         hex, the wrong typeface, a text-shadow, emoji navigation icons and
+         three retired addresses. data-nav is empty because this route has no
+         counterpart in the marketing navigation. -->
+    <header id="site-header" data-nav=""></header>
 
     <div class="main-container">
         <!-- Config Error Message -->
         <div id="configError" class="config-error">
-            ⚠️ Configuration loading failed. Some dropdown options may not be available.
+            Configuration loading failed. Some dropdown options may not be available.
             Please contact support if this persists.
         </div>
 
-        <!-- FIXED: Login screen starts hidden to prevent flash -->
+        <!-- Login screen starts hidden to prevent flash -->
         <div id="loginScreen" class="login-screen hidden">
             <div class="login-container">
                 <div class="login-header">
@@ -1240,7 +1340,7 @@
                         <div class="password-container">
                             <input type="password" id="password" class="password-input-with-toggle" autocomplete="current-password" required>
                             <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', this)">
-                                <span class="eye-icon">👁</span>
+                                <span class="eye-icon" aria-hidden="true">Show</span>
                             </button>
                         </div>
                     </div>
@@ -1305,7 +1405,7 @@
                         <option value="">All Relationships</option>
                         <option value="all-lions">All Lions</option>
                         <optgroup label="Lions">
-                            <option value="Lions Player/Cheerleader">Lions Player/Cheerleader</option>
+                            <option value="Lions Athlete">Lions Athlete</option>
                             <option value="Lions Parent">Lions Parent</option>
                             <option value="Lions Sibling">Lions Sibling</option>
                             <option value="Lions Board Member">Lions Board Member</option>
@@ -1352,42 +1452,47 @@
 
             <div class="export-section">
                 <a href="#" id="downloadSampleBtn"
-                    style="font-size: 0.8rem; color: var(--gray-500); margin-right: 1rem;">📥 Download sample.csv</a>
-                <button class="btn" id="refreshBtn">🔄 Refresh</button>
-                <button class="btn btn-secondary" id="exportCSVBtn">📊 Quick Export</button>
-                <button class="btn btn-secondary" id="exportRawBtn">📋 Raw Data Export</button>
-                <button class="btn btn-secondary" id="exportSodexoBtn">🍕 Sodexo Format</button>
-                <button class="btn btn-secondary" id="customExportBtn">⚙️ Custom Export</button>
-                <button class="btn btn-secondary" id="emailExportBtn">📧 Email Export</button>
-                <button class="btn btn-secondary" id="bulkUploadBtn">📁 Bulk Upload</button>
+                    style="font-size: 0.8rem; color: var(--db-gray-500); margin-right: 1rem;">Download sample.csv</a>
+                <button class="btn" id="refreshBtn">Refresh</button>
+                <button class="btn btn-secondary" id="exportCSVBtn">Quick Export</button>
+                <button class="btn btn-secondary" id="exportRawBtn">Raw Data Export</button>
+                <button class="btn btn-secondary" id="exportSodexoBtn">Sodexo Format</button>
+                <button class="btn btn-secondary" id="emailAuditBtn">Email Audit</button>
+                <button class="btn btn-secondary" id="customExportBtn">Custom Export</button>
+                <button class="btn btn-secondary" id="emailExportBtn">Email Export</button>
+                <button class="btn btn-secondary" id="bulkUploadBtn">Bulk Upload</button>
 
                 <!-- Mobile Admin Dropdown -->
                 <div class="mobile-dropdown">
                     <button class="btn btn-secondary" id="adminDropdownBtn">
-                        <span>⚙️</span>
+                        
                         <span>Admin</span>
-                        <span>▼</span>
+                        
                     </button>
                     <div class="dropdown-menu" id="adminDropdownMenu">
                         <button class="dropdown-item" onclick="exportRawData()">
-                            <span>📋</span>
+                            
                             <span>Raw Data Export</span>
                         </button>
                         <button class="dropdown-item" onclick="exportSodexoFormat()">
-                            <span>🍕</span>
+
                             <span>Sodexo Format</span>
                         </button>
+                        <button class="dropdown-item" onclick="showEmailAuditReport()">
+
+                            <span>Email Audit</span>
+                        </button>
                         <button class="dropdown-item" onclick="showCustomExport()">
-                            <span>⚙️</span>
+                            
                             <span>Custom Export</span>
                         </button>
                         <button class="dropdown-item" onclick="showEmailExport()">
-                            <span>📧</span>
+                            
                             <span>Email Export</span>
                         </button>
                         <div class="dropdown-separator"></div>
                         <button class="dropdown-item" onclick="downloadSampleCSV()">
-                            <span>📥</span>
+                            
                             <span>Download Sample</span>
                         </button>
                     </div>
@@ -1478,23 +1583,23 @@
                     </div>
                 </div>
                 <div class="add-form-buttons">
-                    <button class="btn btn-success" id="saveNewRegistrationBtn">💾 Save Registration</button>
-                    <button class="btn btn-secondary" id="cancelAddBtn">❌ Cancel</button>
+                    <button class="btn btn-success" id="saveNewRegistrationBtn">Save Registration</button>
+                    <button class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
                 </div>
             </div>
 
             <div id="bulkUploadForm" class="bulk-upload-form">
                 <h3>Bulk Upload Registrations</h3>
                 <div class="file-upload-area" id="fileUploadArea">
-                    <div>📁 Click here to select CSV file or drag and drop</div>
-                    <div style="font-size: 0.8rem; color: var(--gray-500); margin-top: 0.5rem;">Supported format: .csv
+                    <div>Click here to select a CSV file, or drag and drop one</div>
+                    <div style="font-size: 0.8rem; color: var(--db-gray-500); margin-top: 0.5rem;">Supported format: .csv
                         files only</div>
                     <input type="file" id="csvFileInput" class="file-upload-input" accept=".csv">
                 </div>
                 <div id="uploadStatus" class="upload-status"></div>
                 <div class="bulk-upload-buttons">
-                    <button class="btn btn-success" id="processBulkBtn" disabled>💾 Process Upload</button>
-                    <button class="btn btn-secondary" id="cancelBulkBtn">❌ Cancel</button>
+                    <button class="btn btn-success" id="processBulkBtn" disabled>Process Upload</button>
+                    <button class="btn btn-secondary" id="cancelBulkBtn">Cancel</button>
                 </div>
             </div>
 
@@ -1513,10 +1618,10 @@
                             <th style="width: 80px;">Training</th>
                             <th style="width: 80px;">Willing</th>
                             <th style="width: 40px;">
-                                <span style="background-color: #000; color: #F4F4F5; font-size: 0.9rem; font-weight: bold; padding: 4px 6px; border-radius: 3px; display: inline-block;">S</span>
+                                <span style="background-color: var(--black); color: var(--white); font-size: 0.9rem; font-weight: bold; padding: 4px 6px; border-radius: 3px; display: inline-block;">S</span>
                             </th>
-                            <th style="width: 40px;" id="actionsHeader">✏️</th>
-                            <th style="width: 40px;" id="deleteHeader">🗑️</th>
+                            <th style="width: 40px;" id="actionsHeader">Edit</th>
+                            <th style="width: 40px;" id="deleteHeader">Delete</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -1530,8 +1635,8 @@
             <div class="pagination">
                 <div class="pagination-info" id="paginationInfo">No data</div>
                 <div class="pagination-controls">
-                    <button class="btn btn-secondary" id="prevBtn" disabled>← Previous</button>
-                    <button class="btn btn-secondary" id="nextBtn" disabled>Next →</button>
+                    <button class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
+                    <button class="btn btn-secondary" id="nextBtn" disabled>Next</button>
                 </div>
             </div>
         </div>
@@ -1549,8 +1654,8 @@
                 </label>
             </div>
             <div class="dialog-buttons">
-                <button class="btn btn-success" id="saveLOSShirtBtn">💾 Save</button>
-                <button class="btn btn-secondary" id="cancelLOSShirtBtn">❌ Cancel</button>
+                <button class="btn btn-success" id="saveLOSShirtBtn">Save</button>
+                <button class="btn btn-secondary" id="cancelLOSShirtBtn">Cancel</button>
             </div>
         </div>
     </div>
@@ -1636,8 +1741,8 @@
             </div>
 
             <div class="dialog-buttons">
-                <button class="btn btn-success" id="executeCustomExportBtn">📊 Export Selected Data</button>
-                <button class="btn btn-secondary" id="cancelCustomExportBtn">❌ Cancel</button>
+                <button class="btn btn-success" id="executeCustomExportBtn">Export Selected Data</button>
+                <button class="btn btn-secondary" id="cancelCustomExportBtn">Cancel</button>
             </div>
         </div>
     </div>
@@ -1706,9 +1811,9 @@
             </div>
 
             <div class="dialog-buttons">
-                <button class="btn btn-success" id="copyEmailsBtn">📋 Copy to Clipboard</button>
-                <button class="btn btn-secondary" id="generateEmailListBtn">🔄 Refresh List</button>
-                <button class="btn btn-secondary" id="cancelEmailExportBtn">❌ Cancel</button>
+                <button class="btn btn-success" id="copyEmailsBtn">Copy to Clipboard</button>
+                <button class="btn btn-secondary" id="generateEmailListBtn">Refresh List</button>
+                <button class="btn btn-secondary" id="cancelEmailExportBtn">Cancel</button>
             </div>
         </div>
     </div>
@@ -1726,8 +1831,8 @@
                 <div id="forgotPasswordError" class="error hidden"></div>
                 <div id="forgotPasswordSuccess" class="upload-status success" style="display: none;"></div>
                 <div class="dialog-buttons">
-                    <button type="submit" class="btn btn-success">📧 Send Reset Email</button>
-                    <button type="button" class="btn btn-secondary" id="cancelForgotPasswordBtn">❌ Cancel</button>
+                    <button type="submit" class="btn btn-success">Send Reset Email</button>
+                    <button type="button" class="btn btn-secondary" id="cancelForgotPasswordBtn">Cancel</button>
                 </div>
             </form>
         </div>
@@ -1743,7 +1848,7 @@
                     <div class="password-container">
                         <input type="password" id="currentPassword" class="password-input-with-toggle" required autocomplete="current-password">
                         <button type="button" class="password-toggle" onclick="togglePasswordVisibility('currentPassword', this)">
-                            <span class="eye-icon">👁</span>
+                            <span class="eye-icon" aria-hidden="true">Show</span>
                         </button>
                     </div>
                 </div>
@@ -1752,7 +1857,7 @@
                     <div class="password-container">
                         <input type="password" id="newPassword" class="password-input-with-toggle" required autocomplete="new-password" minlength="6">
                         <button type="button" class="password-toggle" onclick="togglePasswordVisibility('newPassword', this)">
-                            <span class="eye-icon">👁</span>
+                            <span class="eye-icon" aria-hidden="true">Show</span>
                         </button>
                     </div>
                 </div>
@@ -1761,14 +1866,14 @@
                     <div class="password-container">
                         <input type="password" id="confirmPassword" class="password-input-with-toggle" required autocomplete="new-password" minlength="6">
                         <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmPassword', this)">
-                            <span class="eye-icon">👁</span>
+                            <span class="eye-icon" aria-hidden="true">Show</span>
                         </button>
                     </div>
                 </div>
                 <div id="passwordChangeError" class="error hidden"></div>
                 <div class="dialog-buttons">
-                    <button type="submit" class="btn btn-success">💾 Update Password</button>
-                    <button type="button" class="btn btn-secondary" id="cancelChangePasswordBtn">❌ Cancel</button>
+                    <button type="submit" class="btn btn-success">Update Password</button>
+                    <button type="button" class="btn btn-secondary" id="cancelChangePasswordBtn">Cancel</button>
                 </div>
             </form>
         </div>
@@ -1786,16 +1891,57 @@
         </div>
     </div>
 
-    <footer class="footer">
-        <nav class="footer-nav">
-            <a href="/">Home</a>
-            <a href="/events">Events</a>
-            <a href="/reimbursement">Reimbursement</a>
-            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
-        </nav>
-        <div class="footer-brand">
-            © <span id="footerYear">2026</span> Lions Sports Club. All rights reserved.<br>
-            Giving God The Glory Through Sports
+    <div id="emailGateDialog" class="dialog email-gate-dialog hidden" role="dialog" aria-modal="true"
+         aria-labelledby="emailGateTitle">
+        <div class="dialog-content">
+            <h3 id="emailGateTitle">Email Addresses Need Attention</h3>
+            <p class="email-gate-summary" id="emailGateSummary"></p>
+            <div id="emailGateBody"></div>
+            <label class="email-gate-ack" id="emailGateAckRow">
+                <input type="checkbox" id="emailGateAck">
+                <span>I understand the people listed above cannot be credentialed by Sodexo and will not be
+                      able to work an event.</span>
+            </label>
+            <div class="dialog-buttons">
+                <button class="btn btn-secondary" id="emailGateCopyBtn">Copy List</button>
+                <button class="btn" id="emailGateCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="emailGateProceedBtn" disabled>Export Anyway</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER =========================================================
+         Copyright only, matching every other ported page. A second nav down
+         here would be a third place navigation is defined. ================ -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
         </div>
     </footer>
 
@@ -1803,20 +1949,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Load Universal Authentication First -->
-    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+    <!-- universal-auth.js still owns the session on this page. Moving it to
+         auth/lions-auth.js would put Firebase SDK 11.10.0 and 10.7.1 in one
+         document, where getApp() from one registry cannot see the other's app.
+         That is a property-wide decision, not a page edit. -->
+    <script src="/universal-auth.js"></script>
 
-    <!-- Load Universal Header System -->
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
 
     <!-- Load relationship config from external source -->
     <script>
-        console.log('🚀 Starting relationship config initialization...');
+        console.log('Starting relationship config initialization...');
         
         // Load external relationship configuration
         async function loadRelationshipConfig() {
             try {
-                console.log('📡 Loading relationship config from external source...');
+                console.log('Loading relationship config from external source...');
                 
                 // Load from external URL with cache-busting
                 const cacheBuster = new Date().getTime();
@@ -1839,7 +1986,7 @@
                 eval(configText);
                 
                 if (window.RELATIONSHIP_CONFIG) {
-                    console.log('✅ External relationship config loaded successfully');
+                    console.log('External relationship config loaded successfully');
                     console.log('Available relationships:', window.RELATIONSHIP_CONFIG.getAllRelationships());
                     
                     // Initialize dropdowns with loaded config
@@ -1850,8 +1997,8 @@
                 }
                 
             } catch (error) {
-                console.warn('⚠️ Failed to load external relationship config:', error.message);
-                console.log('🔄 Falling back to embedded configuration...');
+                console.warn('Failed to load external relationship config:', error.message);
+                console.log('Falling back to embedded configuration...');
                 
                 // Create fallback configuration
                 createFallbackConfig();
@@ -1867,9 +2014,15 @@
         // Create fallback relationship configuration
         function createFallbackConfig() {
             window.RELATIONSHIP_CONFIG = {
+
+                // Kept in step with relationship-config.js by hand. When that
+                // file changes, change this too, or a fetch failure silently
+                // reverts the dashboard to an older canon.
+                CONFIG_VERSION: 3,
+
                 groups: {
                     'Lions': [
-                        'Lions Player/Cheerleader',
+                        'Lions Athlete',
                         'Lions Parent',
                         'Lions Sibling',
                         'Lions Board Member',
@@ -1879,8 +2032,10 @@
                     ],
 
                     'Other': [
+                        'Archived',
                         'Church/Mission Fundraiser',
                         'En Pointe Booster',
+                        'Freedom Church',
                         'Friend/Family of Lions Booster',
                         'InGrace Homeschool Fundraiser',
                         'Valor Football Player',
@@ -1888,13 +2043,32 @@
                     ]
                 },
 
+                LEGACY_ALIASES: {
+                    'Lions Player/Cheerleader': 'Lions Athlete',
+                    'Lions Player': 'Lions Athlete',
+                    'Lions Cheerleader': 'Lions Athlete',
+                    'InGrace Homeschool': 'InGrace Homeschool Fundraiser',
+                    'Other Church/Mission': 'Church/Mission Fundraiser'
+                },
+
+                EXCLUDED_FROM_STAFFING: ['Archived'],
+
+                normalize(relationship) {
+                    if (!relationship) {
+                        return '';
+                    }
+                    const value = String(relationship).trim();
+                    return this.LEGACY_ALIASES[value] || value;
+                },
+
                 getAllRelationships() {
                     return Object.values(this.groups).flat();
                 },
 
                 getGroupForRelationship(relationship) {
+                    const value = this.normalize(relationship);
                     for (const [group, relationships] of Object.entries(this.groups)) {
-                        if (relationships.includes(relationship)) {
+                        if (relationships.includes(value)) {
                             return group;
                         }
                     }
@@ -1902,7 +2076,17 @@
                 },
 
                 isLionsRelationship(relationship) {
-                    return this.groups.Lions.includes(relationship);
+                    return this.groups.Lions.includes(this.normalize(relationship));
+                },
+
+                isStaffable(relationship) {
+                    return !this.EXCLUDED_FROM_STAFFING.includes(this.normalize(relationship));
+                },
+
+                isLegacyValue(relationship) {
+                    return Object.prototype.hasOwnProperty.call(
+                        this.LEGACY_ALIASES, String(relationship || '').trim()
+                    );
                 },
 
                 generateOptions(includeEmpty = true) {
@@ -2001,7 +2185,7 @@
                 }
             };
 
-            console.log('⚠️ Using fallback relationship config');
+            console.log('Using fallback relationship config');
         }
 
         // Initialize dropdowns with loaded config
@@ -2014,28 +2198,28 @@
             const filterSelect = document.getElementById('filterRelationship');
             if (filterSelect) {
                 filterSelect.innerHTML = config.generateFilterOptions();
-                console.log('✅ Filter dropdown updated');
+                console.log('Filter dropdown updated');
             }
 
             // Update add form dropdown
             const addSelect = document.getElementById('add-relationship');
             if (addSelect) {
                 addSelect.innerHTML = config.generateOptions();
-                console.log('✅ Add form dropdown updated');
+                console.log('Add form dropdown updated');
             }
 
             // Update export checkboxes
             const exportContainer = document.getElementById('relationshipCheckboxGroup');
             if (exportContainer) {
                 exportContainer.innerHTML = config.generateExportCheckboxes();
-                console.log('✅ Export checkboxes updated');
+                console.log('Export checkboxes updated');
             }
 
             // Update email export checkboxes
             const emailContainer = document.getElementById('emailRelationshipCheckboxGroup');
             if (emailContainer) {
                 emailContainer.innerHTML = config.generateEmailCheckboxes();
-                console.log('✅ Email export checkboxes updated');
+                console.log('Email export checkboxes updated');
             }
         }
 
@@ -2049,7 +2233,7 @@
 
     <script type="module">
         // PERFORMANCE FIX: Optimized auth integration with faster Firestore access
-        console.log('🚀 Dashboard: Optimized auth integration - Surgical Performance Fixes');
+        console.log('Dashboard: Optimized auth integration - Surgical Performance Fixes');
 
         // Global application state variables - PRESERVED ALL FUNCTIONALITY
         let currentUser = null;
@@ -2093,45 +2277,41 @@
         window.logout = logout;
         window.exportRawData = exportRawData;
         window.exportSodexoFormat = exportSodexoFormat;
+        window.showEmailAuditReport = showEmailAuditReport;
         window.showCustomExport = showCustomExport;
         window.showEmailExport = showEmailExport;
         window.downloadSampleCSV = downloadSampleCSV;
 
         // PERFORMANCE FIX: Ultra-fast dashboard integration
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('📱 Dashboard DOM loaded, optimized integration starting...');
+            console.log('Dashboard DOM loaded, optimized integration starting...');
             
             try {
                 // Setup event listeners immediately
                 setupEventListeners();
                 initializeMobileDropdowns();
                 
-                // PERFORMANCE: Start header setup in background without waiting
-                setTimeout(async () => {
-                    if (window.LIONS_HEADER) {
-                        await window.LIONS_HEADER.setupPage('headerContainer');
-                        setTimeout(() => {
-                            if (window.LIONS_HEADER?.updateUserInterfaceSmooth) {
-                                window.LIONS_HEADER.updateUserInterfaceSmooth();
-                            }
-                        }, 50);
-                    }
-                }, 10);
+                // lions-nav.js renders the header itself as soon as the shell
+                // element exists, so there is nothing to set up and nothing to
+                // wait for. What replaced the old two-stage call is the
+                // identity fill below, which is the only part of the header
+                // that depends on who is signed in.
                 
                 // PERFORMANCE FIX: Check auth immediately without delays
                 if (window.LIONS_AUTH?.isAuthenticated()) {
                     currentUser = window.LIONS_AUTH.getCurrentUser();
+                    fillHeaderIdentity(true);
                     userRole = determineUserRole(currentUser?.email);
                     if (userRole) {
-                        console.log('✅ User authenticated instantly, showing dashboard');
+                        console.log('User authenticated instantly, showing dashboard');
                         showDashboard();
                     } else {
-                        console.log('❌ User not authorized for dashboard');
+                        console.log('User not authorized for dashboard');
                         await logout();
                         showError('Unauthorized access. Only specific email addresses are allowed.');
                     }
                 } else {
-                    console.log('🚪 No authentication, showing login');
+                    console.log('No authentication, showing login');
                     showLogin();
                 }
                 
@@ -2141,38 +2321,99 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Dashboard initialization failed:', error);
+                console.error('Dashboard initialization failed:', error);
                 showError('Dashboard failed to load. Please refresh the page.');
             }
         });
 
+
+        /**
+         * Fills the identity controls in the shared header.
+         *
+         * Without this the ported header renders with no My Account link and no
+         * Sign out control, so this page becomes somewhere you can arrive and
+         * not leave except by the browser's back button.
+         *
+         * canAccess is handed over so lions-nav.js renders the administrator
+         * group in the Fundraising menu here, the same as it does on /account
+         * and /signup. Withholding it used to be deliberate, on the grounds
+         * that canAccess lived on auth/lions-auth.js while this page runs on
+         * universal-auth.js. The cost of that was an administrator seeing no
+         * administrator menu on the three pages only administrators can open,
+         * which is worse than the drift it avoided and breaks ADR-001.
+         *
+         * universal-auth.js now answers canAccess itself, keyed on
+         * LIONS_ROLE_ADDRESSES rather than on a role label, so the two modules
+         * cannot disagree without one of the address lists changing first.
+         */
+        function fillHeaderIdentity(signedIn) {
+            if (!window.LIONS_NAV || typeof window.LIONS_NAV.setAuth !== 'function') { return; }
+            window.LIONS_NAV.setAuth({
+                signedIn: !!signedIn,
+                active: '',
+                canAccess: function (system) {
+                    return !!(window.LIONS_AUTH
+                           && typeof window.LIONS_AUTH.canAccess === 'function'
+                           && window.LIONS_AUTH.canAccess(system));
+                },
+                onSignOut: function () {
+                    if (window.LIONS_AUTH && window.LIONS_AUTH.forceLogout) {
+                        window.LIONS_AUTH.forceLogout();
+                    }
+                }
+            });
+        }
+
         // Handle auth state changes
         function handleAuthStateChange(action, userData) {
-            console.log('📱 Dashboard: Auth state change received', action, userData);
+            fillHeaderIdentity(action === 'login' && !!userData);
+
+            console.log('Dashboard: Auth state change received', action, userData);
             
             currentUser = userData;
             
             if (action === 'login' && currentUser) {
                 userRole = determineUserRole(currentUser.email);
                 if (userRole) {
-                    console.log('✅ User authenticated, showing dashboard');
+                    console.log('User authenticated, showing dashboard');
                     showDashboard();
                 } else {
-                    console.log('❌ User not authorized for dashboard');
+                    console.log('User not authorized for dashboard');
                     logout();
                     showError('Unauthorized access. Only specific email addresses are allowed.');
                 }
             } else if (action === 'logout') {
-                console.log('🚪 User logged out, showing login');
+                console.log('User logged out, showing login');
                 showLogin();
             }
         }
 
-        // Enhanced User Role System with Firebase Permissions - PRESERVED
-        function determineUserRole(email) {
-            const normalizedEmail = email.toLowerCase().trim();
+        /**
+         * Resolves the dashboard permission set for an address.
+         *
+         * Returning null here is what locks a visitor out: handleAuthStateChange
+         * calls logout on a null role, logout calls LIONS_AUTH.forceLogout, and
+         * forceLogout signs the session out and sends the browser to the site
+         * root. Until 2026-08-05 each branch matched the lionsfootballclub.com
+         * address alone, so the administrator signing in on the address the
+         * migration is moving to was signed straight back out and returned to
+         * the front page with no explanation. Both domains resolve now.
+         *
+         * ROLE_ADDRESSES in auth/lions-auth.js is canonical. The lists here
+         * prefer the copy published by universal-auth.js and fall back to a
+         * literal, because deployment is a manual upload and this page must not
+         * lose its role check if universal-auth.js has not gone up yet.
+         */
+        const DASHBOARD_ROLE_ADDRESSES = window.LIONS_ROLE_ADDRESSES || {
+            administrator: ['fundraising@lionssports.club', 'fundraising@lionsfootballclub.com'],
+            treasurer:     ['treasurer@lionssports.club',   'treasurer@lionsfootballclub.com'],
+            president:     ['president@lionssports.club',   'president@lionsfootballclub.com']
+        };
 
-            if (normalizedEmail === 'fundraising@lionsfootballclub.com') {
+        function determineUserRole(email) {
+            const normalizedEmail = String(email || '').toLowerCase().trim();
+
+            if (DASHBOARD_ROLE_ADDRESSES.administrator.includes(normalizedEmail)) {
                 return {
                     role: 'Administrator',
                     accessLevel: 'full',
@@ -2184,9 +2425,9 @@
                 };
             }
 
-            if (normalizedEmail === 'treasurer@lionsfootballclub.com') {
+            if (DASHBOARD_ROLE_ADDRESSES.treasurer.includes(normalizedEmail)) {
                 return {
-                    role: 'Treasurer', 
+                    role: 'Treasurer',
                     accessLevel: 'view-only',
                     canEdit: false,
                     canDelete: false,
@@ -2196,7 +2437,7 @@
                 };
             }
 
-            if (normalizedEmail === 'president@lionsfootballclub.com') {
+            if (DASHBOARD_ROLE_ADDRESSES.president.includes(normalizedEmail)) {
                 return {
                     role: 'President',
                     accessLevel: 'view-only',
@@ -2213,7 +2454,7 @@
 
         // PERFORMANCE FIX: Instant dashboard display
         function showDashboard() {
-            console.log('📱 Showing dashboard for user:', currentUser.email);
+            console.log('Showing dashboard for user:', currentUser.email);
             
             document.getElementById('loginScreen').classList.add('hidden');
             updateDashboardUI(currentUser, userRole);
@@ -2309,13 +2550,13 @@
                 const result = await window.LIONS_AUTH.signInWithEmailAndPassword(email, password);
                 
                 if (result.success) {
-                    console.log('✅ Login successful via universal auth');
+                    console.log('Login successful via universal auth');
                 } else {
                     throw new Error(result.error || 'Login failed');
                 }
                 
             } catch (error) {
-                console.error('❌ Login error:', error);
+                console.error('Login error:', error);
                 
                 const errorMessages = {
                     'auth/user-not-found': 'No account found with this email. Contact administrator to create your account.',
@@ -2336,13 +2577,13 @@
             try {
                 if (window.LIONS_AUTH?.forceLogout) {
                     await window.LIONS_AUTH.forceLogout();
-                    console.log('✅ Logout successful via universal auth');
+                    console.log('Logout successful via universal auth');
                 } else {
-                    console.warn('⚠️ Universal auth forceLogout not available');
+                    console.warn('Universal auth forceLogout not available');
                     showLogin();
                 }
             } catch (error) {
-                console.error('❌ Logout error:', error);
+                console.error('Logout error:', error);
                 showLogin();
             }
         }
@@ -2352,7 +2593,7 @@
             if (!currentUser || !userRole) return;
 
             try {
-                console.log('📊 Loading data for user:', currentUser.email, 'Role:', userRole.role);
+                console.log('Loading data for user:', currentUser.email, 'Role:', userRole.role);
                 
                 // PERFORMANCE FIX: Get Firestore immediately without waiting
                 if (!db) {
@@ -2367,13 +2608,13 @@
                     while (!db && attempts < maxAttempts) {
                         if (window.LIONS_AUTH?.firestore) {
                             db = window.LIONS_AUTH.firestore;
-                            console.log('✅ Firestore obtained from universal auth');
+                            console.log('Firestore obtained from universal auth');
                             break;
                         }
                         
                         await new Promise(resolve => setTimeout(resolve, 500));
                         attempts++;
-                        console.log(`⏳ Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
+                        console.log(`Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
                     }
                 }
                 
@@ -2399,14 +2640,14 @@
                 currentPage = 1;
                 statsNeedUpdate = true; // Mark stats for update
 
-                console.log('✅ Data loaded successfully:', allData.length, 'records');
+                console.log('Data loaded successfully:', allData.length, 'records');
                 
                 // PERFORMANCE: Update display and statistics efficiently
                 displayData();
                 updateStats();
 
             } catch (error) {
-                console.error('❌ Error loading data:', error);
+                console.error('Error loading data:', error);
                 
                 if (error.code === 'permission-denied') {
                     if (userRole?.role === 'Treasurer') {
@@ -2426,33 +2667,16 @@
         }
 
         function showTreasurerPermissionError() {
+            // The previous version of this panel printed a security rules
+            // snippet for the reader to paste into the Firebase console. It was
+            // stale, it named the retired addresses, and it invited a treasurer
+            // to edit production security rules from a copy in a web page. It
+            // has been replaced with the one action a reader can usefully take.
             const errorMessage = `
-                <div style="text-align: left; max-width: 800px; margin: 0 auto;">
-                    <h3 style="color: var(--error); margin-bottom: 1rem;">Firebase Database Access Required</h3>
-                    <p style="margin-bottom: 1rem;"><strong>Your account needs read permissions to view the data.</strong></p>
-                    
-                    <p style="margin-bottom: 1rem;">The administrator needs to add this rule to Firebase Security Rules:</p>
-                    <div style="background: var(--gray-100); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; margin-bottom: 1rem; white-space: pre;">
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow treasurer and president read access
-    match /Lions-Fundraising-Users/{document} {
-      allow read: if request.auth != null && 
-        (request.auth.token.email == "treasurer@lionsfootballclub.com" ||
-         request.auth.token.email == "president@lionsfootballclub.com" ||
-         request.auth.token.email == "fundraising@lionsfootballclub.com");
-      
-      // Only admin can write
-      allow write: if request.auth != null && 
-        request.auth.token.email == "fundraising@lionsfootballclub.com";
-    }
-  }
-}
-                    </div>
-                    
-                    <p><strong>Contact:</strong> fundraising@lionsfootballclub.com to enable database access.</p>
-                    <p><strong>Note:</strong> After rules are updated, please refresh this page.</p>
+                <div style="text-align: left; max-width: 640px; margin: 0 auto;">
+                    <h3 style="color: var(--error); margin-bottom: 1rem;">Database access required</h3>
+                    <p style="margin-bottom: 1rem;">Your account is signed in but does not have permission to read the volunteer roster.</p>
+                    <p style="margin-bottom: 1rem;">Email <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a> and include the address you signed in with. Once access is granted, refresh this page.</p>
                 </div>
             `;
             document.getElementById('tableBody').innerHTML = `<tr><td colspan="13" class="error">${errorMessage}</td></tr>`;
@@ -2536,13 +2760,13 @@ service cloud.firestore {
                 <td><input type="date" id="edit-license-exp" value="${person.licenseExpiration || ''}" class="edit-input"></td>
                 <td>${createTrainingSelect(person.alcoholTrainingCompleted)}</td>
                 <td>${createWillingSelect(person.willingToObtainLicense)}</td>
-                <td>${person.hasLOSShirt ? '✓' : ''}</td>
+                <td>${person.hasLOSShirt ? 'Yes' : ''}</td>
                 <td style="${isViewOnly ? 'display: none;' : ''}">
-                    <button class="btn-edit save" onclick="saveEdit(${actualIndex})">💾</button>
-                    <button class="btn-edit cancel" onclick="cancelEdit()">❌</button>
+                    <button class="btn-edit save" onclick="saveEdit(${actualIndex})" aria-label="Save">Save</button>
+                    <button class="btn-edit cancel" onclick="cancelEdit()" aria-label="Cancel">Cancel</button>
                 </td>
                 <td style="${isViewOnly ? 'display: none;' : ''}">
-                    <button class="btn-delete" onclick="confirmDelete('${person.id}', '${person.name}')">🗑️</button>
+                    <button class="btn-delete" onclick="confirmDelete('${person.id}', '${person.name}')" aria-label="Delete">Delete</button>
                 </td>
             `;
         }
@@ -2559,11 +2783,11 @@ service cloud.firestore {
             let deleteButton = '';
 
             if (!isViewOnly) {
-                editButton = `<button class="btn-edit" onclick="startEdit(${actualIndex})">✏️</button>`;
-                deleteButton = `<button class="btn-delete" onclick="confirmDelete('${person.id}', '${person.name}')">🗑️</button>`;
+                editButton = `<button class="btn-edit" onclick="startEdit(${actualIndex})" aria-label="Edit">Edit</button>`;
+                deleteButton = `<button class="btn-delete" onclick="confirmDelete('${person.id}', '${person.name}')" aria-label="Delete">Delete</button>`;
             } else {
-                editButton = '<span style="color: var(--gray-500); font-size: 0.75rem;">👁️</span>';
-                deleteButton = '<span style="color: var(--gray-500); font-size: 0.75rem;">👁️</span>';
+                editButton = '<span style="color: var(--db-gray-500); font-size: 0.75rem;">View only</span>';
+                deleteButton = '<span style="color: var(--db-gray-500); font-size: 0.75rem;">View only</span>';
             }
 
             return `
@@ -2577,7 +2801,7 @@ service cloud.firestore {
                 <td>${licenseExp}</td>
                 <td>${person.alcoholTrainingCompleted === 'yes' ? 'Yes' : person.alcoholTrainingCompleted === 'no' ? 'No' : '-'}</td>
                 <td>${person.willingToObtainLicense === 'yes' ? 'Yes' : person.willingToObtainLicense === 'no' ? 'No' : '-'}</td>
-                <td>${hasLOSShirt ? '✓' : ''}</td>
+                <td>${hasLOSShirt ? 'Yes' : ''}</td>
                 <td style="${isViewOnly ? 'display: none;' : ''}">${editButton}</td>
                 <td style="${isViewOnly ? 'display: none;' : ''}">${deleteButton}</td>
             `;
@@ -2591,15 +2815,20 @@ service cloud.firestore {
                 relationships = window.RELATIONSHIP_CONFIG.getAllRelationships();
             } else {
                 relationships = [
-                    'Lions Player/Cheerleader', 'Lions Parent', 'Lions Sibling', 'Lions Board Member',
+                    'Lions Athlete', 'Lions Parent', 'Lions Sibling', 'Lions Board Member',
                     'Lions Coach', 'Lions Booster', 'Lions Alumni',
-                    'Church/Mission Fundraiser', 'En Pointe Booster', 'Friend/Family of Lions Booster',
+                    'Archived', 'Church/Mission Fundraiser', 'En Pointe Booster', 'Freedom Church',
+                    'Friend/Family of Lions Booster',
                     'InGrace Homeschool Fundraiser', 'Valor Football Player', 'Youth Missions Trip Fundraiser'
                 ];
             }
-            
+
+            // A record still holding a pre-v3 value must land on its current
+            // equivalent, or opening the editor would silently reset it.
+            const current = normalizeRelationship(selected);
+
             return `<select id="edit-relationship" class="edit-input">
-                ${relationships.map(opt => `<option value="${opt}" ${selected === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                ${relationships.map(opt => `<option value="${opt}" ${current === opt ? 'selected' : ''}>${opt}</option>`).join('')}
             </select>`;
         }
 
@@ -2689,13 +2918,23 @@ service cloud.firestore {
                 person.phone?.toLowerCase().includes(term);
         }
 
+        // Stored values are compared through normalize() on both sides. A record
+        // written before the v3 rename still holds 'Lions Player/Cheerleader',
+        // and without this a filter on 'Lions Athlete' would return none of them.
+        function normalizeRelationship(value) {
+            return window.RELATIONSHIP_CONFIG && window.RELATIONSHIP_CONFIG.normalize
+                ? window.RELATIONSHIP_CONFIG.normalize(value)
+                : String(value || '').trim();
+        }
+
         function matchesRelationship(person, filter) {
             if (filter === 'all-lions') {
-                return window.RELATIONSHIP_CONFIG ? 
-                    window.RELATIONSHIP_CONFIG.isLionsRelationship(person.relationship) :
-                    ['Lions Player/Cheerleader', 'Lions Parent', 'Lions Sibling', 'Lions Booster', 'Lions Alumni'].includes(person.relationship);
+                return window.RELATIONSHIP_CONFIG
+                    ? window.RELATIONSHIP_CONFIG.isLionsRelationship(person.relationship)
+                    : ['Lions Athlete', 'Lions Parent', 'Lions Sibling', 'Lions Booster', 'Lions Alumni']
+                          .includes(normalizeRelationship(person.relationship));
             }
-            return person.relationship === filter;
+            return normalizeRelationship(person.relationship) === normalizeRelationship(filter);
         }
 
         function matchesLicense(person, filter) {
@@ -3015,6 +3254,189 @@ service cloud.firestore {
             }
         }
 
+        // Sodexo credentials every worker individually and emails them directly,
+        // so the roster it receives cannot carry a blank or a repeated address.
+        // A person holding neither cannot be credentialed and cannot work.
+        //
+        // Comparison is on the literal lowercased address. Email normalizing
+        // libraries strip plus tags in order to find duplicates, which here
+        // would collapse jdsnively+gavin@ and jdsnively+brennan@ into one
+        // address and reject two people who are correctly registered.
+        function emailDetectionKey(address) {
+            const trimmed = (address || '').trim().toLowerCase();
+            const at = trimmed.lastIndexOf('@');
+            if (at < 1) return trimmed;
+
+            const local = trimmed.slice(0, at);
+            const domain = trimmed.slice(at + 1);
+
+            // Gmail delivers j.d@ and jd@ to one mailbox while Firebase treats
+            // them as two accounts. Dots are folded to find the collision and
+            // nothing else; the stored address is never rewritten.
+            if (domain === 'gmail.com' || domain === 'googlemail.com') {
+                return local.replace(/\./g, '') + '@' + domain;
+            }
+            return trimmed;
+        }
+
+        function auditRosterEmails(people) {
+            const missing = [];
+            const holders = new Map();
+
+            (people || []).forEach(person => {
+                const name = (person.name || '').trim() || 'Unnamed record';
+                const address = (person.email || '').trim();
+
+                if (!address) {
+                    missing.push({ name: name });
+                    return;
+                }
+
+                const key = emailDetectionKey(address);
+                if (!holders.has(key)) holders.set(key, []);
+                holders.get(key).push({ name: name, email: address });
+            });
+
+            const shared = [];
+            holders.forEach(group => {
+                if (group.length > 1) shared.push(group);
+            });
+
+            missing.sort((a, b) => a.name.localeCompare(b.name));
+            shared.sort((a, b) => a[0].email.localeCompare(b[0].email));
+
+            return {
+                missing: missing,
+                shared: shared,
+                sharedPeopleCount: shared.reduce((total, group) => total + group.length, 0),
+                clean: missing.length === 0 && shared.length === 0
+            };
+        }
+
+        function emailGateEscape(value) {
+            return String(value).replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[ch]);
+        }
+
+        function renderEmailAudit(audit) {
+            const parts = [];
+
+            if (audit.missing.length > 0) {
+                parts.push(
+                    '<div class="email-gate-group"><h4>No email address (' +
+                    audit.missing.length + ')</h4><ul>' +
+                    audit.missing.map(p => '<li>' + emailGateEscape(p.name) + '</li>').join('') +
+                    '</ul></div>'
+                );
+            }
+
+            audit.shared.forEach(group => {
+                parts.push(
+                    '<div class="email-gate-group"><h4>Shared address (' + group.length + ')</h4><ul>' +
+                    group.map(p =>
+                        '<li>' + emailGateEscape(p.name) +
+                        ' <span class="email-gate-address">' + emailGateEscape(p.email) + '</span></li>'
+                    ).join('') +
+                    '</ul></div>'
+                );
+            });
+
+            return parts.join('');
+        }
+
+        function emailAuditToText(audit) {
+            const lines = [];
+
+            if (audit.missing.length > 0) {
+                lines.push('NO EMAIL ADDRESS (' + audit.missing.length + ')');
+                audit.missing.forEach(p => lines.push('  ' + p.name));
+                lines.push('');
+            }
+
+            if (audit.shared.length > 0) {
+                lines.push('SHARED ADDRESSES (' + audit.shared.length + ' addresses, ' +
+                           audit.sharedPeopleCount + ' people)');
+                audit.shared.forEach(group => {
+                    group.forEach(p => lines.push('  ' + p.name + '  ' + p.email));
+                    lines.push('');
+                });
+            }
+
+            return lines.join('\n').trim();
+        }
+
+        let emailGateResolver = null;
+
+        function closeEmailGate(result) {
+            document.getElementById('emailGateDialog').classList.add('hidden');
+            if (emailGateResolver) {
+                const resolve = emailGateResolver;
+                emailGateResolver = null;
+                resolve(result);
+            }
+        }
+
+        // Resolves true when the export should go ahead. The acknowledgement is
+        // required rather than advisory because this file is what the stadium
+        // credentialing process runs on.
+        function requireCleanEmails(people, context) {
+            const audit = auditRosterEmails(people);
+            if (audit.clean) return Promise.resolve(true);
+
+            const counts = [];
+            if (audit.missing.length > 0) {
+                counts.push(audit.missing.length +
+                    (audit.missing.length === 1 ? ' person has' : ' people have') + ' no address');
+            }
+            if (audit.shared.length > 0) {
+                counts.push(audit.sharedPeopleCount + ' people share ' + audit.shared.length +
+                    (audit.shared.length === 1 ? ' address' : ' addresses'));
+            }
+
+            document.getElementById('emailGateTitle').textContent = 'Email Addresses Need Attention';
+            document.getElementById('emailGateSummary').textContent =
+                context + ' is not ready to send: ' + counts.join(', ') +
+                '. Sodexo emails each worker individually to credential them.';
+            document.getElementById('emailGateBody').innerHTML = renderEmailAudit(audit);
+            document.getElementById('emailGateCopyBtn').dataset.report = emailAuditToText(audit);
+
+            const ack = document.getElementById('emailGateAck');
+            const proceed = document.getElementById('emailGateProceedBtn');
+            ack.checked = false;
+            proceed.disabled = true;
+            proceed.classList.remove('hidden');
+            document.getElementById('emailGateAckRow').classList.remove('hidden');
+            document.getElementById('emailGateCancelBtn').textContent = 'Cancel';
+            document.getElementById('emailGateDialog').classList.remove('hidden');
+
+            return new Promise(resolve => { emailGateResolver = resolve; });
+        }
+
+        // Read-only view of the same audit, so the roster can be inspected
+        // without starting an export.
+        function showEmailAuditReport() {
+            if (!currentUser || allData.length === 0) {
+                alert('No roster data loaded');
+                return;
+            }
+
+            const audit = auditRosterEmails(allData);
+
+            document.getElementById('emailGateTitle').textContent = 'Roster Email Audit';
+            document.getElementById('emailGateSummary').textContent = audit.clean
+                ? 'All ' + allData.length + ' records hold an address, and no address is held by more than one person.'
+                : audit.missing.length + ' with no address, ' + audit.sharedPeopleCount +
+                  ' sharing ' + audit.shared.length + ' addresses, out of ' + allData.length + ' records.';
+            document.getElementById('emailGateBody').innerHTML = audit.clean ? '' : renderEmailAudit(audit);
+            document.getElementById('emailGateCopyBtn').dataset.report = emailAuditToText(audit);
+
+            document.getElementById('emailGateAckRow').classList.add('hidden');
+            document.getElementById('emailGateProceedBtn').classList.add('hidden');
+            document.getElementById('emailGateCancelBtn').textContent = 'Close';
+            document.getElementById('emailGateDialog').classList.remove('hidden');
+        }
+
         // Export functionality
         function exportToCSV() {
             if (!currentUser || filteredData.length === 0) {
@@ -3023,7 +3445,7 @@ service cloud.firestore {
             }
 
             const headerSection = [
-                ['', 'Organization Name:', 'Lions Homeschool Football'],
+                ['', 'Organization Name:', 'Lions Sports Club'],
                 ['', 'Concession Stand Number:', ''],
                 ['', 'Date of event Working:', ''],
                 ['', 'Event:', ''],
@@ -3112,7 +3534,7 @@ service cloud.firestore {
             URL.revokeObjectURL(url);
         }
 
-        function exportSodexoFormat() {
+        async function exportSodexoFormat() {
             if (!currentUser || allData.length === 0) {
                 alert('No data to export');
                 return;
@@ -3122,6 +3544,9 @@ service cloud.firestore {
                 alert('Spreadsheet library is still loading. Please try again in a moment.');
                 return;
             }
+
+            const proceed = await requireCleanEmails(allData, 'The Sodexo roster');
+            if (!proceed) return;
 
             // Sodexo roster header block. Edit these once to auto-fill every export.
             const SODEXO_HEADER = {
@@ -3237,13 +3662,13 @@ service cloud.firestore {
             const sampleData = [
                 ['name', 'email', 'phone', 'relationship', 'ageRange', 'shirtSize', 'licenseNumber', 'licenseExpiration', 'alcoholTrainingCompleted', 'hasLicense', 'willingToObtainLicense', 'hasLOSShirt'],
                 ['John Doe', 'john.doe@email.com', '317-555-0123', 'Lions Parent', '21 and over', 'L', 'DL123456789', '2025-12-31', 'yes', 'yes', 'yes', 'false'],
-                ['Jane Smith', 'jane.smith@email.com', '317-555-0124', 'Lions Player/Cheerleader', '16 to 17', 'M', '', '', 'no', 'no', 'yes', 'true'],
+                ['Jane Smith', 'jane.smith@email.com', '317-555-0124', 'Lions Athlete', '16 to 17', 'M', '', '', 'no', 'no', 'yes', 'true'],
                 ['Mike Johnson', 'mike.j@email.com', '317-555-0125', 'InGrace Homeschool Fundraiser', '18 to 20', 'XL', '', '', '', '', '', 'false']
             ];
 
             const availableRelationships = window.RELATIONSHIP_CONFIG
                 ? window.RELATIONSHIP_CONFIG.getAllRelationships().join(', ')
-                : 'Lions Player/Cheerleader, Lions Parent, Lions Sibling, Lions Board Member, Lions Coach, Lions Booster, Lions Alumni, Church/Mission Fundraiser, En Pointe Booster, Friend/Family of Lions Booster, InGrace Homeschool Fundraiser, Valor Football Player, Youth Missions Trip Fundraiser';
+                : 'Lions Athlete, Lions Parent, Lions Sibling, Lions Board Member, Lions Coach, Lions Booster, Lions Alumni, Church/Mission Fundraiser, En Pointe Booster, Freedom Church, Friend/Family of Lions Booster, InGrace Homeschool Fundraiser, Valor Football Player, Youth Missions Trip Fundraiser';
 
             const header = [
                 `# Available relationships: ${availableRelationships}`,
@@ -3540,7 +3965,7 @@ service cloud.firestore {
 
             previewElement.innerHTML = `
                 <strong>${stats.total}</strong> people selected for export<br>
-                ${stats.over21} over 21 • ${stats.licensed} licensed • ${stats.willing} willing • ${stats.hasShirt} have LOS shirts
+                ${stats.over21} over 21, ${stats.licensed} licensed, ${stats.willing} willing, ${stats.hasShirt} have LOS shirts
             `;
         }
 
@@ -3614,7 +4039,7 @@ service cloud.firestore {
             }
 
             const headerSection = [
-                ['', 'Organization Name:', 'Lions Homeschool Football'],
+                ['', 'Organization Name:', 'Lions Sports Club'],
                 ['', 'Concession Stand Number:', ''],
                 ['', 'Date of event Working:', ''],
                 ['', 'Event:', ''],
@@ -3718,7 +4143,7 @@ service cloud.firestore {
 
             previewElement.innerHTML = `
                 <strong>${stats.total}</strong> people selected for email export<br>
-                ${stats.over21} over 21 • ${stats.licensed} licensed • ${stats.willing} willing
+                ${stats.over21} over 21, ${stats.licensed} licensed, ${stats.willing} willing
             `;
 
             generateEmailList();
@@ -3879,7 +4304,7 @@ service cloud.firestore {
             const requiredFields = ['name', 'email', 'phone', 'relationship', 'ageRange', 'shirtSize'];
             const validRelationships = window.RELATIONSHIP_CONFIG ? 
                 window.RELATIONSHIP_CONFIG.getAllRelationships() :
-                ['Lions Player/Cheerleader', 'Lions Parent', 'Lions Sibling', 'Lions Board Member', 'Lions Coach', 'Lions Booster', 'Lions Alumni', 'Church/Mission Fundraiser', 'En Pointe Booster', 'Friend/Family of Lions Booster', 'InGrace Homeschool Fundraiser', 'Valor Football Player', 'Youth Missions Trip Fundraiser'];
+                ['Lions Athlete', 'Lions Parent', 'Lions Sibling', 'Lions Board Member', 'Lions Coach', 'Lions Booster', 'Lions Alumni', 'Archived', 'Church/Mission Fundraiser', 'En Pointe Booster', 'Freedom Church', 'Friend/Family of Lions Booster', 'InGrace Homeschool Fundraiser', 'Valor Football Player', 'Youth Missions Trip Fundraiser'];
             
             const validAgeRanges = ['16 to 17', '18 to 20', '21 and over'];
             const validShirtSizes = ['S', 'M', 'L', 'XL', '2X', '3X', 'NA'];
@@ -3888,6 +4313,25 @@ service cloud.firestore {
             let errorRows = 0;
             let errorDetails = [];
             bulkUploadData = [];
+
+            // Blank addresses are already refused by the required-field check.
+            // These two maps catch the case it does not cover: an address that
+            // is repeated inside the file, or that a roster record already
+            // holds. Either one puts two people on the Sodexo list behind one
+            // mailbox, and only one of them gets credentialed.
+            const rosterByEmailKey = new Map();
+            allData.forEach(person => {
+                const address = (person.email || '').trim();
+                if (address) rosterByEmailKey.set(emailDetectionKey(address), person.name || 'an existing record');
+            });
+
+            const fileEmailCounts = new Map();
+            results.data.forEach(row => {
+                const address = (row.email || '').toString().trim();
+                if (!address) return;
+                const key = emailDetectionKey(address);
+                fileEmailCounts.set(key, (fileEmailCounts.get(key) || 0) + 1);
+            });
 
             results.data.forEach((row, index) => {
                 const rowNumber = index + 2;
@@ -3903,7 +4347,21 @@ service cloud.firestore {
                     rowErrors.push('Invalid email format');
                 }
 
-                if (row.relationship && !validRelationships.includes(row.relationship.trim())) {
+                if (row.email && row.email.trim()) {
+                    const emailKey = emailDetectionKey(row.email);
+
+                    if (fileEmailCounts.get(emailKey) > 1) {
+                        rowErrors.push(`Email "${row.email.trim()}" appears more than once in this file`);
+                    }
+
+                    if (rosterByEmailKey.has(emailKey)) {
+                        rowErrors.push(`Email "${row.email.trim()}" is already held by ${rosterByEmailKey.get(emailKey)}`);
+                    }
+                }
+
+                // Normalized before the check so a spreadsheet exported under an
+                // earlier canon still imports instead of failing every row.
+                if (row.relationship && !validRelationships.includes(normalizeRelationship(row.relationship))) {
                     rowErrors.push(`Invalid relationship "${row.relationship}"`);
                 }
 
@@ -3924,7 +4382,9 @@ service cloud.firestore {
                         name: row.name.trim(),
                         email: row.email.trim().toLowerCase(),
                         phone: row.phone.trim(),
-                        relationship: row.relationship.trim(),
+                        // Written in canonical form. Reading tolerates legacy
+                        // values; writing should not create new ones.
+                        relationship: normalizeRelationship(row.relationship),
                         ageRange: row.ageRange.trim(),
                         shirtSize: row.shirtSize.trim(),
                         licenseNumber: row.licenseNumber?.trim() || null,
@@ -4068,6 +4528,24 @@ service cloud.firestore {
             document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
             document.getElementById('exportRawBtn').addEventListener('click', exportRawData);
             document.getElementById('exportSodexoBtn').addEventListener('click', exportSodexoFormat);
+            document.getElementById('emailAuditBtn').addEventListener('click', showEmailAuditReport);
+
+            document.getElementById('emailGateAck').addEventListener('change', (e) => {
+                document.getElementById('emailGateProceedBtn').disabled = !e.target.checked;
+            });
+            document.getElementById('emailGateCancelBtn').addEventListener('click', () => closeEmailGate(false));
+            document.getElementById('emailGateProceedBtn').addEventListener('click', () => closeEmailGate(true));
+            document.getElementById('emailGateCopyBtn').addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                const report = btn.dataset.report || '';
+                if (!report) return;
+
+                navigator.clipboard.writeText(report).then(() => {
+                    const original = btn.textContent;
+                    btn.textContent = 'Copied';
+                    setTimeout(() => { btn.textContent = original; }, 1200);
+                }).catch(() => alert('Could not copy. Select the list and copy manually.'));
+            });
             document.getElementById('customExportBtn').addEventListener('click', showCustomExport);
             document.getElementById('emailExportBtn').addEventListener('click', showEmailExport);
             document.getElementById('bulkUploadBtn').addEventListener('click', showBulkUpload);
@@ -4158,7 +4636,7 @@ service cloud.firestore {
             });
         }
 
-        console.log('✅ Dashboard module loaded successfully with surgical performance fixes - Enhanced mobile/iPad support, optimized data loading');
+        console.log('Dashboard module loaded successfully with surgical performance fixes - Enhanced mobile/iPad support, optimized data loading');
     </script>
 </body>
 

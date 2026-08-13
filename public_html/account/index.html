@@ -17,7 +17,7 @@
 
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
     <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
-    <link rel="stylesheet" href="/css/lions-app.css?v=3">
+    <link rel="stylesheet" href="/css/lions-app.css?v=5">
 </head>
 
 <body>
@@ -224,7 +224,7 @@
 <!-- Console gate. Must load before any other Lions script so that diagnostic
      output is suppressed on a production page load. -->
 <script src="/js/lions-log.js?v=1"></script>
-<script src="/js/lions-nav.js?v=1" defer></script>
+<script src="/js/lions-nav.js?v=2" defer></script>
 
 <!-- Relationship values, for resolving a record still holding a superseded
      string such as Lions Player/Cheerleader to its current form. -->
@@ -587,7 +587,12 @@ async function start() {
     renderProfile(profile.data, state.role);
     renderLicense(profile.data);
 
+    // canAccess is handed over rather than a role name, so lions-nav.js asks
+    // SYSTEM_ACCESS in auth/lions-auth.js which system a person may open instead
+    // of carrying a second copy of those allow lists. Bound, because canAccess
+    // reads this.userRole off the manager.
     window.LIONS_NAV.setAuth({ signedIn: true, active: 'account',
+                               canAccess: lionsAuth.canAccess.bind(lionsAuth),
                                onSignOut: signOutAndReturn });
     show('account');
 

@@ -1,6 +1,51 @@
-// LIONS UNIVERSAL AUTHENTICATION SYSTEM v4.1
-// FIXED: Proper header integration and communication
+// LIONS UNIVERSAL AUTHENTICATION SYSTEM v4.2
 // Instant transitions, zero loading states, seamless header updates
+
+/**
+ * Role addresses for the pages that run on this module rather than on
+ * auth/lions-auth.js. Mirrors ROLE_ADDRESSES in auth/lions-auth.js, which is
+ * canonical, and the isSystemAdmin, isTreasurer and isEventSupervisor helpers
+ * in firestore.rules.
+ *
+ * Both domains are listed. Until 2026-08-05 the three predicates below matched
+ * the lionsfootballclub.com address alone, so signing in on the address the
+ * migration is moving to resolved to no role at all. On /dashboard that reached
+ * handleAuthStateChange with a null role, which calls logout, which calls
+ * forceLogout, which signs the session out and sends the browser to the site
+ * root. The administrator could not stay signed in on his own address.
+ *
+ * Drop the lionsfootballclub.com entries only when every role account has moved
+ * and been verified, and drop them from auth/lions-auth.js, firestore.rules,
+ * universal-header.js, dashboard, payouts and treasurer in the same pass, or
+ * the seven will disagree.
+ */
+const LIONS_ROLE_ADDRESSES = {
+    administrator: [
+        'fundraising@lionssports.club',
+        'fundraising@lionsfootballclub.com'
+    ],
+    treasurer: [
+        'treasurer@lionssports.club',
+        'treasurer@lionsfootballclub.com'
+    ],
+    president: [
+        'president@lionssports.club',
+        'president@lionsfootballclub.com'
+    ]
+};
+
+const LIONS_ELEVATED_ADDRESSES = [].concat(
+    LIONS_ROLE_ADDRESSES.administrator,
+    LIONS_ROLE_ADDRESSES.treasurer,
+    LIONS_ROLE_ADDRESSES.president
+);
+
+// Published so universal-header.js and the three unported pages read one list
+// rather than each carrying its own copy. Each of those still keeps a literal
+// fallback, because deployment here is a manual upload and a page must not lose
+// its role check just because this file has not been uploaded yet.
+window.LIONS_ROLE_ADDRESSES = LIONS_ROLE_ADDRESSES;
+window.LIONS_ELEVATED_ADDRESSES = LIONS_ELEVATED_ADDRESSES;
 
 window.LIONS_AUTH = {
     currentUser: null,
@@ -32,7 +77,7 @@ window.LIONS_AUTH = {
                     this.isInitialized = true;
                     // Immediate auth state notification
                     setTimeout(() => this.notifyAuthStateChange(), 0);
-                    console.log('Fast auth: User restored from storage');
+                    (window.LIONS_LOG || console).log('Session restored from storage.');
                 } catch (error) {
                     localStorage.removeItem('lionsAuthUser');
                     localStorage.removeItem('lionsAuthState');
@@ -108,38 +153,75 @@ window.LIONS_AUTH = {
         }
     },
 
-    // Determine user role
+    // Determine user role. Both domains resolve, see LIONS_ROLE_ADDRESSES.
     determineUserRole(email) {
         if (!email) return 'User';
-        const emailLower = email.toLowerCase();
-        if (emailLower === 'fundraising@lionsfootballclub.com') return 'Administrator';
-        if (emailLower === 'treasurer@lionsfootballclub.com') return 'Treasurer';
-        if (emailLower === 'president@lionsfootballclub.com') return 'President';
+        const emailLower = String(email).toLowerCase().trim();
+        if (LIONS_ROLE_ADDRESSES.administrator.includes(emailLower)) return 'Administrator';
+        if (LIONS_ROLE_ADDRESSES.treasurer.includes(emailLower)) return 'Treasurer';
+        if (LIONS_ROLE_ADDRESSES.president.includes(emailLower)) return 'President';
         return 'User';
     },
 
     // Determine LOS access
     determineLOSAccess(email) {
         if (!email) return false;
-        const emailLower = email.toLowerCase();
-        const losUsers = [
-            'fundraising@lionsfootballclub.com',
-            'treasurer@lionsfootballclub.com',
-            'president@lionsfootballclub.com'
-        ];
-        return losUsers.includes(emailLower);
+        return LIONS_ELEVATED_ADDRESSES.includes(String(email).toLowerCase().trim());
     },
 
     // Check if user is admin
     isAdminUser(email) {
         if (!email) return false;
-        const emailLower = email.toLowerCase();
-        const adminUsers = [
-            'fundraising@lionsfootballclub.com',
-            'treasurer@lionsfootballclub.com',
-            'president@lionsfootballclub.com'
-        ];
-        return adminUsers.includes(emailLower);
+        return LIONS_ELEVATED_ADDRESSES.includes(String(email).toLowerCase().trim());
+    },
+
+    /*
+     * Answers "may this person open this system", for the three administrator
+     * routes lions-nav.js offers in the Fundraising menu.
+     *
+     * Resolved against LIONS_ROLE_ADDRESSES rather than against a role label,
+     * on purpose. universal-auth.js calls the fundraising address
+     * "Administrator" and auth/lions-auth.js calls the same address "System
+     * Administrator"; the labels differ, the addresses do not. Keying on the
+     * address means this cannot drift from SYSTEM_ACCESS in lions-auth.js
+     * without one of the two address lists changing first, and those are
+     * already published from one place.
+     *
+     * The equivalence, verified 2026-08-05:
+     *
+     *   dashboard   System Administrator            -> administrator
+     *   payouts     System Administrator, Treasurer -> administrator, treasurer
+     *   treasurer   System Administrator, Treasurer -> administrator, treasurer
+     *
+     * Only the three elevated routes are listed. Every other system in
+     * SYSTEM_ACCESS admits Volunteer, so a signed-in visitor already passes
+     * and the nav does not gate them.
+     */
+    canAccess(systemName) {
+        const email = this.currentUser && this.currentUser.email;
+        if (!email) { return false; }
+
+        const role = this.determineUserRole(email);
+
+        // js/lions-access.js is the one map. It is preferred whenever it has
+        // loaded, so this file and the landing page cannot answer the same
+        // question differently.
+        if (window.LIONS_ACCESS && typeof window.LIONS_ACCESS.canAccess === 'function') {
+            return window.LIONS_ACCESS.canAccess(role, systemName);
+        }
+
+        // Fallback for a page that has not loaded lions-access.js. Deployment
+        // here is a manual upload, so a page must keep working when a file it
+        // expects has not gone up yet. Keep in step with SYSTEM_ROLES there.
+        const FALLBACK_SYSTEM_ROLES = {
+            dashboard: ['Administrator'],
+            payouts:   ['Administrator', 'Treasurer'],
+            treasurer: ['Administrator', 'Treasurer']
+        };
+
+        const allowed = FALLBACK_SYSTEM_ROLES[String(systemName || '').toLowerCase()];
+        if (!allowed) { return true; }
+        return allowed.includes(role);
     },
 
     // INSTANT authentication check
@@ -263,7 +345,7 @@ window.LIONS_AUTH = {
             isAuthenticated: !!this.currentUser
         };
 
-        // FIXED: Update header immediately if available
+        // Update header immediately if available
         if (window.LIONS_HEADER && typeof window.LIONS_HEADER === 'object') {
             window.LIONS_HEADER.currentUser = this.currentUser;
             
@@ -423,4 +505,9 @@ if (document.readyState === 'loading') {
     }
 }
 
-console.log('Lions Auth v4.1 loaded - FIXED header integration');
+
+// Routed through the console gate, which is silent unless ?debug=1. This was an
+// unconditional banner, and while it printed no page on this property could be
+// console-silent on a normal load. The fallback keeps the line working on a
+// page that loads this file without /js/lions-log.js.
+(window.LIONS_LOG || console).log('Lions Auth v4.2 loaded.');

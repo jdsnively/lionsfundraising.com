@@ -183,14 +183,23 @@ window.LIONS_HEADER = {
         }
     },
 
-    // Check if user has elevated admin role
+    // Check if user has elevated admin role.
+    //
+    // Reads the list published by universal-auth.js so there is one definition
+    // on a page that loads both. The literal fallback below covers the case
+    // where this file has been uploaded and universal-auth.js has not, which is
+    // reachable because deployment is a manual upload. Both are the same pair
+    // of domains; ROLE_ADDRESSES in auth/lions-auth.js is canonical.
     isElevatedUser() {
         if (!this.currentUser || !this.currentUser.email) return false;
 
-        const email = this.currentUser.email.toLowerCase();
-        const elevatedRoles = [
+        const email = this.currentUser.email.toLowerCase().trim();
+        const elevatedRoles = window.LIONS_ELEVATED_ADDRESSES || [
+            'fundraising@lionssports.club',
             'fundraising@lionsfootballclub.com',
+            'treasurer@lionssports.club',
             'treasurer@lionsfootballclub.com',
+            'president@lionssports.club',
             'president@lionsfootballclub.com'
         ];
 

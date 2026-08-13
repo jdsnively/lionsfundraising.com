@@ -227,4 +227,10 @@ const RELATIONSHIP_CONFIG = {
 
 window.RELATIONSHIP_CONFIG = RELATIONSHIP_CONFIG;
 
-console.log('Relationship config v' + RELATIONSHIP_CONFIG.CONFIG_VERSION + ' loaded');
+
+// Routed through the console gate, which is silent unless ?debug=1. This was an
+// unconditional banner, and while it printed no page on this property could be
+// console-silent on a normal load. The fallback keeps the line working on a
+// page that loads this file without /js/lions-log.js.
+(window.LIONS_LOG || console).log('Relationship config v'
+    + RELATIONSHIP_CONFIG.CONFIG_VERSION + ' loaded.');

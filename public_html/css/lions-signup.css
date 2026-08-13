@@ -435,6 +435,38 @@ details > .event-block:first-of-type {
     color: var(--lions-gray-text);
 }
 
+/* -- One stand -------------------------------------------------------------- */
+
+/* Two stands are staffed independently, so each is a bounded block rather than
+   a run of headings. Flat, per the design system: the separation is a hairline
+   rule and space, never a shadow. */
+.admin-stand {
+    margin-top: var(--lions-space-4);
+    padding: var(--lions-space-3) var(--lions-space-4) var(--lions-space-4);
+    border: 1px solid var(--lions-gray-light);
+    background: var(--lions-white);
+}
+
+.admin-stand-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lions-space-3);
+    flex-wrap: wrap;
+    font-family: var(--lions-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--lions-ink);
+    margin: 0;
+}
+
+.admin-stand-count {
+    margin-left: auto;
+    font-family: var(--lions-font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--lions-gray-text);
+}
+
 /* -- One group -------------------------------------------------------------- */
 
 .admin-group {
@@ -612,4 +644,87 @@ details > .event-block:first-of-type {
 
 @media (max-width: 620px) {
     .admin-edit .field-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------------------------
+   Adding a person to a stand by hand.
+
+   Jason staffs 132PB himself and fills gaps on 124, and until 2026-08-05 this
+   screen could only act on rows that already existed. The picker below is the
+   control that puts a roster person on a shift they never signed up for.
+
+   Flat throughout, and the list is capped in height rather than paginated: the
+   roster runs to a hundred and fifteen people and the filter is the way
+   through it, not scrolling.
+   --------------------------------------------------------------------------- */
+
+.admin-add {
+    margin-top: var(--lions-space-3);
+    padding: var(--lions-space-4);
+    border: 1px solid var(--lions-gray-light);
+    border-radius: var(--lions-radius-sm);
+    background: var(--lions-blue-wash);
+}
+
+.admin-add-label {
+    display: block;
+    margin-bottom: var(--lions-space-2);
+    font-family: var(--font-heading);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--lions-ink);
+}
+
+.admin-add-filter {
+    width: 100%;
+    min-height: var(--lions-tap-target);
+    padding: var(--lions-space-2) var(--lions-space-3);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--lions-ink);
+    background: var(--white);
+    border: 2px solid var(--lions-gray-light);
+    border-radius: var(--lions-radius-sm);
+}
+
+.admin-add-filter:focus-visible {
+    outline: var(--lions-focus-ring);
+    outline-offset: var(--lions-focus-offset);
+    border-color: var(--blue-primary);
+}
+
+.admin-add-list {
+    list-style: none;
+    margin: var(--lions-space-3) 0 0;
+    padding: 0;
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+.admin-add-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--lions-space-2) var(--lions-space-3);
+    padding: var(--lions-space-2) 0;
+    border-top: 1px solid var(--lions-gray-light);
+}
+
+.admin-add-list li:first-child { border-top: 0; }
+
+/* The address is shown because it is how two people with the same name are
+   told apart, and because every person now holds their own. */
+.admin-add-mail {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    color: var(--lions-gray-text);
+    word-break: break-all;
+}
+
+/* The view switch sits outside both views, so it needs its own spacing rather
+   than inheriting a page-head's. */
+.admin-viewbar {
+    margin-bottom: var(--lions-space-4);
 }

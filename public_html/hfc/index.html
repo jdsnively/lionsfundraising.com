@@ -137,7 +137,7 @@
             font-weight: bold;
         }
 
-        /* NEW: Floating Add All Items Section - Left side to avoid product containers */
+        /* Floating Add All Items Section - Left side to avoid product containers */
         .add-all-section {
             position: fixed;
             bottom: 20px;
@@ -551,7 +551,7 @@
             font-family: 'Georgia', serif;
         }
 
-        /* NEW: Visible Cart Summary */
+        /* Visible Cart Summary */
         .cart-summary-section {
             background: white;
             border: 3px solid #1B365D;
@@ -1286,7 +1286,7 @@
             </div>
         </div>
 
-        <!-- NEW: Visible Cart Summary -->
+        <!-- Visible Cart Summary -->
         <div class="cart-summary-section">
             <h2>
                 Your Cart Summary
@@ -1363,7 +1363,7 @@
         </div>
     </footer>
 
-    <!-- NEW: Floating Quick Add Section -->
+    <!-- Floating Quick Add Section -->
     <div class="add-all-section" id="floating-add-section">
         <h3>🚀 Quick Add</h3>
         <p>Set quantities above, then add all at once!</p>
@@ -1487,7 +1487,7 @@
                         this.updateAddAllButton();
                     },
                     
-                    // NEW: Add all items with current quantities
+                    // Add all items with current quantities
                     addAllItems: function() {
                         let addedItems = 0;
                         let errorMessages = [];
@@ -1549,7 +1549,7 @@
                         }
                     },
                     
-                    // NEW: Clear all quantities
+                    // Clear all quantities
                     clearAllQuantities: function() {
                         const productIds = ['bundle', 'tshirt', 'program', 'coin', 'lanyard', 'backpack', 'patch', 'sticker', 'wristband'];
                         
@@ -1564,7 +1564,7 @@
                         this.updateAddAllButton();
                     },
                     
-                    // NEW: Update add all button state
+                    // Update add all button state
                     updateAddAllButton: function() {
                         const addAllBtn = document.getElementById('add-all-btn');
                         if (!addAllBtn) return;
@@ -1659,7 +1659,7 @@
                         }
                         
                         Store.cart.updateDisplay();
-                        Store.cart.updateSummary(); // NEW: Update visible summary
+                        Store.cart.updateSummary(); // Update visible summary
                     }
                 },
                 
@@ -1707,7 +1707,7 @@
                         }
                     },
                     
-                    // NEW: Update visible cart summary
+                    // Update visible cart summary
                     updateSummary: function() {
                         const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
                         const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1746,7 +1746,7 @@
                         const cleanId = sanitize.text(itemId);
                         cartItems = cartItems.filter(item => item.id !== cleanId);
                         this.updateDisplay();
-                        this.updateSummary(); // NEW: Update visible summary
+                        this.updateSummary(); // Update visible summary
                     },
                     
                     scrollToCheckout: function() {
@@ -1765,7 +1765,7 @@
                     clear: function() {
                         cartItems = [];
                         this.updateDisplay();
-                        this.updateSummary(); // NEW: Update visible summary
+                        this.updateSummary(); // Update visible summary
                     },
                     
                     _escapeHtml: function(text) {

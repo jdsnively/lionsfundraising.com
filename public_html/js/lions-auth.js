@@ -1,4 +1,4 @@
-// 🔐 LIONS UNIVERSAL AUTHENTICATION SYSTEM v2.1 - FIXED
+// Lions universal authentication.
 // Enterprise-grade shared login across ALL Lions Sports Club pages
 // Usage: Include this script on every Lions page before any other auth code
 

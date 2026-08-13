@@ -4,43 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lions Treasurer Portal</title>
-    <!-- Protected favicon implementation -->
-    <link rel="icon" type="image/png" id="dynamicFavicon">
-    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
-    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <title>Treasurer - Lions Sports Club</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- League Spartan, and only League Spartan. A page that does not request
+         it renders the SHARED header in the Arial fallback while its siblings
+         render correctly, which is the same markup showing two typefaces. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Shared chrome. lions-chrome.css carries the header, navigation, social
+         section and footer and is a port of css/site.css on the marketing site.
+         lions-app.css is deliberately NOT loaded: this page defines .btn,
+         .btn-secondary and .loading itself, and handing it the component sheet
+         to get a header would restyle controls that work. That is exactly why
+         the two files were split on 2026-08-03. -->
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
 
     <style>
         :root {
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+            /* Every name on this block carries a --tr- prefix so that none can
+               collide with the token bridge in lions-chrome.css, which owns
+               --white, --black, --dark, --blue-*, --gold, --cross-red, --gray-*
+               and --font-*. This style block comes after that stylesheet and
+               would win the cascade, repainting the shared header and footer on
+               this page alone. */
+            --tr-blue: var(--blue-primary);
+            --tr-blue-hover: var(--blue-hover);
+            --tr-blue-active: var(--blue-active);
 
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
+            /* Ghost White, never pure white. */
+            --tr-surface: var(--white);
+            --tr-gray-50: #fafafa;
+            --tr-gray-100: #f4f4f5;
+            --tr-gray-200: #e5e7eb;
+            --tr-gray-300: #d1d5db;
+            --tr-gray-500: #6b7280;
+            --tr-gray-700: #374151;
+            --tr-gray-900: #111827;
 
-            --success: #10b981;
-            --warning: #ED4337;
-            --error: #ef4444;
-            --info: #3b82f6;
+            --success: var(--lions-success);
+            --warning: var(--lions-warning);
+            --error: var(--lions-error);
+            --info: var(--blue-primary);
 
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+            /* League Spartan headings, Helvetica World body, resolved through
+               the bridge. The page previously loaded two typefaces that are not
+               in the design system. */
+            --tr-font-body: var(--font-body);
+            --tr-font-heading: var(--font-heading);
 
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+            --border-light: 1px solid var(--tr-gray-200);
+            --border-medium: 2px solid var(--tr-gray-300);
+            --border-focus: 2px solid var(--tr-blue);
 
             --radius-sm: 6px;
             --radius-md: 8px;
@@ -71,10 +96,10 @@
         }
 
         body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
+            font-family: var(--tr-font-body);
+            background: var(--tr-blue);
             min-height: 100vh;
-            color: var(--gray-700);
+            color: var(--tr-gray-700);
             position: relative;
             padding: var(--space-6);
             overflow-x: hidden;
@@ -95,7 +120,7 @@
         .main-container {
             max-width: 1600px;
             margin: 0 auto;
-            background: var(--white);
+            background: var(--tr-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             padding-top: var(--space-12);
@@ -116,25 +141,25 @@
         }
 
         .login-container {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             border-radius: var(--radius-xl);
             padding: var(--space-12);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--tr-blue);
             max-width: 500px;
             width: 100%;
         }
 
         .login-title {
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-4);
             font-weight: 600;
         }
 
         .login-subtitle {
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
             font-size: 1rem;
             font-weight: 500;
             margin-bottom: var(--space-8);
@@ -149,19 +174,19 @@
         }
 
         .treasurer-title {
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-6);
             font-weight: 600;
         }
 
         .treasurer-subtitle {
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
             font-size: 1.1rem;
             font-weight: 500;
             margin-bottom: var(--space-8);
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             padding: var(--space-4);
             border-radius: var(--radius-lg);
             border: var(--border-light);
@@ -176,8 +201,8 @@
         }
 
         .stat-card {
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--tr-blue);
+            color: var(--tr-surface);
             border: var(--border-light);
             border-radius: var(--radius-lg);
             padding: var(--space-8);
@@ -197,9 +222,9 @@
         .stat-number {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--white);
+            color: var(--tr-surface);
             margin-bottom: var(--space-2);
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
         }
 
         .stat-label {
@@ -209,7 +234,7 @@
         }
 
         .controls {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin-bottom: var(--space-6);
@@ -229,7 +254,7 @@
 
         .form-group label {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -241,10 +266,10 @@
             padding: var(--space-3);
             border: var(--border-medium);
             border-radius: var(--radius-md);
-            background: var(--white);
-            color: var(--gray-700);
+            background: var(--tr-surface);
+            color: var(--tr-gray-700);
             font-size: 1rem;
-            font-family: var(--font-primary);
+            font-family: var(--tr-font-body);
             min-height: 48px;
             transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
             -webkit-appearance: none;
@@ -255,7 +280,7 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: var(--navy-blue);
+            border-color: var(--tr-blue);
             box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
         }
 
@@ -264,16 +289,16 @@
             align-items: center;
             gap: var(--space-2);
             padding: var(--space-3) var(--space-4);
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--tr-blue);
+            color: var(--tr-surface);
             text-decoration: none;
             border-radius: var(--radius-md);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--tr-blue);
             font-weight: 600;
             font-size: 0.875rem;
             cursor: pointer;
-            font-family: var(--font-primary);
+            font-family: var(--tr-font-body);
             min-height: 48px;
             justify-content: center;
             transition: all var(--transition-smooth);
@@ -282,8 +307,8 @@
         }
 
         .btn:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
+            background: var(--tr-blue-active);
+            border-color: var(--tr-blue-active);
         }
 
         .btn:active {
@@ -297,13 +322,13 @@
         }
 
         .btn-secondary {
-            background: var(--gray-500);
-            border-color: var(--gray-500);
+            background: var(--tr-gray-500);
+            border-color: var(--tr-gray-500);
         }
 
         .btn-secondary:hover {
-            background: var(--gray-700);
-            border-color: var(--gray-700);
+            background: var(--tr-gray-700);
+            border-color: var(--tr-gray-700);
         }
 
         .btn-success {
@@ -337,9 +362,9 @@
         }
 
         .btn-lock:disabled {
-            background: var(--gray-300);
-            border-color: var(--gray-300);
-            color: var(--gray-500);
+            background: var(--tr-gray-300);
+            border-color: var(--tr-gray-300);
+            color: var(--tr-gray-500);
         }
 
         .shift-card.locked {
@@ -348,7 +373,7 @@
         }
 
         .shift-card.locked::before {
-            content: "🔒 LOCKED - REQUIRES REVIEW";
+            content: "LOCKED, REQUIRES REVIEW";
             position: absolute;
             top: -1px;
             left: -1px;
@@ -388,7 +413,7 @@
         }
 
         .action-section {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-4);
             margin-bottom: var(--space-6);
@@ -411,7 +436,7 @@
         }
 
         .shift-card {
-            background: var(--white);
+            background: var(--tr-surface);
             border: var(--border-medium);
             border-radius: var(--radius-lg);
             padding: 0;
@@ -442,15 +467,15 @@
         }
 
         .shift-title {
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
             font-size: 1.25rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-weight: 600;
             margin-bottom: var(--space-2);
         }
 
         .shift-date {
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
             font-size: 0.9rem;
             font-weight: 500;
         }
@@ -497,7 +522,7 @@
 
         .detail-label {
             font-size: 0.8rem;
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -505,12 +530,12 @@
 
         .detail-value {
             font-size: 1rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-weight: 600;
         }
 
         .workers-summary {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             border-radius: var(--radius-md);
             padding: var(--space-4);
             margin-bottom: var(--space-4);
@@ -518,7 +543,7 @@
 
         .workers-title {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-3);
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -530,7 +555,7 @@
             justify-content: space-between;
             align-items: center;
             padding: var(--space-2) 0;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--tr-gray-200);
             font-size: 0.9rem;
         }
 
@@ -539,7 +564,7 @@
         }
 
         .worker-name {
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-weight: 500;
         }
 
@@ -549,7 +574,7 @@
         }
 
         .worker-hours {
-            color: var(--gray-700);
+            color: var(--tr-gray-700);
             font-weight: 600;
         }
 
@@ -560,8 +585,8 @@
             align-items: center;
             margin-top: auto;
             padding: var(--space-4);
-            border-top: 1px solid var(--gray-200);
-            background: var(--gray-50);
+            border-top: 1px solid var(--tr-gray-200);
+            background: var(--tr-gray-50);
         }
 
         .shift-actions .btn {
@@ -577,7 +602,7 @@
         }
 
         .table-container {
-            background: var(--white);
+            background: var(--tr-surface);
             border-radius: var(--radius-lg);
             border: var(--border-light);
             overflow: auto;
@@ -595,11 +620,11 @@
         }
 
         .table th {
-            background: var(--gray-100);
+            background: var(--tr-gray-100);
             padding: var(--space-4);
             text-align: center;
             font-weight: 600;
-            color: var(--gray-900);
+            color: var(--tr-gray-900);
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -612,7 +637,7 @@
         .table td {
             padding: var(--space-4);
             border-bottom: var(--border-light);
-            color: var(--gray-700);
+            color: var(--tr-gray-700);
             font-size: 0.875rem;
             text-align: center;
         }
@@ -622,7 +647,7 @@
         }
 
         .table tr:hover {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
         }
 
         .table tr:last-child td {
@@ -630,11 +655,11 @@
         }
 
         .table tbody tr:nth-child(even) {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
         }
 
         .table tbody tr:nth-child(odd) {
-            background: var(--white);
+            background: var(--tr-surface);
         }
 
         .table tbody tr:nth-child(even):hover {
@@ -642,7 +667,7 @@
         }
 
         .table tbody tr:nth-child(odd):hover {
-            background: var(--gray-100);
+            background: var(--tr-gray-100);
         }
 
         .dialog {
@@ -664,7 +689,7 @@
         }
 
         .dialog-content {
-            background: var(--white);
+            background: var(--tr-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             max-width: 950px;
@@ -672,7 +697,7 @@
             max-height: 85vh;
             overflow-y: auto;
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--tr-blue);
             -webkit-overflow-scrolling: touch;
             position: relative !important;
             transform: none !important;
@@ -684,9 +709,9 @@
         }
 
         .dialog-title {
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
             font-size: 1.5rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-6);
             font-weight: 600;
         }
@@ -708,15 +733,15 @@
         }
 
         .shift-details-title {
-            font-family: var(--font-display);
+            font-family: var(--tr-font-heading);
             font-size: 1.75rem;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-2);
             font-weight: 600;
         }
 
         .shift-details-subtitle {
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
             font-size: 1rem;
             font-weight: 500;
             margin-bottom: var(--space-6);
@@ -735,19 +760,19 @@
 
         .info-label {
             font-weight: 600;
-            color: var(--gray-700);
+            color: var(--tr-gray-700);
             margin-bottom: var(--space-1);
             font-size: 0.9rem;
         }
 
         .info-value {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-size: 1rem;
         }
 
         .breakdown-section {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
             padding: var(--space-6);
             border-radius: var(--radius-lg);
             margin-bottom: var(--space-6);
@@ -756,7 +781,7 @@
 
         .breakdown-title {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             margin-bottom: var(--space-6);
             font-size: 1.1rem;
         }
@@ -776,13 +801,13 @@
         }
 
         .breakdown-label {
-            color: var(--gray-700);
+            color: var(--tr-gray-700);
             font-weight: 500;
             font-size: 0.9rem;
         }
 
         .breakdown-value {
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-weight: 600;
             font-size: 0.9rem;
         }
@@ -796,7 +821,7 @@
             grid-template-columns: 1fr 1fr;
             gap: var(--space-8);
             padding-top: var(--space-4);
-            border-top: 1px solid var(--gray-300);
+            border-top: 1px solid var(--tr-gray-300);
             margin-top: var(--space-4);
         }
 
@@ -808,12 +833,12 @@
 
         .summary-label {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
         }
 
         .summary-value {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
             font-size: 1rem;
         }
 
@@ -821,7 +846,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: var(--space-6);
-            background: var(--white);
+            background: var(--tr-surface);
             border-radius: var(--radius-lg);
             overflow: hidden;
             border: var(--border-light);
@@ -829,8 +854,8 @@
         }
 
         .worker-details-table th {
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--tr-blue);
+            color: var(--tr-surface);
             padding: var(--space-4);
             text-align: center;
             font-weight: 600;
@@ -848,7 +873,7 @@
 
         .worker-details-table td:first-child {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--tr-blue);
         }
 
         .worker-details-table th:nth-child(2),
@@ -865,13 +890,13 @@
 
         .worker-details-table td {
             padding: var(--space-4);
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--tr-gray-200);
             text-align: center;
             font-size: 0.875rem;
         }
 
         .worker-details-table tr:nth-child(even) {
-            background: var(--gray-50);
+            background: var(--tr-gray-50);
         }
 
         .worker-details-table tr:last-child td {
@@ -879,7 +904,7 @@
         }
 
         .info-item .cr-section-primary {
-            border: 2px solid var(--navy-blue) !important;
+            border: 2px solid var(--tr-blue) !important;
             background: rgba(26, 54, 93, 0.12) !important;
             padding: var(--space-2) var(--space-3) !important;
             border-radius: var(--radius-md) !important;
@@ -887,7 +912,7 @@
             min-width: 80px !important;
             text-align: center !important;
             font-weight: 700 !important;
-            color: var(--navy-blue) !important;
+            color: var(--tr-blue) !important;
             margin: var(--space-1) 0 !important;
         }
 
@@ -911,7 +936,7 @@
         .loading {
             text-align: center;
             padding: var(--space-8);
-            color: var(--gray-500);
+            color: var(--tr-gray-500);
         }
 
         .error {
@@ -942,11 +967,17 @@
             color: #92400e;
         }
 
+        /* Flat, per the design system: no gradient, so the loading state is a
+           block that pulses in opacity rather than a highlight sweeping across
+           it. It says the same thing and it survives prefers-reduced-motion. */
         .skeleton {
-            background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
-            background-size: 200% 100%;
+            background: var(--tr-gray-200);
             animation: loading 1.5s infinite;
             border-radius: var(--radius-md);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton { animation: none; }
         }
 
         @keyframes loading {
@@ -1136,7 +1167,14 @@
 </head>
 
 <body>
-    <div id="headerContainer"></div>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js, which is
+         the single definition on this property and mirrors $nav_items in
+         /includes/header.php on lionssports.club. universal-header.js is frozen
+         and is no longer loaded here: read at v1.9 it carries the retired navy
+         hex, the wrong typeface, a text-shadow, emoji navigation icons and
+         three retired addresses. data-nav is empty because this route has no
+         counterpart in the marketing navigation. -->
+    <header id="site-header" data-nav=""></header>
 
     <div class="main-container">
         <div id="loginScreen" class="login-screen">
@@ -1215,10 +1253,10 @@
             </div>
 
             <div class="action-section">
-                <button class="btn" id="refreshBtn">🔄 Refresh Data</button>
-                <button class="btn btn-success" id="exportAllPayrollBtn">📊 Export All Payroll</button>
-                <button class="btn btn-warning" id="exportSummaryBtn">📋 Export Summary</button>
-                <button class="btn btn-secondary" id="workerTotalsBtn">👥 Worker Summary</button>
+                <button class="btn" id="refreshBtn">Refresh Data</button>
+                <button class="btn btn-success" id="exportAllPayrollBtn">Export All Payroll</button>
+                <button class="btn btn-warning" id="exportSummaryBtn">Export Summary</button>
+                <button class="btn btn-secondary" id="workerTotalsBtn">Worker Summary</button>
             </div>
 
             <div id="shiftsContainer">
@@ -1228,7 +1266,7 @@
 
             <div id="workerTotalsSection" class="hidden">
                 <h3
-                    style="text-align: center; margin-bottom: var(--space-6); font-family: var(--font-display); color: var(--navy-blue);">
+                    style="text-align: center; margin-bottom: var(--space-6); font-family: var(--tr-font-heading); color: var(--tr-blue);">
                     Worker Payroll Summary
                 </h3>
                 <div class="table-container">
@@ -1260,7 +1298,7 @@
         <div class="dialog-content">
             <h3 class="dialog-title">Lock Shift for Review</h3>
             <div id="lockModalContent">
-                <p style="margin-bottom: 1rem; color: var(--gray-700);">
+                <p style="margin-bottom: 1rem; color: var(--tr-gray-700);">
                     Locking this shift will prevent further editing until unlocked from the payouts page.
                     This helps ensure finalized payroll data remains unchanged.
                 </p>
@@ -1271,7 +1309,7 @@
             </div>
             <div class="dialog-buttons">
                 <button class="btn btn-secondary" onclick="closeLockModal()">Cancel</button>
-                <button class="btn btn-lock" id="confirmLockBtn">🔒 Lock Shift</button>
+                <button class="btn btn-lock" id="confirmLockBtn">Lock Shift</button>
             </div>
         </div>
     </div>
@@ -1306,8 +1344,46 @@
     </div>
 
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-    <script src="https://lionsfundraising.com/universal-auth.js"></script>
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER =========================================================
+         Copyright only, matching every other ported page. A second nav down
+         here would be a third place navigation is defined. ================ -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- universal-auth.js still owns the session on this page. Moving it to
+         auth/lions-auth.js would put Firebase SDK 11.10.0 and 10.7.1 in one
+         document, where getApp() from one registry cannot see the other's app.
+         That is a property-wide decision, not a page edit. -->
+    <script src="/universal-auth.js"></script>
 
     <script type="module">
         import { getFirestore, collection, doc, getDocs, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
@@ -1396,7 +1472,7 @@
         function formatDate(dateStr) {
             if (!dateStr) return 'No Date';
             try {
-                // FIXED: Parse as local date to prevent timezone conversion
+                // Parse as local date to prevent timezone conversion
                 const parts = dateStr.split('-');
                 if (parts.length === 3) {
                     // Create date in local timezone (no UTC conversion)
@@ -1455,7 +1531,7 @@
             // LOW RATE RULE CHECK
             // Check what hourly rate WOULD BE after 5% org deductions
             // If < $20/hr, skip org deductions to protect worker pay
-            // Formula: (Sodexo × 0.95) / TotalHours
+            // Formula: (Sodexo * 0.95) / TotalHours
             const potentialAvailable = sodexoAmount * 0.95;
             const potentialRate = potentialAvailable / result.totalHours;
 
@@ -1988,24 +2064,28 @@
         let pendingLockShiftId = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
-            console.log('🔄 Treasurer portal initializing...');
+            console.log('Treasurer portal initializing...');
             cacheElements();
-            await window.LIONS_HEADER.setupPage('headerContainer');
+            // lions-nav.js renders the header itself as soon as the shell
+            // element exists, so there is nothing to await. The previous line
+            // awaited window.LIONS_HEADER.setupPage, which is undefined now
+            // that universal-header.js is gone and would have thrown before any
+            // of the code below ran.
             let attempts = 0;
             while (!window.LIONS_AUTH?.isInitialized && attempts < 50) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
             }
             if (!window.LIONS_AUTH?.isInitialized) {
-                console.error('❌ Universal Auth failed to initialize');
+                console.error('Universal Auth failed to initialize');
                 showError('Authentication system failed to load. Please refresh the page.');
                 return;
             }
-            console.log('✅ Universal Auth ready, setting up treasurer portal...');
+            console.log('Universal Auth ready, setting up treasurer portal.');
             await waitForFirebaseInitialization();
             window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
             setupEventListeners();
-            console.log('✅ Treasurer portal initialization complete with LOCAL CALCULATIONS');
+            console.log('Treasurer portal initialization complete with LOCAL CALCULATIONS');
         });
 
         function cacheElements() {
@@ -2035,7 +2115,7 @@
                 if (window.LIONS_AUTH?.firebaseApp) {
                     try {
                         db = getFirestore(window.LIONS_AUTH.firebaseApp);
-                        console.log('✅ Firestore initialized successfully');
+                        console.log('Firestore initialized successfully');
                         return true;
                     } catch (error) {
                         console.warn('Firestore initialization attempt failed:', error);
@@ -2044,20 +2124,102 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
                 attempts++;
             }
-            console.error('❌ Firebase initialization timeout');
+            console.error('Firebase initialization timeout');
             showError('Failed to initialize database connection. Please refresh the page.');
             return false;
         }
 
+        /**
+         * Addresses that reach the treasurer portal. Mirrors the Treasurer and
+         * System Administrator entries in ROLE_ADDRESSES in auth/lions-auth.js,
+         * which is canonical, and isTreasurer and isSystemAdmin in
+         * firestore.rules.
+         *
+         * Both domains resolve. Every gate on this page matched the
+         * lionsfootballclub.com addresses alone until 2026-08-05, so both role
+         * holders lost the portal the moment they signed in on the addresses the
+         * migration is moving to. The list prefers the copy published by
+         * universal-auth.js and falls back to a literal, because deployment is a
+         * manual upload and this page must not lose its role check if
+         * universal-auth.js has not gone up yet.
+         *
+         * TREASURER_WRITE_ADDRESSES is the narrower set that may lock a shift.
+         * It happens to be identical today. It is named separately so that
+         * narrowing one does not silently narrow the other.
+         */
+        const TREASURER_PORTAL_ADDRESSES = window.LIONS_ROLE_ADDRESSES
+            ? [].concat(window.LIONS_ROLE_ADDRESSES.treasurer, window.LIONS_ROLE_ADDRESSES.administrator)
+            : [
+                'treasurer@lionssports.club',
+                'treasurer@lionsfootballclub.com',
+                'fundraising@lionssports.club',
+                'fundraising@lionsfootballclub.com'
+            ];
+
+        const TREASURER_WRITE_ADDRESSES = TREASURER_PORTAL_ADDRESSES;
+
+        const TREASURER_ADMIN_ADDRESSES =
+            (window.LIONS_ROLE_ADDRESSES && window.LIONS_ROLE_ADDRESSES.administrator) || [
+                'fundraising@lionssports.club',
+                'fundraising@lionsfootballclub.com'
+            ];
+
+        /** Lower-cased, trimmed address of the signed-in user, or an empty string. */
+        function currentAddress() {
+            return String((currentUser && currentUser.email) || '').toLowerCase().trim();
+        }
+
+
+        /**
+         * Fills the identity controls in the shared header.
+         *
+         * Without this the ported header renders with no My Account link and no
+         * Sign out control, so this page becomes somewhere you can arrive and
+         * not leave except by the browser's back button. That is the exact
+         * complaint the port exists to answer.
+         *
+         * canAccess is handed over so lions-nav.js renders the administrator
+         * group in the Fundraising menu here, the same as it does on /account
+         * and /signup. Withholding it used to be deliberate, on the grounds
+         * that canAccess lived on auth/lions-auth.js while this page runs on
+         * universal-auth.js. The cost of that was an administrator seeing no
+         * administrator menu on the three pages only administrators can open,
+         * which is worse than the drift it avoided and breaks ADR-001.
+         *
+         * universal-auth.js now answers canAccess itself, keyed on
+         * LIONS_ROLE_ADDRESSES rather than on a role label, so the two modules
+         * cannot disagree without one of the address lists changing first.
+         */
+        function fillHeaderIdentity(signedIn) {
+            if (!window.LIONS_NAV || typeof window.LIONS_NAV.setAuth !== 'function') { return; }
+            window.LIONS_NAV.setAuth({
+                signedIn: !!signedIn,
+                active: '',
+                canAccess: function (system) {
+                    return !!(window.LIONS_AUTH
+                           && typeof window.LIONS_AUTH.canAccess === 'function'
+                           && window.LIONS_AUTH.canAccess(system));
+                },
+                onSignOut: function () {
+                    if (window.LIONS_AUTH && window.LIONS_AUTH.forceLogout) {
+                        window.LIONS_AUTH.forceLogout();
+                    }
+                }
+            });
+        }
+
         function handleAuthStateChange(action, userData) {
-            console.log('🔄 Auth state changed:', action, userData?.email);
+            console.log('Auth state changed:', action);
+            fillHeaderIdentity(action === 'login' && !!userData);
+
             if (action === 'login' && userData) {
                 currentUser = userData;
-                const email = userData.email?.toLowerCase();
-                isTreasurer = email === 'treasurer@lionsfootballclub.com' || 
-                             email === 'fundraising@lionsfootballclub.com';
+                isTreasurer = TREASURER_PORTAL_ADDRESSES.includes(currentAddress());
                 if (!isTreasurer) {
-                    showError('Treasurer access required. Only treasurer@lionsfootballclub.com or fundraising@lionsfootballclub.com can access this portal.');
+                    // The role addresses are deliberately not recited back to a
+                    // visitor who does not hold the role, and the previous
+                    // wording published two retired addresses on a live page.
+                    showError('Treasurer access is required to view this portal. If you believe you should have access, email fundraising@lionssports.club.');
                     return;
                 }
                 showTreasurerDashboard();
@@ -2069,7 +2231,7 @@
         }
 
         function showTreasurerDashboard() {
-            console.log('📊 Showing treasurer dashboard for:', currentUser.email);
+            console.log('Showing treasurer dashboard for:', currentUser.email);
             if (elements.loginScreen) elements.loginScreen.classList.add('hidden');
             if (elements.treasurerDashboard) elements.treasurerDashboard.classList.remove('hidden');
             loadFinalizedShifts();
@@ -2092,7 +2254,7 @@
         }
 
         function showError(message, isPermissionsError = false) {
-            console.error('❌', message);
+            console.error('', message);
             const errorDiv = document.createElement('div');
             errorDiv.className = `error ${isPermissionsError ? 'permissions-error' : ''}`;
             errorDiv.textContent = message;
@@ -2103,14 +2265,14 @@
         async function loadFinalizedShifts() {
             if (!currentUser || !isTreasurer || !db) return;
             try {
-                console.log('📊 Loading finalized shifts for treasurer...');
+                console.log('Loading finalized shifts for treasurer...');
                 if (elements.shiftsGrid) elements.shiftsGrid.innerHTML = createLoadingSkeleton();
                 const usersSnapshot = await getDocs(query(
                     collection(db, 'Lions-Fundraising-Users'),
                     orderBy('name', 'asc')
                 ));
                 dashboardUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('✅ Dashboard users loaded:', dashboardUsers.length);
+                console.log('Dashboard users loaded:', dashboardUsers.length);
                 const shiftsSnapshot = await getDocs(query(
                     collection(db, 'Work-Shifts'),
                     orderBy('eventDate', 'desc')
@@ -2119,15 +2281,15 @@
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(shift => shift.status === 'finalized');
                 filteredShifts = [...allShifts];
-                console.log('✅ Finalized shifts loaded:', allShifts.length);
+                console.log('Finalized shifts loaded:', allShifts.length);
                 displayShifts();
                 updateStats();
             } catch (error) {
-                console.error('❌ Error loading finalized shifts:', error);
+                console.error('Error loading finalized shifts:', error);
                 if (error.code === 'permission-denied') {
                     showError('Access denied. Please ensure you are signed in as the treasurer.');
                 } else if (error.code === 'unauthenticated') {
-                    console.log('🔄 Authentication expired, logging out...');
+                    console.log('Authentication expired, logging out...');
                     window.LIONS_AUTH.forceLogout();
                 } else {
                     showError('Failed to load payroll data. Please check your connection and try again.');
@@ -2206,9 +2368,8 @@
             const paymentStatus = shift.paymentStatus || 'finalized';
             const statusClass = paymentStatus === 'paid' ? 'status-paid' : 
                               paymentStatus === 'processed' ? 'status-processed' : 'status-finalized';
-            const isAdmin = currentUser?.email?.toLowerCase() === 'fundraising@lionsfootballclub.com';
-            const isTreasurerOrAdmin = currentUser?.email?.toLowerCase() === 'treasurer@lionsfootballclub.com' || 
-                                     currentUser?.email?.toLowerCase() === 'fundraising@lionsfootballclub.com';
+            const isAdmin = TREASURER_ADMIN_ADDRESSES.includes(currentAddress());
+            const isTreasurerOrAdmin = TREASURER_PORTAL_ADDRESSES.includes(currentAddress());
             const eventName = shift.eventName || 'Unnamed Event';
             const highlightedEventName = highlightSearchTerm(eventName);
             const highlightedStand = highlightSearchTerm(primaryStand.toString());
@@ -2218,7 +2379,7 @@
                         <div class="shift-header">
                             <div>
                                 <div class="shift-title">${highlightedEventName}</div>
-                                <div class="shift-date">${formatDate(shift.eventDate)} • Stand ${highlightedStand}${shift.separateStandsMode ? ' (Separate Mode)' : ''}</div>
+                                <div class="shift-date">${formatDate(shift.eventDate)}, stand ${highlightedStand}${shift.separateStandsMode ? ' (Separate Mode)' : ''}</div>
                             </div>
                             <div class="shift-status ${statusClass}">${paymentStatus === 'paid' ? 'paid' : paymentStatus === 'processed' ? 'processed' : 'ready'}</div>
                         </div>
@@ -2247,7 +2408,7 @@
                                     <div class="worker-item">
                                         <span class="worker-name">${worker.name}</span>
                                         <div>
-                                            <span class="worker-hours">${worker.hours.toFixed(2)}h</span> • 
+                                            <span class="worker-hours">${worker.hours.toFixed(2)}h</span> 
                                             <span class="worker-payout">$${worker.netAmount.toFixed(2)}</span>
                                         </div>
                                     </div>
@@ -2260,9 +2421,9 @@
                         <button class="btn btn-lock" onclick="lockShift('${shift.id}')" 
                                 style="display: ${isTreasurerOrAdmin ? 'inline-flex' : 'none'};" 
                                 ${shift.isLocked ? 'disabled' : ''}>
-                            ${shift.isLocked ? '🔒 Locked' : '🔓 Lock Shift'}
+                            ${shift.isLocked ? 'Locked' : 'Lock Shift'}
                         </button>
-                        <button class="btn btn-secondary" onclick="viewShiftDetails('${shift.id}')">👁️ View Details</button>
+                        <button class="btn btn-secondary" onclick="viewShiftDetails('${shift.id}')">View Details</button>
                     </div>
                 </div>
             `;
@@ -2323,18 +2484,17 @@
                     collection(db, 'Work-Shifts'),
                     orderBy('eventDate', 'desc')
                 ));
-                console.log('✅ Firebase read permissions verified');
+                console.log('Firebase read permissions verified');
                 return true;
             } catch (error) {
-                console.error('❌ Firebase connection test failed:', error);
+                console.error('Firebase connection test failed:', error);
                 return false;
             }
         }
 
         window.lockShift = async function(shiftId) {
-            const currentUserEmail = currentUser?.email?.toLowerCase();
-            if (currentUserEmail !== 'fundraising@lionsfootballclub.com' && currentUserEmail !== 'treasurer@lionsfootballclub.com') {
-                showError('Only treasurer and administrators can lock shifts.');
+            if (!TREASURER_WRITE_ADDRESSES.includes(currentAddress())) {
+                showError('Only the treasurer and administrators can lock shifts.');
                 return;
             }
             const hasPermissions = await checkFirebaseWritePermissions();
@@ -2373,7 +2533,7 @@
                     showError('Shift not found.');
                     return;
                 }
-                console.log('🔒 Locking shift in Firebase:', shiftId);
+                console.log('Locking shift in Firebase:', shiftId);
                 const shiftRef = doc(db, 'Work-Shifts', shiftId);
                 await updateDoc(shiftRef, {
                     isLocked: true,
@@ -2390,14 +2550,14 @@
                     lockedBy: currentUser.email,
                     lockedDate: new Date().toISOString()
                 });
-                console.log('✅ Shift locked successfully in Firebase');
+                console.log('Shift locked successfully in Firebase');
                 displayShifts();
                 closeLockModal();
                 showNotification('Shift locked successfully in Firebase. Can be unlocked from payouts page.', 'success');
             } catch (error) {
-                console.error('❌ Error locking shift:', error);
+                console.error('Error locking shift:', error);
                 if (error.code === 'permission-denied') {
-                    showError('Firebase Security Rules Error: The treasurer account lacks write permissions to the Work-Shifts collection. Contact your system administrator to update Firebase security rules to allow treasurer@lionsfootballclub.com write access to Work-Shifts.', true);
+                    showError('This account does not have permission to lock a shift. Email fundraising@lionssports.club with the address you signed in with and we will sort out the access.', true);
                 } else if (error.code === 'unauthenticated') {
                     showError('Authentication expired. Please refresh the page and sign in again.');
                     window.LIONS_AUTH.forceLogout();
@@ -2426,8 +2586,7 @@
         };
 
         function checkForLockedShifts() {
-            const userEmail = currentUser?.email?.toLowerCase();
-            if (userEmail !== 'treasurer@lionsfootballclub.com' && userEmail !== 'fundraising@lionsfootballclub.com') return;
+            if (!TREASURER_PORTAL_ADDRESSES.includes(currentAddress())) return;
             const lockedCount = allShifts.filter(shift => shift.isLocked).length;
             if (lockedCount === 0) return;
         }
@@ -2467,7 +2626,7 @@
             if (elements.modalTitle) elements.modalTitle.textContent = 'Shift Details';
             if (elements.modalSubtitle) {
                 const displayStatus = shift.isLocked ? 'locked' : (shift.status || 'finalized');
-                elements.modalSubtitle.textContent = `${formatDate(shift.eventDate)} • Status: ${displayStatus}`;
+                elements.modalSubtitle.textContent = `${formatDate(shift.eventDate)}, status ${displayStatus}`;
             }
             if (elements.modalInfoGrid) {
                 const primaryCrNumber = shift.primaryCrNumber || shift.crNumber || 'N/A';
@@ -2543,7 +2702,7 @@
             }
             if (elements.modalWorkerDetails && shift.workers && shift.workers.length > 0) {
                 elements.modalWorkerDetails.innerHTML = `
-                    <h4 style="color: var(--navy-blue); margin-bottom: var(--space-4); font-weight: 600;">Worker Details</h4>
+                    <h4 style="color: var(--tr-blue); margin-bottom: var(--space-4); font-weight: 600;">Worker Details</h4>
                     <table class="worker-details-table">
                         <thead>
                             <tr>
@@ -2578,7 +2737,7 @@
                     </table>
                 `;
             } else if (elements.modalWorkerDetails) {
-                elements.modalWorkerDetails.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: var(--space-4);">No worker data available.</p>';
+                elements.modalWorkerDetails.innerHTML = '<p style="text-align: center; color: var(--tr-gray-500); padding: var(--space-4);">No worker data available.</p>';
             }
             if (elements.shiftDetailsModal) {
                 elements.shiftDetailsModal.classList.remove('hidden');
@@ -2733,7 +2892,7 @@
             const isVisible = !elements.workerTotalsSection.classList.contains('hidden');
             if (isVisible) {
                 elements.workerTotalsSection.classList.add('hidden');
-                elements.workerTotalsBtn.textContent = '👥 Worker Summary';
+                elements.workerTotalsBtn.textContent = 'Worker Summary';
             } else {
                 if (elements.workerTotalsBody) {
                     elements.workerTotalsBody.innerHTML = '<tr><td colspan="8" class="loading">Loading worker totals...</td></tr>';
@@ -2741,7 +2900,7 @@
                 elements.workerTotalsSection.classList.remove('hidden');
                 setTimeout(() => {
                     displayWorkerTotalsTable();
-                    elements.workerTotalsBtn.textContent = '❌ Hide Summary';
+                    elements.workerTotalsBtn.textContent = 'Hide Summary';
                 }, 50);
             }
         }
@@ -2917,7 +3076,7 @@
             document.addEventListener('touchstart', () => {}, { passive: true });
         }
 
-        console.log('✅ Treasurer portal loaded with LOCAL CALCULATIONS - Low Rate Rule implemented');
+        console.log('Treasurer portal loaded with LOCAL CALCULATIONS - Low Rate Rule implemented');
     </script>
 </body>
 

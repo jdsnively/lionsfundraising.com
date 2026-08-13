@@ -17,8 +17,106 @@
 
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
     <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
-    <link rel="stylesheet" href="/css/lions-app.css?v=3">
-    <link rel="stylesheet" href="/css/lions-signup.css?v=1">
+    <link rel="stylesheet" href="/css/lions-app.css?v=5">
+    <link rel="stylesheet" href="/css/lions-signup.css?v=2">
+
+    <style>
+        /* --------------------------------------------------------------------
+           Page-local surfaces for multi person signup.
+
+           Only the controls that did not exist before are declared here. Cards,
+           buttons, chips, banners and the shift row itself come from
+           lions-app.css and lions-signup.css and are untouched, so a volunteer
+           whose email carries a single roster record meets exactly the page
+           they met yesterday.
+
+           No custom property below is one the token bridge in lions-chrome.css
+           already owns. A page style block comes after the stylesheet link and
+           wins that cascade, so a private --white or --blue-primary declared
+           here would repaint the shared header and footer on this page alone.
+           ------------------------------------------------------------------ */
+
+        /* The picker is the only card on this page that is not adjacent to
+           another card in the markup, so the .card + .card rule in
+           lions-app.css does not reach it and the first event card would sit
+           flush against it. Same 24px the sibling rule applies. */
+        #household-card {
+            margin-bottom: var(--lions-space-6);
+        }
+
+        /* The household picker. Same hit target, accent and focus treatment as
+           the shift and commitment checkboxes, so one rule governs the page. */
+        .people-picker {
+            display: flex;
+            flex-direction: column;
+            gap: var(--lions-space-1);
+        }
+
+        .person-check {
+            display: flex;
+            align-items: center;
+            gap: var(--lions-space-3);
+            min-height: var(--lions-tap-target);
+            cursor: pointer;
+        }
+
+        .person-check input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            accent-color: var(--lions-blue);
+            cursor: pointer;
+        }
+
+        .person-check input[type="checkbox"]:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
+        }
+
+        .person-name {
+            font-size: 1.0625rem;
+            line-height: 1.4;
+            color: var(--lions-ink);
+        }
+
+        .person-you {
+            color: var(--lions-gray-text);
+            font-size: 0.9375rem;
+        }
+
+        .person-check .chip {
+            margin-left: var(--lions-space-2);
+        }
+
+        /* One shift, several people. The names sit to the right of the shift
+           label at desktop widths and wrap under it on a phone, which is what
+           .shift-row already does with its state column. */
+        .shift-people {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--lions-space-2) var(--lions-space-6);
+        }
+
+        .shift-person {
+            display: flex;
+            align-items: center;
+            gap: var(--lions-space-2);
+            min-height: var(--lions-tap-target);
+        }
+
+        /* A person's name beside their checkbox or their state chip. Set below
+           the shift label so the shift stays the thing being scanned for. */
+        .shift-who {
+            font-size: 1rem;
+            line-height: 1.4;
+            color: var(--lions-ink);
+        }
+
+        @media (max-width: 620px) {
+            .shift-people { gap: var(--lions-space-2) var(--lions-space-4); }
+        }
+    </style>
 </head>
 
 <body>
@@ -85,24 +183,37 @@
 
             <div id="season-banner" class="banner" hidden role="status"></div>
 
+            <!-- Household picker. Rendered only when the signed-in address
+                 carries more than one staffable roster record, which is the
+                 shape of a family that registered together. It decides whose
+                 name appears beside each shift, so a volunteer who signs up
+                 alone never sees it. -->
+            <section class="card" id="household-card" hidden>
+                <h2>Who are you signing up</h2>
+                <p id="household-intro"></p>
+                <div class="people-picker" id="household-list"></div>
+            </section>
+
             <form id="season-form" novalidate>
 
                 <div id="event-list"></div>
 
                 <!-- Commitment acknowledgment. Presented once per submission at
-                     declaration rather than at standby, because that is where the
-                     obligation begins. Text and version come from
+                     signup, because that is where the obligation begins. Text and version come from
                      signup-config.js so the exact wording each volunteer agreed
-                     to is recorded alongside the timestamp. -->
+                     to is recorded alongside the timestamp. One acknowledgment
+                     covers every person in the submission and is stamped onto
+                     each of their documents. -->
                 <section class="card" id="commitment-card" hidden>
-                    <h2>Before you submit</h2>
+                    <h2>Before you sign up</h2>
                     <p id="commitment-text"></p>
+                    <p id="commitment-people" hidden></p>
                     <label class="check-commit">
                         <input type="checkbox" id="commitment-ack">
                         <span id="commitment-label"></span>
                     </label>
                     <div class="btn-row">
-                        <button type="submit" class="btn" id="submit-availability">Submit availability</button>
+                        <button type="submit" class="btn" id="submit-availability">Sign up</button>
                         <button type="button" class="btn btn-secondary" id="reset-selection">Clear selections</button>
                     </div>
                 </section>
@@ -148,7 +259,7 @@
 </div><!-- /page-bg -->
 
 <script src="/js/lions-log.js?v=1"></script>
-<script src="/js/lions-nav.js?v=1" defer></script>
+<script src="/js/lions-nav.js?v=2" defer></script>
 <script src="/relationship-config.js?v=3"></script>
 <script src="/signup/signup-config.js?v=1"></script>
 
@@ -177,10 +288,29 @@
  * The document shape in the build spec carries 28 fields. Writing that shape
  * would be rejected in full by the size guard, and the rejection would look
  * like a permissions problem rather than a field-count problem. The create
- * payload below is deliberately 20 keys: everything a volunteer legitimately
+ * payload below is deliberately 20 keys for the signed-in volunteer and 21 for
+ * somebody they declare on behalf of: everything a volunteer legitimately
  * sets, and nothing an administrator owns. assignedAt, assignedBy, notifiedAt,
- * isStandLead, workShiftId, remindersSent, and notificationsOptOut are added
- * by the assignment surface and read with defaults until then.
+ * isStandLead, workShiftId, remindersSent, and notificationsOptOut are added by
+ * the assignment surface and read with defaults until then. Count the keys
+ * before adding one.
+ *
+ * MULTI PERSON SIGNUP
+ *
+ * Lions-Fundraising-Users is keyed by volunteer name and a family registers
+ * several people against one email address, so one address commonly resolves
+ * to several records. This page loads all of them, lets the signed-in person
+ * declare for any of them in one submission, and writes one document per
+ * person per shift, which is the shape signup/admin.js assigns from.
+ *
+ * userEmail on every one of those documents is the SIGNED-IN address, because
+ * the create rule pins it to the authenticated token and a write carrying a
+ * child's address would be refused outright. Who a row is for is carried by
+ * personId and name, a row for anybody else is marked isGuest and carries
+ * addedByEmail. Priority tier, permit state, phone, relationship and the
+ * licensed or unlicensed group are all read from THAT person's record and
+ * never from the adder's, so a sixteen year old with no permit cannot be
+ * carried into a licensed slot by a parent who holds one.
  *
  * Read Lions-Events is open to any authenticated user, so the season loads for
  * every signed-in volunteer regardless of role.
@@ -197,7 +327,6 @@ import {
     collectionGroup,
     query,
     where,
-    limit,
     getDocs,
     addDoc,
     deleteDoc,
@@ -211,10 +340,24 @@ const SUPPORT = 'fundraising@lionssports.club';
 const db = getFirestore(getApp());
 
 /** Session state, populated by start(). */
-let me = null;          // { email, name, record, tier, ref }
+let me = null;          // the signed-in person: { email, name, record, personId, tier }
+let household = [];     // every staffable person on this address, the signed-in one first
 let season = '';
 let events = [];        // published events for the season, date ascending
-let mySignups = new Map(); // key `${eventId}|${shiftKey}` -> { id, ref, state, groupKey }
+let mySignups = new Map(); // declKey(personId, eventId, shiftKey) -> declaration
+let declByUid = new Map(); // the short id used in markup -> the same declaration
+let declSeq = 0;
+
+/**
+ * Shifts ticked but not yet submitted, keyed the same way as mySignups.
+ *
+ * Held here rather than read back off the checkboxes because the event list is
+ * re-rendered whenever the household picker changes, and a selection made two
+ * minutes ago has to survive that. It is also what the submit handler
+ * iterates, so a write is driven by recorded intent rather than by whatever
+ * markup happens to be on screen.
+ */
+let pending = new Map();
 
 // ---------------------------------------------------------------------------
 // Views
@@ -271,11 +414,6 @@ function toLocalDate(value) {
     }
     const m = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
-}
-
-function formatDate(date) {
-    return date.toLocaleDateString('en-US',
-        { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatDateShort(date) {
@@ -353,15 +491,157 @@ function closedReason(ev) {
     return 'This date has passed';
 }
 
+/** The shifts an event carries, falling back to the template for its type. */
+function shiftsOf(ev) {
+    return Array.isArray(ev.shifts) && ev.shifts.length
+        ? ev.shifts
+        : CFG.shiftsFor(!!ev.splitShifts);
+}
+
+// ---------------------------------------------------------------------------
+// The household
+//
+// One address, one or more roster records. Everything below treats the
+// signed-in person as one member of that list rather than as a special case,
+// so the single record path and the family path run the same code.
+// ---------------------------------------------------------------------------
+
+/** Composite identity of a declaration: this person, this event, this shift. */
+function declKey(personId, eventId, shiftKey) {
+    return String(personId) + '||' + String(eventId) + '||' + String(shiftKey);
+}
+
+function normalizedName(value) {
+    return String(value == null ? '' : value).trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
+ * When a record was registered, in milliseconds, or Infinity when unknown.
+ *
+ * /register writes registrationTimestamp. Older imports carry createdAt or
+ * timestamp. All three are read rather than assuming one, and a record with no
+ * usable date sorts last instead of sorting first as a zero would.
+ */
+function registeredAtMs(data) {
+    const raw = (data && (data.registrationTimestamp || data.createdAt || data.timestamp)) || null;
+    if (!raw) { return Number.POSITIVE_INFINITY; }
+    if (typeof raw.toDate === 'function') { return raw.toDate().getTime(); }
+    const d = raw instanceof Date ? raw : new Date(raw);
+    const t = d.getTime();
+    return isNaN(t) ? Number.POSITIVE_INFINITY : t;
+}
+
+/**
+ * A total order over roster records: earliest registration first, document id
+ * ascending to break a tie.
+ *
+ * Firestore promises no ordering on a query without orderBy, so the limit(1)
+ * lookup this replaced left "which family member am I" undefined for every
+ * address carrying more than one record. Both keys here come from the
+ * documents themselves, so the answer is the same on every load and on every
+ * device.
+ */
+function compareRecords(a, b) {
+    const ta = registeredAtMs(a.data);
+    const tb = registeredAtMs(b.data);
+    if (ta !== tb) { return ta < tb ? -1 : 1; }
+    if (a.id === b.id) { return 0; }
+    return a.id < b.id ? -1 : 1;
+}
+
+/**
+ * Which record is the person at the keyboard.
+ *
+ * A single record answers its own question, so nothing changes for the
+ * volunteers who have one. Beyond that, the Firebase display name is used when
+ * it identifies exactly one record, and otherwise the household is ordered and
+ * the first registration wins, which on a family registration is the adult who
+ * filled the form in. Being wrong here is recoverable rather than damaging:
+ * the picker lists everybody and any of them can be declared for.
+ */
+function chooseSelf(records, displayName) {
+    if (records.length === 1) { return records[0]; }
+
+    const wanted = normalizedName(displayName);
+    if (wanted) {
+        const hits = records.filter(r => normalizedName(r.data.name) === wanted);
+        if (hits.length === 1) { return hits[0]; }
+    }
+
+    return records.slice().sort(compareRecords)[0];
+}
+
+/**
+ * Short labels for the picker and the shift rows.
+ *
+ * A first name is enough inside a household and keeps a shift row readable on
+ * a phone. Where two people share one, both fall back to the full name rather
+ * than presenting two identical checkboxes.
+ */
+function assignLabels(people) {
+    const counts = new Map();
+
+    people.forEach(p => {
+        const first = normalizedName(String(p.name).split(' ')[0]);
+        counts.set(first, (counts.get(first) || 0) + 1);
+    });
+
+    people.forEach(p => {
+        const first = String(p.name).trim().split(/\s+/)[0] || p.name;
+        p.label = counts.get(normalizedName(first)) > 1 ? p.name : first;
+    });
+}
+
+/**
+ * Builds the household, signed-in person first and everybody else by name.
+ *
+ * Only the signed-in person starts selected. A volunteer who signs up alone
+ * therefore meets the page exactly as it was, and adding somebody else is a
+ * deliberate act rather than a default that could be submitted without being
+ * read.
+ */
+function buildHousehold(records, self) {
+    const rest = records.filter(r => r !== self).sort((a, b) => {
+        const na = normalizedName(a.data.name);
+        const nb = normalizedName(b.data.name);
+        if (na !== nb) { return na < nb ? -1 : 1; }
+        return a.id < b.id ? -1 : 1;
+    });
+
+    const people = [self].concat(rest).map(r => ({
+        personId: r.id,
+        name: r.data.name || r.id,
+        record: r.data,
+        tier: CFG.priorityTier(r.data),
+        isSelf: r === self,
+        selected: r === self,
+        label: ''
+    }));
+
+    assignLabels(people);
+    return people;
+}
+
+function personByIndex(value) {
+    const index = Number(value);
+    return Number.isInteger(index) && index >= 0 && index < household.length
+        ? household[index]
+        : null;
+}
+
+function selectedPeople() {
+    return household.filter(p => p.selected);
+}
+
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
 function stateChip(state) {
     const map = {
-        available: ['Available', 'is-available'],
-        scheduled: ['Scheduled', 'is-valid'],
-        standby:   ['Standby',   'is-expiring'],
+        available: ['Awaiting assignment', 'is-available'],
+        scheduled: ['On the schedule', 'is-valid'],
+        standby:   ['Standby',            'is-expiring'],
         released:  ['Released',  'is-released']
     };
     const entry = map[state];
@@ -375,18 +655,157 @@ function escapeHtml(value) {
 }
 
 /**
+ * Permit state as a chip label and class, or an empty label when there is
+ * nothing worth saying.
+ *
+ * Evaluated against today. Per-event validity is evaluated at assignment time
+ * by the administrator surface, because a permit can lapse between a
+ * declaration made in August and an event in March.
+ *
+ * A minor is never described here. Their permit state is not a fact about them
+ * worth printing, and the age it implies is not this page's to publish.
+ */
+function permitLabel(record) {
+    if (CFG.isMinor(record)) { return ['', '']; }
+
+    const labels = {
+        valid:      ['Alcohol permit on file', ''],
+        expiring:   ['Permit expiring', 'is-expiring'],
+        expired:    ['Permit expired', 'is-expired'],
+        incomplete: ['Permit incomplete', 'is-expiring'],
+        none:       ['', '']
+    };
+
+    return labels[CFG.licenseStatusFor(record, new Date())] || labels.none;
+}
+
+/** The signed-in volunteer's own permit state, shown once at the top. */
+function renderPermitChip() {
+    const chip = document.getElementById('identity-permit');
+    const entry = permitLabel(me.record);
+
+    if (!entry[0]) {
+        chip.hidden = true;
+        return;
+    }
+
+    chip.hidden = false;
+    chip.textContent = entry[0];
+    chip.className = 'chip ' + entry[1];
+}
+
+/**
+ * The household picker.
+ *
+ * Hidden for an address with one record, which is most of the roster. Contact
+ * details are deliberately absent: a name and a permit chip are all the adder
+ * needs, and a phone number printed here would be a minor's phone number on
+ * the households that have one.
+ */
+function renderHousehold() {
+    const card = document.getElementById('household-card');
+
+    if (household.length < 2) {
+        card.hidden = true;
+        return;
+    }
+
+    document.getElementById('household-intro').textContent =
+        'These people are registered under your email address. Tick anyone you are '
+      + 'signing up and their name appears beside every shift, so you can choose '
+      + 'different dates for different people.';
+
+    document.getElementById('household-list').innerHTML = household.map((p, i) => {
+        const permit = permitLabel(p.record);
+        return '<label class="person-check">'
+             + '<input type="checkbox" data-person="' + i + '"' + (p.selected ? ' checked' : '') + '>'
+             + '<span class="person-name">' + escapeHtml(p.name)
+             + (p.isSelf ? ' <span class="person-you">(you)</span>' : '')
+             + '</span>'
+             + (permit[0] ? '<span class="chip ' + permit[1] + '">' + permit[0] + '</span>' : '')
+             + '</label>';
+    }).join('');
+
+    card.hidden = false;
+}
+
+/**
+ * Everybody with a line on one shift row.
+ *
+ * A person already declared shows their state whether or not they are ticked
+ * in the picker, because a declaration is a fact and unticking somebody must
+ * not hide a commitment already made on their behalf. A person who is ticked
+ * and not yet declared shows a checkbox. A declaration held for somebody no
+ * longer on this address, an archived record for instance, is still listed so
+ * that it can be seen and cancelled rather than becoming invisible.
+ */
+function peopleForShift(ev, shift) {
+    const rows = [];
+    const known = new Set();
+
+    household.forEach(person => {
+        known.add(String(person.personId));
+        const entry = mySignups.get(declKey(person.personId, ev.id, shift.key));
+        if (entry) {
+            rows.push({ person: person, entry: entry });
+        } else if (person.selected) {
+            rows.push({ person: person, entry: null });
+        }
+    });
+
+    mySignups.forEach(entry => {
+        if (entry.eventId === ev.id && entry.shiftKey === shift.key
+            && !known.has(String(entry.personId))) {
+            rows.push({
+                person: { personId: entry.personId, name: entry.name, label: entry.name },
+                entry: entry
+            });
+        }
+    });
+
+    return rows;
+}
+
+/**
+ * The control that ends one declaration.
+ *
+ * whom is supplied on a row carrying more than one person, so that several
+ * controls reading "Cancel" in the same row are still told apart by anybody
+ * navigating with a screen reader.
+ */
+function cancelControl(ev, entry, whom) {
+    const eventDate = toLocalDate(ev.eventDate);
+    const canCancel = eventDate && CFG.canSelfCancel(eventDate) && entry.state !== 'released';
+
+    return canCancel
+        ? ' <button type="button" class="link-action" data-cancel="' + escapeHtml(entry.uid) + '"'
+        + (whom ? ' aria-label="Cancel ' + escapeHtml(whom) + '"' : '')
+        + '>Cancel</button>'
+        : ' <span class="shift-note">' + (entry.state === 'released' ? '' : 'Contact us to change') + '</span>';
+}
+
+function checkboxAttributes(ev, shift, index, key) {
+    return ' data-event="' + escapeHtml(ev.id) + '"'
+         + ' data-shift="' + escapeHtml(shift.key) + '"'
+         + ' data-person="' + index + '"'
+         + (pending.has(key) ? ' checked' : '');
+}
+
+/**
  * Builds one shift row.
  *
- * A volunteer who already holds a signup for this shift sees its state and,
- * where the cutoff allows, a cancel control. A shift they have not declared
- * for shows a checkbox. The two are mutually exclusive: an existing
- * declaration is changed by cancelling it, not by unticking a box, so that a
- * stray click cannot silently withdraw a commitment.
+ * A person who already holds a signup for this shift sees its state and, where
+ * the cutoff allows, a cancel control. A shift they have not declared for
+ * shows a checkbox. The two are mutually exclusive: an existing declaration is
+ * changed by cancelling it, not by unticking a box, so that a stray click
+ * cannot silently withdraw a commitment.
+ *
+ * An address with one roster record renders the markup this page has always
+ * rendered, with no name beside the control, because there is only one person
+ * the control could refer to. Anything larger names every line, so a parent is
+ * never in doubt about which of their family a tick belongs to.
  */
 function shiftRow(ev, shift) {
-    const key = ev.id + '|' + shift.key;
-    const existing = mySignups.get(key);
-
     // Times are printed only when the event says they are settled. Showing a
     // default alongside the words "shift times are not final yet" is worse than
     // showing nothing: a volunteer reads the hours, not the caveat, and commits
@@ -396,34 +815,81 @@ function shiftRow(ev, shift) {
         : '';
     const label = shift.label + (times ? ' <span class="shift-times">' + times + '</span>' : '');
 
-    if (existing) {
-        const eventDate = toLocalDate(ev.eventDate);
-        const canCancel = eventDate && CFG.canSelfCancel(eventDate)
-                       && existing.state !== 'released';
-        return '<div class="shift-row is-declared">'
-             + '<div class="shift-label">' + label + '</div>'
-             + '<div class="shift-state">' + stateChip(existing.state)
-             + (canCancel
-                 ? ' <button type="button" class="link-action" data-cancel="' + escapeHtml(key) + '">Cancel</button>'
-                 : ' <span class="shift-note">' + (existing.state === 'released'
-                     ? ''
-                     : 'Contact us to change') + '</span>')
-             + '</div></div>';
+    const rows = peopleForShift(ev, shift);
+
+    /**
+     * The standby hint for one person on this row.
+     *
+     * Shown before submitting rather than only afterwards, so that nobody
+     * discovers they are on standby from a confirmation message. It is worded
+     * as an invitation because that is the instruction: a full role is never a
+     * reason to turn somebody away, and a volunteer who reads "full" and closes
+     * the page is the outcome this wording exists to avoid.
+     */
+    const fullHint = (person) => groupHasRoom(ev, shift, groupFor(person, ev))
+        ? ''
+        : '<span class="shift-note">Full, sign up for standby</span>';
+
+    // The unnamed control is used only when every line on this row belongs to
+    // the one person on the address. A row that also carries a declaration made
+    // for somebody since removed from the address is named like any other, so
+    // that a chip is never shown against the wrong person.
+    const simple = household.length < 2
+        && rows.length < 2
+        && (rows.length === 0 || rows[0].person === household[0]);
+
+    if (simple) {
+        const only = rows[0];
+
+        if (only && only.entry) {
+            return '<div class="shift-row is-declared">'
+                 + '<div class="shift-label">' + label + '</div>'
+                 + '<div class="shift-state">' + stateChip(only.entry.state)
+                 + cancelControl(ev, only.entry)
+                 + '</div></div>';
+        }
+
+        const key = declKey(household[0].personId, ev.id, shift.key);
+        return '<div class="shift-row">'
+             + '<label class="shift-check">'
+             + '<input type="checkbox"' + checkboxAttributes(ev, shift, 0, key) + '>'
+             + '<span class="shift-label">' + label + '</span>'
+             + '</label>'
+             + fullHint(household[0])
+             + '</div>';
     }
 
-    return '<div class="shift-row">'
-         + '<label class="shift-check">'
-         + '<input type="checkbox" data-event="' + escapeHtml(ev.id) + '" data-shift="' + escapeHtml(shift.key) + '">'
-         + '<span class="shift-label">' + label + '</span>'
-         + '</label></div>';
+    const allDeclared = rows.length > 0 && rows.every(r => r.entry);
+
+    const people = rows.map(row => {
+        const who = row.person.label || row.person.name;
+
+        if (row.entry) {
+            return '<span class="shift-person">'
+                 + '<span class="shift-who">' + escapeHtml(who) + '</span>'
+                 + stateChip(row.entry.state)
+                 + cancelControl(ev, row.entry, who + ', ' + ev.name + ' ' + shift.label)
+                 + '</span>';
+        }
+
+        const index = household.indexOf(row.person);
+        const key = declKey(row.person.personId, ev.id, shift.key);
+        return '<label class="shift-check">'
+             + '<input type="checkbox"' + checkboxAttributes(ev, shift, index, key) + '>'
+             + '<span class="shift-who">' + escapeHtml(row.person.label || row.person.name) + '</span>'
+             + fullHint(row.person)
+             + '</label>';
+    }).join('');
+
+    return '<div class="shift-row' + (allDeclared ? ' is-declared' : '') + '">'
+         + '<div class="shift-label">' + label + '</div>'
+         + '<div class="shift-people">' + people + '</div></div>';
 }
 
 function eventBlock(ev) {
     const d = toLocalDate(ev.eventDate);
     const open = isOpen(ev);
-    const shifts = Array.isArray(ev.shifts) && ev.shifts.length
-        ? ev.shifts
-        : CFG.shiftsFor(!!ev.splitShifts);
+    const shifts = shiftsOf(ev);
 
     let head = '<div class="event-head">'
              + '<div class="event-when">' + (d ? formatDateShort(d) : 'Date TBA') + '</div>'
@@ -440,8 +906,8 @@ function eventBlock(ev) {
 
     let body = '';
     if (ev.dateStatus === 'either' && Array.isArray(ev.dateAlternatives) && ev.dateAlternatives.length > 1) {
-        body += '<p class="event-alt">The contract gives two possible dates. Marking '
-              + 'yourself available holds both until it is confirmed.</p>';
+        body += '<p class="event-alt">The contract gives two possible dates. Signing '
+              + 'up holds both until it is confirmed.</p>';
     }
     if (ev.timesStatus === 'tba') {
         body += '<p class="event-alt">Shift times are not final yet.</p>';
@@ -452,8 +918,21 @@ function eventBlock(ev) {
     return '<div class="event-block">' + head + body + '</div>';
 }
 
+/**
+ * Which multi-day runs the volunteer had expanded.
+ *
+ * The list is rebuilt whenever the household picker changes as well as after a
+ * submission, and collapsing a run somebody has just opened to read loses
+ * their place in a fifty event season.
+ */
+function openRunKeys() {
+    return new Set(Array.from(document.querySelectorAll('#event-list details[open]'))
+        .map(d => d.dataset.run));
+}
+
 function renderSeason() {
     const runs = groupIntoRuns(events);
+    const open = openRunKeys();
 
     const html = runs.map(run => {
         if (!run.series) {
@@ -468,7 +947,7 @@ function renderSeason() {
             : 'Dates to be confirmed';
 
         return '<section class="card event-card">'
-             + '<details' + (openCount ? '' : '') + '>'
+             + '<details data-run="' + escapeHtml(run.key) + '"' + (open.has(run.key) ? ' open' : '') + '>'
              + '<summary class="run-summary">'
              + '<span class="run-name">' + escapeHtml(run.series) + '</span>'
              + '<span class="run-span">' + span + '</span>'
@@ -488,26 +967,56 @@ function renderSeason() {
 }
 
 /**
- * The commitment card appears only once something is ticked. Showing a
- * consent control before there is anything to consent to trains people to
- * tick it without reading.
+ * The commitment card appears only once something is ticked. Showing a consent
+ * control before there is anything to consent to trains people to tick it
+ * without reading.
+ *
+ * One acknowledgment covers the whole submission and is stamped onto every
+ * document it writes, so when it covers more than the person giving it, it
+ * names who. Agreeing to hold a date on somebody else's behalf should not
+ * happen without their name in front of you.
  */
 function updateCommitmentVisibility() {
-    const anyChecked = document.querySelectorAll('#event-list input[type="checkbox"]:checked').length > 0;
-    document.getElementById('commitment-card').hidden = !anyChecked;
+    document.getElementById('commitment-card').hidden = pending.size === 0;
+
+    const line = document.getElementById('commitment-people');
+    const names = [];
+
+    pending.forEach(item => {
+        const person = household.find(p => p.personId === item.personId);
+        const name = person ? person.name : item.personId;
+        if (names.indexOf(name) === -1) { names.push(name); }
+    });
+
+    if (household.length < 2 || names.length < 2) {
+        line.hidden = true;
+        line.textContent = '';
+        return;
+    }
+
+    line.textContent = 'This covers ' + names.join(', ') + '.';
+    line.hidden = false;
 }
 
 // ---------------------------------------------------------------------------
 // Loading
 // ---------------------------------------------------------------------------
 
-async function loadRoster(email) {
+/**
+ * Every roster record filed under one address.
+ *
+ * Deliberately unbounded where this carried limit(1). The roster is keyed by
+ * volunteer name, so a family that registered together holds one record each
+ * against the same email, and the limit returned exactly one of them and hid
+ * the rest. The security rules are unaffected: they are evaluated per document
+ * and a limit is not part of that evaluation.
+ */
+async function loadHousehold(email) {
     const snap = await getDocs(query(
         collection(db, CFG.COLLECTIONS.USERS),
-        where('email', '==', String(email || '').trim().toLowerCase()),
-        limit(1)
+        where('email', '==', String(email || '').trim().toLowerCase())
     ));
-    return snap.empty ? null : { ref: snap.docs[0].ref, id: snap.docs[0].id, data: snap.docs[0].data() };
+    return snap.docs.map(d => ({ ref: d.ref, id: d.id, data: d.data() }));
 }
 
 async function loadEvents() {
@@ -534,17 +1043,52 @@ async function loadEvents() {
 }
 
 /**
- * Loads this volunteer's existing declarations across the season.
+ * Records one declaration in both indexes.
  *
- * A collection group query reads every signups subcollection in one round
+ * personId is defaulted to the signed-in person, which is the shape of any row
+ * written before this page recorded one. uid exists so that a cancel control
+ * can name a declaration in an attribute without putting a volunteer's name,
+ * which is the roster document key, into the markup.
+ */
+function recordDeclaration(target, entry) {
+    const personId = entry.personId || me.personId;
+
+    const record = {
+        id: entry.id,
+        ref: entry.ref,
+        uid: 'd' + (++declSeq),
+        personId: personId,
+        name: entry.name || personId,
+        eventId: entry.eventId,
+        shiftKey: entry.shiftKey,
+        state: entry.state,
+        groupKey: entry.groupKey
+    };
+
+    target.set(declKey(personId, entry.eventId, entry.shiftKey), record);
+    declByUid.set(record.uid, record);
+    return record;
+}
+
+/**
+ * Loads the declarations already on file for this address, for every person on
+ * it.
+ *
+ * A row declared for somebody else carries the adder's address in userEmail,
+ * because the create rule pins it there, and that is what lets one query
+ * return the whole family rather than one read per person.
+ *
+ * A collection group query would read every signups subcollection in one round
  * trip rather than one read per event, which on a 57 event season is the
- * difference between 1 and 57. It needs a composite index on
- * (userEmail, season); if that index is missing Firestore throws with a
- * console link to create it, and the fallback below keeps the page usable in
- * the meantime.
+ * difference between 1 and 57. It needs both a composite index and a
+ * match /{path=**}/signups rule, and this project publishes neither, so the
+ * attempt fails and the per event fallback below is what actually runs. It is
+ * kept rather than deleted because it costs one refused read and becomes the
+ * fast path on the day those are published.
  */
 async function loadMySignups() {
     const map = new Map();
+    declByUid = new Map();
 
     try {
         const snap = await getDocs(query(
@@ -554,8 +1098,10 @@ async function loadMySignups() {
         ));
         snap.docs.forEach(d => {
             const data = d.data();
-            map.set(data.eventId + '|' + data.shiftKey, {
-                id: d.id, ref: d.ref, state: data.state, groupKey: data.groupKey
+            recordDeclaration(map, {
+                id: d.id, ref: d.ref, personId: data.personId, name: data.name,
+                eventId: data.eventId, shiftKey: data.shiftKey,
+                state: data.state, groupKey: data.groupKey
             });
         });
         return map;
@@ -573,8 +1119,10 @@ async function loadMySignups() {
             ));
             snap.docs.forEach(d => {
                 const data = d.data();
-                map.set(ev.id + '|' + data.shiftKey, {
-                    id: d.id, ref: d.ref, state: data.state, groupKey: data.groupKey
+                recordDeclaration(map, {
+                    id: d.id, ref: d.ref, personId: data.personId, name: data.name,
+                    eventId: ev.id, shiftKey: data.shiftKey,
+                    state: data.state, groupKey: data.groupKey
                 });
             });
         } catch (error) {
@@ -600,9 +1148,9 @@ async function start() {
         return;
     }
 
-    let roster;
+    let records;
     try {
-        roster = await loadRoster(state.user.email);
+        records = await loadHousehold(state.user.email);
     } catch (error) {
         log.error('Roster lookup failed on the signup page.', error);
         fail('We could not load your record just now. Refresh the page, and if it '
@@ -610,7 +1158,7 @@ async function start() {
         return;
     }
 
-    if (!roster) {
+    if (!records.length) {
         // An administrator is a Firebase Auth identity, not a registration. The
         // role addresses in lions-auth.js were never added to
         // Lions-Fundraising-Users, so the person who has to assign the season
@@ -629,28 +1177,37 @@ async function start() {
         }
 
         const address = String(state.user.email).trim().toLowerCase();
-        roster = {
+        records = [{
             id: address,
             data: { name: address.split('@')[0], email: address, relationship: '' }
-        };
+        }];
         log.log('No roster record for this administrator, continuing without one.');
     }
 
     // Archived records are excluded from staffing entirely, so the sheet is not
-    // shown to them at all rather than shown and then refused on submit.
-    if (!CFG.isStaffable(roster.data)) {
+    // shown to them at all rather than shown and then refused on submit. An
+    // address holding an archived record alongside active ones keeps the active
+    // ones: an archive applies to a person, not to a family.
+    const staffable = records.filter(r => CFG.isStaffable(r.data));
+
+    if (!staffable.length) {
         fail('Your record is archived, so the signup sheet is closed to you. If that '
            + 'is wrong, let us know and we will reactivate it.');
         return;
     }
 
+    const self = chooseSelf(staffable, state.user.displayName);
+
     me = {
         email: String(state.user.email).trim().toLowerCase(),
-        name: roster.data.name || '',
-        record: roster.data,
-        personId: roster.id,
-        tier: CFG.priorityTier(roster.data)
+        name: self.data.name || '',
+        record: self.data,
+        personId: self.id,
+        tier: CFG.priorityTier(self.data)
     };
+
+    household = buildHousehold(staffable, self);
+    pending = new Map();
 
     season = CFG.seasonFor(new Date());
 
@@ -663,7 +1220,12 @@ async function start() {
         return;
     }
 
+    // canAccess is handed over rather than a role name, so lions-nav.js asks
+    // SYSTEM_ACCESS in auth/lions-auth.js which system a person may open instead
+    // of carrying a second copy of those allow lists. Bound, because canAccess
+    // reads this.userRole off the manager.
     window.LIONS_NAV.setAuth({ signedIn: true, active: 'signup',
+                               canAccess: lionsAuth.canAccess.bind(lionsAuth),
                                onSignOut: signOutAndReturn });
 
     if (!events.length) {
@@ -674,11 +1236,20 @@ async function start() {
     mySignups = await loadMySignups();
 
     document.getElementById('identity-name').textContent = me.name || 'Lions volunteer';
+    // No time reference before an event appears here. Signing up puts a
+    // volunteer on the schedule, so there is no waiting period to describe,
+    // and a published lead time is a promise made to a hundred and fifteen
+    // people on behalf of one.
     document.getElementById('season-intro').textContent =
-        'Season ' + season + '. Tick every shift you can work. We assign about a week '
-      + 'ahead and email you either way.';
+        'Season ' + season + '. Tick every shift you can work and you are on the '
+      + 'schedule for it.'
+      + (household.length > 1
+            ? ' You can sign up anyone else registered under your email address '
+            + 'at the same time.'
+            : '');
 
     renderPermitChip();
+    renderHousehold();
     renderSeason();
     show('season');
 
@@ -695,40 +1266,8 @@ async function start() {
         }
     }
 
-    log.log('Signup page ready, ' + events.length + ' events, ' + mySignups.size + ' existing declarations.');
-}
-
-/**
- * The volunteer's own permit state, shown once at the top rather than per
- * event. Evaluated against today; per-event validity is evaluated at
- * assignment time by the administrator surface, because a permit can lapse
- * between declaration and a March event.
- */
-function renderPermitChip() {
-    const chip = document.getElementById('identity-permit');
-
-    if (CFG.isMinor(me.record)) {
-        chip.hidden = true;
-        return;
-    }
-
-    const status = CFG.licenseStatusFor(me.record, new Date());
-
-    const labels = {
-        valid:      ['Alcohol permit on file', ''],
-        expiring:   ['Permit expiring', 'is-expiring'],
-        expired:    ['Permit expired', 'is-expired'],
-        incomplete: ['Permit incomplete', 'is-expiring'],
-        none:       ['', '']
-    };
-
-    const entry = labels[status] || labels.none;
-    if (!entry[0]) {
-        chip.hidden = true;
-        return;
-    }
-    chip.textContent = entry[0];
-    chip.className = 'chip ' + entry[1];
+    log.log('Signup page ready, ' + events.length + ' events, ' + household.length
+          + ' people on this address, ' + mySignups.size + ' existing declarations.');
 }
 
 // ---------------------------------------------------------------------------
@@ -738,27 +1277,38 @@ function renderPermitChip() {
 /**
  * Builds the document a volunteer is permitted to create.
  *
- * Exactly 20 keys. The rule rejects anything with 25 or more, and rejects the
- * whole write rather than trimming it. Count the keys before adding one.
+ * Exactly 20 keys for the signed-in person and 21 for anybody they sign up on
+ * behalf of. The rule rejects anything with 25 or more, and rejects the whole
+ * write rather than trimming it. Count the keys before adding one. The state
+ * reversal on 2026-08-05 changed the VALUE of the state key and added none, so
+ * the count is unchanged.
+ *
+ * userEmail is the signed-in address on every row including a guest's, because
+ * the rule compares it against the authenticated token and any other value is
+ * refused. Who the row is FOR is carried by personId, name and isGuest, and
+ * addedByEmail records who added it. Every other value is read from that
+ * person's own record: a guest inherits nothing from the adder.
  */
-function signupPayload(ev, shift, groupKey) {
-    return {
+function signupPayload(person, ev, shift, groupKey, entryState) {
+    const record = person.record || {};
+
+    const payload = {
         season:               season,
         eventId:              ev.id,
         shiftKey:             shift.key,
         groupKey:             groupKey,
         userEmail:            me.email,
-        personId:             me.personId,
-        name:                 me.name,
-        phone:                me.record.phone || '',
+        personId:             person.personId,
+        name:                 person.name,
+        phone:                record.phone || '',
         relationshipAtSignup: window.RELATIONSHIP_CONFIG
-                                ? window.RELATIONSHIP_CONFIG.normalize(me.record.relationship)
-                                : (me.record.relationship || ''),
-        priorityTier:         me.tier,
-        isGuest:              false,
-        hasLicenseAtSignup:   me.record.hasLicense === 'yes',
-        licenseExpiresAt:     me.record.licenseExpiration || null,
-        state:                CFG.STATES.AVAILABLE,
+                                ? window.RELATIONSHIP_CONFIG.normalize(record.relationship)
+                                : (record.relationship || ''),
+        priorityTier:         person.tier,
+        isGuest:              !person.isSelf,
+        hasLicenseAtSignup:   record.hasLicense === 'yes',
+        licenseExpiresAt:     record.licenseExpiration || null,
+        state:                entryState,
         commitmentAckAt:      serverTimestamp(),
         commitmentAckVersion: CFG.COMMITMENT_VERSION,
         createdAt:            serverTimestamp(),
@@ -766,35 +1316,83 @@ function signupPayload(ev, shift, groupKey) {
         updatedAt:            serverTimestamp(),
         updatedBy:            me.email
     };
+
+    // The twenty first key, and only on a row declared for somebody else. The
+    // signed-in person's own row keeps the shape it has always had.
+    if (!person.isSelf) {
+        payload.addedByEmail = me.email;
+    }
+
+    return payload;
 }
 
 /**
  * Which group a declaration lands in.
  *
- * A volunteer with a permit valid through the event date can staff a licensed
- * slot; everyone else goes to the unlicensed group. This is a starting
+ * A person with a permit valid through the event date can staff a licensed
+ * slot; everyone else goes to the unlicensed group. Evaluated against the
+ * record of the person being declared for and never the adder's, so a parent
+ * holding a permit cannot place a child in a licensed slot. This is a starting
  * classification for the assignment screen, not a restriction: the
  * administrator moves people between groups freely.
  */
-function groupFor(ev) {
+function groupFor(person, ev) {
     const eventDate = toLocalDate(ev.eventDate) || new Date();
-    return CFG.canWorkLicensedSlot(me.record, eventDate) ? 'licensed' : 'unlicensed';
+    return CFG.canWorkLicensedSlot(person.record, eventDate) ? 'licensed' : 'unlicensed';
+}
+
+/**
+ * Places already taken in one group on one shift.
+ *
+ * Read from the counts map on the event document, which the assignment screen
+ * writes each time it loads. Deliberately not maintained by this page.
+ *
+ * Having a volunteer increment the counter would need a second write on the
+ * signup path, and it would put a value every signed-in account can overwrite
+ * in charge of whether other volunteers are told a group is full. The count
+ * would also still be wrong, because two people signing up in the same second
+ * both read the old value. The trade Jason accepted on 2026-08-05 is that
+ * capacity is never enforced and he reviews signups as they arrive, so a count
+ * that is accurate as of his last visit is exactly as good as a live one and
+ * costs nothing.
+ *
+ * `pendingBySlot` carries what this submission has already written, so a family
+ * of four ticking the same shift fills the group in order rather than all four
+ * reading the same starting number.
+ */
+const pendingBySlot = new Map();
+
+function slotKey(ev, shift, groupKey) {
+    return ev.id + '|' + CFG.countsKey(shift.key, groupKey);
+}
+
+function occupiedNow(ev, shift, groupKey) {
+    return CFG.occupancyOf(ev, shift.key, groupKey)
+         + (pendingBySlot.get(slotKey(ev, shift, groupKey)) || 0);
+}
+
+/** Whether a group has room, used for the hint shown before anybody submits. */
+function groupHasRoom(ev, shift, groupKey) {
+    const target = CFG.targetFor(shift, groupKey);
+    return CFG.entryStateFor(occupiedNow(ev, shift, groupKey), target) === CFG.STATES.SCHEDULED;
+}
+
+/** How a shift is named back to the volunteer in a result message. */
+function describe(person, ev, shift) {
+    return (household.length > 1 ? person.label + ', ' : '') + ev.name + ' ' + shift.label;
 }
 
 document.getElementById('season-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     clearBanner();
 
-    const boxes = Array.from(
-        document.querySelectorAll('#event-list input[type="checkbox"]:checked'));
-
-    if (!boxes.length) {
-        announce('Tick at least one shift before submitting.', 'warning');
+    if (!pending.size) {
+        announce('Tick at least one shift before signing up.', 'warning');
         return;
     }
 
     if (!document.getElementById('commitment-ack').checked) {
-        announce('Please confirm you will hold these dates before submitting.', 'error');
+        announce('Please confirm these are dates you are working before signing up.', 'error');
         document.getElementById('commitment-ack').focus();
         return;
     }
@@ -803,78 +1401,163 @@ document.getElementById('season-form').addEventListener('submit', async (event) 
     const reset  = document.getElementById('reset-selection');
     submit.disabled = true;
     reset.disabled = true;
-    submit.textContent = 'Submitting';
+    submit.textContent = 'Signing you up';
 
     const written = [];
     const failed = [];
+    const standby = [];
+    const peopleWritten = new Set();
 
-    // Written one at a time rather than in a batch. A batch that trips the
-    // rules fails entirely and tells the volunteer nothing about which shift
-    // caused it; individually, a single bad row is reported by name and the
-    // rest still land.
-    for (const box of boxes) {
-        const ev = events.find(e => e.id === box.dataset.event);
-        if (!ev) { continue; }
+    // Written one at a time rather than in a batch, and one document per person
+    // per shift. A batch that trips the rules fails entirely and tells the
+    // volunteer nothing about which shift caused it; individually, a single bad
+    // row is reported by name and the rest still land.
+    for (const item of Array.from(pending.values())) {
+        const person = household.find(p => p.personId === item.personId);
+        const ev = events.find(e => e.id === item.eventId);
+        if (!person || !ev) { pending.delete(item.key); continue; }
 
-        const shifts = Array.isArray(ev.shifts) && ev.shifts.length
-            ? ev.shifts
-            : CFG.shiftsFor(!!ev.splitShifts);
-        const shift = shifts.find(s => s.key === box.dataset.shift);
-        if (!shift) { continue; }
+        const shift = shiftsOf(ev).find(s => s.key === item.shiftKey);
+        if (!shift) { pending.delete(item.key); continue; }
+
+        // Idempotence. A declaration already on file for this person, event and
+        // shift is left alone rather than written a second time, which is what
+        // a resubmission after a partial failure would otherwise do to every
+        // row that succeeded the first time.
+        if (mySignups.has(item.key)) { pending.delete(item.key); continue; }
 
         try {
+            const groupKey = groupFor(person, ev);
+            const entryState = CFG.entryStateFor(
+                occupiedNow(ev, shift, groupKey),
+                CFG.targetFor(shift, groupKey));
+
             const ref = await addDoc(
                 collection(db, CFG.COLLECTIONS.EVENTS, ev.id, CFG.COLLECTIONS.SIGNUPS),
-                signupPayload(ev, shift, groupFor(ev)));
+                signupPayload(person, ev, shift, groupKey, entryState));
 
-            mySignups.set(ev.id + '|' + shift.key, {
-                id: ref.id, ref: ref, state: CFG.STATES.AVAILABLE, groupKey: groupFor(ev)
+            // Counted only after the write landed, so a refused row does not
+            // push the next person in the same submission onto standby.
+            const slot = slotKey(ev, shift, groupKey);
+            pendingBySlot.set(slot, (pendingBySlot.get(slot) || 0) + 1);
+
+            recordDeclaration(mySignups, {
+                id: ref.id, ref: ref, personId: person.personId, name: person.name,
+                eventId: ev.id, shiftKey: shift.key,
+                state: entryState, groupKey: groupKey
             });
-            written.push(ev.name + ' ' + shift.label);
+
+            pending.delete(item.key);
+            peopleWritten.add(person.personId);
+            if (entryState === CFG.STATES.STANDBY) { standby.push(describe(person, ev, shift)); }
+            written.push(describe(person, ev, shift));
 
         } catch (error) {
             log.error('Declaration failed for ' + ev.id + ' ' + shift.key, error);
-            failed.push(ev.name + ' ' + shift.label);
+            // Left in pending on purpose, so the row is still ticked when the
+            // list redraws and a retry is one press of the button.
+            failed.push(describe(person, ev, shift));
         }
     }
 
     submit.disabled = false;
     reset.disabled = false;
-    submit.textContent = 'Submit availability';
+    submit.textContent = 'Sign up';
 
     if (written.length) {
-        await lionsAuth.logAuditEvent('signup_availability_declared',
-            { season: season, count: written.length });
+        await lionsAuth.logAuditEvent('signup_recorded',
+            { season: season, count: written.length, people: peopleWritten.size,
+              standby: standby.length });
     }
 
     document.getElementById('commitment-ack').checked = false;
     renderSeason();
 
+    // No time reference before an event. The confirmation says what is true
+    // now, which is that these shifts are on the schedule, and it never says
+    // when anything happens next.
+    const standbyNote = standby.length
+        ? ' ' + (standby.length === 1 ? 'One shift is' : standby.length + ' shifts are')
+        + ' on standby because that role was already full. Please keep the date open.'
+        : '';
+
     if (failed.length && written.length) {
         announce('Saved ' + written.length + ' of ' + (written.length + failed.length)
                + '. These did not save: ' + failed.join(', ') + '. Email ' + SUPPORT
-               + ' and we will add them.', 'warning');
+               + ' and we will add them.' + standbyNote, 'warning');
     } else if (failed.length) {
         announce('Nothing saved. Email ' + SUPPORT + ' and we will add you.', 'error');
     } else {
-        announce('Thank you. ' + written.length
-               + (written.length === 1 ? ' shift' : ' shifts')
-               + ' recorded. We will email you once the schedule is set.', 'success');
+        announce('Thank you. You are on the schedule for ' + written.length
+               + (written.length === 1 ? ' shift' : ' shifts') + '.' + standbyNote,
+               'success');
     }
 });
 
 document.getElementById('reset-selection').addEventListener('click', () => {
-    document.querySelectorAll('#event-list input[type="checkbox"]:checked')
-        .forEach(b => { b.checked = false; });
+    // Clears ticked shifts only. Who is being signed up is a separate decision
+    // and stays where the volunteer put it.
+    pending = new Map();
     document.getElementById('commitment-ack').checked = false;
-    updateCommitmentVisibility();
+    renderSeason();
     clearBanner();
 });
 
 document.getElementById('event-list').addEventListener('change', (event) => {
-    if (event.target.matches('input[type="checkbox"]')) {
-        updateCommitmentVisibility();
+    const box = event.target;
+    if (!box.matches('input[type="checkbox"]')) { return; }
+
+    const person = personByIndex(box.dataset.person);
+    if (!person) { return; }
+
+    const key = declKey(person.personId, box.dataset.event, box.dataset.shift);
+
+    if (box.checked) {
+        pending.set(key, {
+            key: key,
+            personId: person.personId,
+            eventId: box.dataset.event,
+            shiftKey: box.dataset.shift
+        });
+    } else {
+        pending.delete(key);
     }
+
+    updateCommitmentVisibility();
+});
+
+/**
+ * Ticking somebody in the picker puts their name on every shift row; unticking
+ * takes it off, along with anything ticked for them that has not been
+ * submitted.
+ *
+ * The last selected person cannot be removed. There is no submission with
+ * nobody in it, and a form that lets you reach that state only to refuse it at
+ * the end wastes the trip.
+ */
+document.getElementById('household-list').addEventListener('change', (event) => {
+    const box = event.target;
+    if (!box.matches('input[type="checkbox"]')) { return; }
+
+    const person = personByIndex(box.dataset.person);
+    if (!person) { return; }
+
+    if (!box.checked && selectedPeople().length < 2) {
+        box.checked = true;
+        announce('At least one person has to stay selected.', 'warning');
+        return;
+    }
+
+    person.selected = box.checked;
+
+    if (!person.selected) {
+        Array.from(pending.values()).forEach(item => {
+            if (item.personId === person.personId) { pending.delete(item.key); }
+        });
+    }
+
+    clearBanner();
+    renderSeason();
 });
 
 // ---------------------------------------------------------------------------
@@ -887,17 +1570,18 @@ document.getElementById('event-list').addEventListener('change', (event) => {
  * The cutoff is enforced here and nowhere else. The security rule allows a
  * volunteer to delete their own signup at any time, so a determined person
  * could cancel inside the window from a console. That is a rules gap recorded
- * in the handoff, not something this page can close.
+ * in the handoff, not something this page can close. A row declared for
+ * somebody else is the adder's to cancel for the same reason it was theirs to
+ * create: it carries the adder's address.
  */
 document.getElementById('event-list').addEventListener('click', async (event) => {
     const button = event.target.closest('[data-cancel]');
     if (!button) { return; }
 
-    const key = button.dataset.cancel;
-    const existing = mySignups.get(key);
+    const existing = declByUid.get(button.dataset.cancel);
     if (!existing) { return; }
 
-    const ev = events.find(e => e.id === key.split('|')[0]);
+    const ev = events.find(e => e.id === existing.eventId);
     const eventDate = ev ? toLocalDate(ev.eventDate) : null;
 
     if (eventDate && !CFG.canSelfCancel(eventDate)) {
@@ -912,11 +1596,12 @@ document.getElementById('event-list').addEventListener('click', async (event) =>
 
     try {
         await deleteDoc(existing.ref);
-        mySignups.delete(key);
+        mySignups.delete(declKey(existing.personId, existing.eventId, existing.shiftKey));
+        declByUid.delete(existing.uid);
         await lionsAuth.logAuditEvent('signup_availability_withdrawn',
             { season: season, eventId: ev ? ev.id : null });
         renderSeason();
-        announce('Removed. You are no longer down for that shift.', 'success');
+        announce('Removed. That shift is no longer declared.', 'success');
 
     } catch (error) {
         log.error('Cancellation failed.', error);

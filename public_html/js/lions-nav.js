@@ -75,8 +75,18 @@
         // application-only menu so that the chrome stays one definition on both
         // properties, which is what ADR-006 requires. A visitor on the marketing
         // site can reach the Lucas Oil guide too, which is no loss.
+            // Order set by Jason 2026-08-05. Event Signup was the second row
+            // and has been removed: the public path is Register, and picking
+            // dates is what a volunteer does after they are on the roster, not
+            // something a first-time visitor should be offered alongside it.
+            //
+            // Note that this leaves /signup with no navigation entry at all.
+            // It is reached from the landing page strip, from the registration
+            // success screen, and from the link in the sign-in email. If a
+            // signed-in volunteer should have a menu route back to it, the row
+            // belongs in ADMIN_ITEMS' sibling position rather than here, so it
+            // appears only once auth has resolved.
             { key: 'home-erp',    label: 'Fundraising Home', href: '/' },
-            { key: 'signup',      label: 'Event Signup',     href: '/signup' },
             { key: 'register',    label: 'Register',         href: '/register' },
             { key: 'los',         label: 'Lucas Oil Guide',  href: '/LOS' },
             { key: 'sodexo-atc',  label: 'Alcohol Permit',   href: '/sodexo-atc' }
@@ -90,6 +100,37 @@
           href: 'https://teamstore.frecklesgraphics.com/shop/lionssportsclub/',
           external: true, cta: true }
     ];
+
+    /**
+     * Administrator routes.
+     *
+     * Deliberately NOT rows in NAV_ITEMS. That list is a mirror of $nav_items in
+     * /includes/header.php on the marketing site, and these three have no
+     * counterpart over there. Putting them in it would make the two definitions
+     * disagree, which is the whole problem the mirror exists to prevent.
+     *
+     * They are appended to the Fundraising dropdown by setAuth once auth has
+     * resolved, rather than added as an eighth top-level item. The header rail
+     * already needs 1285px for the seven items it has; an eighth would push the
+     * bar into the identity controls at exactly the widths a laptop uses.
+     *
+     * `system` names the entry in SYSTEM_ACCESS that governs the route. This
+     * file does not carry a copy of those allow lists. The page hands setAuth a
+     * canAccess function and this asks it, so the menu a person sees and the
+     * access they hold cannot drift apart. A page that supplies no canAccess
+     * gets no administrator rows at all, which is the safe answer.
+     */
+    var ADMIN_ITEMS = [
+        { key: 'dashboard', label: 'Dashboard', href: '/dashboard', system: 'dashboard' },
+        { key: 'payouts',   label: 'Payouts',   href: '/payouts',   system: 'payouts' },
+        { key: 'treasurer', label: 'Treasurer', href: '/treasurer', system: 'treasurer' }
+    ];
+
+    // Marks every element setAuth injects, so a second call replaces the first
+    // rather than adding a second copy. setAuth runs once per page today, and
+    // an administrator page that resolves auth twice is exactly the shape that
+    // would otherwise grow a duplicate menu.
+    var ADMIN_MARK = 'data-lions-admin-item';
 
     var CARET =
         '<svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
@@ -239,11 +280,86 @@
      * elements answering to getElementById('sign-out') is a defect waiting for
      * whoever adds the third caller.
      */
+    /**
+     * Appends the administrator routes to the Fundraising dropdown.
+     *
+     * Runs on both renderings of that menu, the desktop list and the drawer
+     * panel, because the stylesheet shows one or the other by width and a
+     * volunteer on a laptop and the same person on a phone must not be offered
+     * different routes.
+     *
+     * Every previously injected element is removed first. Nothing is added when
+     * the caller is signed out, supplies no canAccess, or holds none of the
+     * three systems, so a volunteer's menu is unchanged and a treasurer sees
+     * Payouts and Treasurer without a Dashboard link they cannot open.
+     */
+    function renderAdminItems(state) {
+        document.querySelectorAll('[' + ADMIN_MARK + ']')
+            .forEach(function (el) { el.parentNode.removeChild(el); });
+
+        var signedIn = !!(state && state.signedIn);
+        var canAccess = state && typeof state.canAccess === 'function' ? state.canAccess : null;
+        if (!signedIn || !canAccess) { return; }
+
+        var allowed = ADMIN_ITEMS.filter(function (item) {
+            try {
+                return canAccess(item.system) === true;
+            } catch (error) {
+                // A caller whose canAccess throws is treated as granting
+                // nothing. Showing a route on the strength of an exception is
+                // the one outcome worth ruling out.
+                return false;
+            }
+        });
+        if (!allowed.length) { return; }
+
+        var active = (state && state.active) || '';
+
+        var desktop = document.getElementById('dd-fundraising');
+        if (desktop) {
+            var heading = document.createElement('li');
+            heading.setAttribute(ADMIN_MARK, '');
+            heading.className = 'dropdown-heading';
+            heading.setAttribute('aria-hidden', 'true');
+            heading.textContent = 'Admin';
+            desktop.appendChild(heading);
+
+            allowed.forEach(function (item) {
+                var li = document.createElement('li');
+                li.setAttribute(ADMIN_MARK, '');
+                li.innerHTML = '<a href="' + esc(item.href) + '" class="dropdown-link"'
+                             + currentAttr(item.key, active) + '>' + esc(item.label) + '</a>';
+                desktop.appendChild(li);
+            });
+        }
+
+        var drawer = document.getElementById('m-fundraising');
+        if (drawer) {
+            var drawerHeading = document.createElement('span');
+            drawerHeading.setAttribute(ADMIN_MARK, '');
+            drawerHeading.className = 'mobile-submenu-heading';
+            drawerHeading.setAttribute('aria-hidden', 'true');
+            drawerHeading.textContent = 'Admin';
+            drawer.appendChild(drawerHeading);
+
+            allowed.forEach(function (item) {
+                var link = document.createElement('a');
+                link.setAttribute(ADMIN_MARK, '');
+                link.setAttribute('href', item.href);
+                if (item.key === active) { link.setAttribute('aria-current', 'page'); }
+                link.textContent = item.label;
+                drawer.appendChild(link);
+            });
+        }
+    }
+
     function setAuth(state) {
         var slot = document.getElementById('auth-slot');
         var drawerSlot = document.getElementById('mobile-auth-slot');
         var signedIn = !!(state && state.signedIn);
         var current = signedIn && state.active === 'account' ? ' aria-current="page"' : '';
+
+        renderAdminItems(state);
 
         if (slot) {
             slot.innerHTML = signedIn
@@ -355,7 +471,12 @@
         });
     }
 
-    window.LIONS_NAV = { render: render, setAuth: setAuth, items: NAV_ITEMS };
+    window.LIONS_NAV = {
+        render: render,
+        setAuth: setAuth,
+        items: NAV_ITEMS,
+        adminItems: ADMIN_ITEMS
+    };
 
     // Renders as soon as the shell exists. data-nav on the shell names the
     // active key, so a page declares its own position rather than this file

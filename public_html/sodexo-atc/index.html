@@ -1,517 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Information about Serving Alcohol for Sodexo Live! - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <!-- League Spartan, matching /LOS, /signup and /account. This page
+         previously requested the two off-brand faces that lions-tokens.css
+         names and forbids, and never requested League Spartan at all, so the
+         ported header fell back to Arial here while the identical header
+         rendered correctly on /signup. Same markup, two different headers. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Universal Authentication System v4.1 -->
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
     <script src="https://lionsfundraising.com/universal-auth.js"></script>
-    
-    <!-- Universal Header System v1.6 -->
+
     <script src="/js/lions-log.js?v=1"></script>
-    <script src="/js/lions-nav.js?v=1" defer></script>
+    <script src="/js/lions-access.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
+    <script src="/js/lions-header-identity.js?v=1" defer></script>
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
     <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
 
     <style>
-        :root {
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-6: 1.5rem;
-            --space-8: 2rem;
-            --space-12: 3rem;
-            --space-16: 4rem;
+        /* --------------------------------------------------------------------
+           Page-local surfaces for the alcohol permit guide.
 
-            /* Enhanced Transition System */
-            --transition-ultra-fast: 0.15s ease-out;
-            --transition-fast: 0.2s ease-out;
-            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+           There is deliberately no :root color block here any more. The version
+           this replaces declared its own --white as pure white, and because a
+           page style block comes after the stylesheet link it won that cascade
+           against the token bridge in lions-chrome.css. Every ported chrome
+           rule reading var(--white), including the social section links, then
+           painted pure white on this page and Ghost White on /signup.
+           Redefining a bridge token name from inside a page silently restyles
+           the shared chrome, so nothing below introduces a name the bridge
+           already owns.
+
+           The spacing and radius aliases survive because the markup uses them
+           throughout, but they now resolve to the canonical scale rather than
+           to a private copy of it. The private palette, the private type
+           stack, and the private transition scale are gone.
+
+           LAYOUT, 2026-08-03. The guide used to sit in one Ghost White card
+           capped at 1600px, with a bordered card for every section inside it
+           and further bordered panels inside those. Three levels of box, and a
+           body line that ran the full width of the outer one.
+
+           A content page on lionssports.club is not a card. It is a stack of
+           full width bands with the 1160px .container rail inside each, and the
+           numbers below are measured off /who-we-are rather than chosen here:
+           band padding 80px top and 96px bottom, 56px and 64px under 768px,
+           56px between groups inside a band, a 720px hero lede, a 600px
+           reading measure, 20px under a title, 18px under an eyebrow. Nothing
+           in this block is a new number.
+
+           This page and /LOS now carry the same class names for the same
+           parts, so a difference between the two files is a real difference
+           rather than two spellings of one idea.
+           ------------------------------------------------------------------ */
+
+        .atc {
+            --space-2: var(--lions-space-2);
+            --space-3: var(--lions-space-3);
+            --space-4: var(--lions-space-4);
+            --space-6: var(--lions-space-6);
+            --space-8: var(--lions-space-8);
+            --space-12: var(--lions-space-12);
+
+            --radius-sm: var(--lions-radius-sm);
+            --radius-md: var(--lions-radius);
+            --radius-lg: var(--lions-radius-lg);
+
+            --border-light: var(--lions-border);
+
+            /* Band rhythm. The shared spacing scale tops out at 64px and the
+               canon's band padding is 80 and 96, so these two carry literals.
+               They are the canon's literals, taken from .who-hero and
+               .board-section, not sizes invented for this page. Declared as
+               custom properties so the phone override below moves the hero and
+               every band together rather than one rule at a time. */
+            --guide-band-top: 80px;
+            --guide-band-bottom: 96px;
+
+            /* Separation between two consecutive sections of the same document
+               inside one band. The canon uses 56px for a break of this weight,
+               both under .board-section-lede and as the .social-section band
+               padding. */
+            --guide-gap: 56px;
+
+            /* The reading measure. 600px of 17px body copy is close to 70
+               characters a line, which is the range a reader tracks without
+               losing the return sweep. Both numbers are the canon's: 600px is
+               the .board-section-lede measure and 17px is the .who-cta-sub
+               body size. */
+            --guide-measure-width: 600px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @media (max-width: 767px) {
+            .atc {
+                --guide-band-top: 56px;
+                --guide-band-bottom: 64px;
+                --guide-gap: 40px;
+            }
         }
 
-        body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
-            min-height: 100vh;
-            color: var(--gray-700);
-            padding: var(--space-6);
-        }
+        /* ---- Hero band ----------------------------------------------------
+           Ported from .who-hero. Dark band over the Lions Blue page surface,
+           which is hero pattern A, the canonical one. */
 
-        .main-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            position: relative;
-            z-index: 1;
-            min-height: calc(100vh - var(--space-12));
-            border: var(--border-light);
-        }
-
-        .page-header {
+        .guide-hero {
+            background: var(--black);
+            padding: var(--guide-band-top) 0 var(--guide-band-bottom);
             text-align: center;
-            margin-bottom: var(--space-8);
         }
 
-        .page-title {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
-            color: var(--navy-blue);
+        .guide-eyebrow {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--blue-light);
+            margin-bottom: 18px;
+        }
+
+        /* The canon's title ramp is 44 / 60 / 72. This title is a sentence of
+           49 characters rather than the three words /who-we-are carries, and
+           at 44px it breaks into four lines on a phone before the reader has
+           reached any content. The ramp is stepped down one notch to the sizes
+           the canon uses for its next heading level, which keeps the title to
+           two lines at 390 and two at 1440. */
+        .guide-title {
+            font-family: var(--font-heading);
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: var(--space-3);
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px)  { .guide-title { font-size: 42px; } }
+        @media (min-width: 1280px) { .guide-title { font-size: 60px; } }
+
+        .guide-lede {
+            font-family: var(--font-body);
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) { .guide-lede { font-size: 20px; } }
+
+        /* ---- Content bands -------------------------------------------------
+           One Ghost White reading surface for the whole guide. The canon's two
+           body bands differ by three points of luminance, which the eye cannot
+           resolve; the hairline at the top of each band is what actually
+           separates them, so that is the mechanism used here too. */
+
+        .guide-band {
+            background: var(--white);
+            padding: var(--guide-band-top) 0 var(--guide-band-bottom);
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* The column the prose actually sits in, centered inside the 1160px
+           rail. Capping the measure rather than the rail is what keeps a line
+           readable on a wide monitor while leaving the bands full bleed. */
+        .guide-measure {
+            max-width: var(--guide-measure-width);
+            margin: 0 auto;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        /* Consecutive sections of one document, not separate pages, so the
+           break between them is the canon's within-band 56px rather than the
+           176px two full bands would put there. The bordered card each of
+           these used to sit in is gone with the outer card: a border drawn
+           around every section is a box that says nothing about the content
+           inside it, and the hairline plus the space does the same work. */
+        .guide-section + .guide-section {
+            margin-top: var(--guide-gap);
+            padding-top: var(--guide-gap);
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* ---- Body copy ------------------------------------------------------ */
+
+        .atc main {
+            font-family: var(--font-body);
+            color: var(--lions-ink);
+        }
+
+        /* Ported from .who-cta-heading, the smaller of the canon's two section
+           ramps. Left aligned, unlike the canon's centered headings, because a
+           reference document needs the heading and the first line of its body
+           to share a left edge. */
+        .guide-section-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 600;
             line-height: 1.2;
+            color: var(--blue-primary);
+            margin-bottom: 20px;
         }
+        @media (min-width: 768px) { .guide-section-title { font-size: 34px; } }
 
-        .page-subtitle {
-            color: var(--gray-500);
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .content-section {
-            background: var(--gray-50);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            margin-bottom: var(--space-8);
-            border: var(--border-light);
-        }
-
-        .section-title {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            color: var(--navy-blue);
+        .content-text {
             margin-bottom: var(--space-6);
         }
 
-        .content-text {
-            line-height: 1.6;
-            font-size: 1rem;
-            color: var(--gray-700);
-            margin-bottom: var(--space-4);
-        }
+        .content-text:last-child { margin-bottom: 0; }
 
-        .content-text:last-child {
-            margin-bottom: 0;
-        }
+        /* ---- Application steps ----------------------------------------------
+           The blue wash is the palette's own tint of Lions Blue. It is used
+           here so the two step panels still read as raised out of the section
+           body once their off-palette accent border became brand blue, without
+           inventing a neutral the token file does not define. */
 
         .steps-section {
-            background: var(--white);
+            background: var(--lions-blue-wash);
             border: var(--border-light);
-            border-left: 4px solid var(--info);
+            border-left: 4px solid var(--blue-primary);
             border-radius: var(--radius-md);
             padding: var(--space-6);
             margin-bottom: var(--space-6);
         }
 
         .step-title {
-            font-weight: 700;
-            color: var(--navy-blue);
-            margin-bottom: var(--space-3);
+            font-family: var(--font-heading);
             font-size: 1.1rem;
-        }
-
-        .step-content {
-            margin-left: var(--space-6);
-        }
-
-        .step-content p {
+            font-weight: 700;
+            color: var(--blue-primary);
             margin-bottom: var(--space-3);
-            line-height: 1.6;
-            color: var(--gray-700);
         }
+
+        /* The indent this used to carry pushed the step body a further 24px in
+           from a panel that is already inset from a measure that is already
+           centered. Four left edges for one sentence. The panel's own padding
+           is the indent now. */
+        .step-content p { margin-bottom: var(--space-3); }
+        .step-content p:last-child { margin-bottom: 0; }
+
+        /* ---- Links and buttons ----------------------------------------------
+           One button treatment, Lions Blue. The version this replaces used a
+           borrowed blue for the primary buttons and the inline link, and
+           switched the button to navy on hover, so the control changed hue
+           rather than value when a pointer touched it. Hover and active are now
+           the canonical lighter and darker steps of the same blue. */
 
         .info-link {
-            color: var(--info);
-            text-decoration: none;
+            display: inline-block;
+            color: var(--blue-primary);
             font-weight: 600;
             padding: var(--space-2) var(--space-4);
-            border-radius: var(--radius-sm);
             border: 1px solid transparent;
-            transition: all var(--transition-fast);
-            display: inline-block;
+            border-radius: var(--radius-sm);
+            transition: background 0.2s, border-color 0.2s;
         }
 
         .info-link:hover {
-            background: var(--gray-50);
-            border-color: var(--info);
-            transform: translateY(-1px);
+            background: var(--lions-blue-wash);
+            border-color: var(--blue-primary);
+        }
+
+        .info-link:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
 
         .primary-btn {
             display: inline-flex;
             align-items: center;
-            gap: var(--space-3);
-            background: var(--info);
-            color: var(--white);
-            padding: var(--space-4) var(--space-6);
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            border: var(--border-medium);
-            border-color: var(--info);
-            min-height: 44px;
-            transition: all var(--transition-fast);
-            cursor: pointer;
-            font-family: var(--font-primary);
             justify-content: center;
+            gap: var(--space-3);
+            min-height: var(--lions-tap-target);
+            padding: var(--space-4) var(--space-6);
+            background: var(--blue-primary);
+            color: var(--white);
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .primary-btn:hover {
-            background: var(--navy-blue);
-            border-color: var(--navy-blue);
-            color: var(--white);
-            transform: translateY(-1px);
+        .primary-btn:hover  { background: var(--blue-hover); color: var(--white); }
+        .primary-btn:active { background: var(--blue-active); }
+        .primary-btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
+
+        /* A control row is a break in the reading flow, so it gets 32px above
+           and below it rather than 24px, and it sits on the same left edge as
+           the copy it belongs to rather than centered in the measure. */
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: var(--space-8) 0;
+        }
+
+        .btn-row:last-child { margin-bottom: 0; }
+
+        /* ---- Callouts --------------------------------------------------------
+           Two levels of emphasis, both flat. The hover lift each one carried is
+           gone: a block of static text that rises under the pointer suggests it
+           can be clicked, and nothing here can.
+
+           Warning uses --lions-warning, the palette's AA-safe amber, rather
+           than the bright amber this page had, which fails contrast as text on
+           a light surface. Critical uses Cross Red, which the design system
+           reserves for urgent calls, in place of a near-miss red. */
 
         .warning-callout {
-            background: var(--white);
-            border: var(--border-medium);
-            border-color: var(--warning);
-            border-left: 6px solid var(--warning);
+            border: 2px solid var(--lions-warning);
+            border-left: 6px solid var(--lions-warning);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin: var(--space-8) 0;
-            transition: all var(--transition-fast);
         }
 
-        .warning-callout:hover {
-            transform: translateY(-1px);
-        }
+        .warning-callout:last-child { margin-bottom: 0; }
 
         .warning-title {
-            color: var(--warning);
-            font-weight: 700;
-            margin-bottom: var(--space-4);
+            font-family: var(--font-heading);
             font-size: 1.2rem;
-            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--lions-warning);
+            margin-bottom: var(--space-4);
         }
 
         .critical-callout {
-            background: var(--white);
-            border: var(--border-medium);
-            border-color: var(--error);
-            border-left: 6px solid var(--error);
+            border: 2px solid var(--cross-red);
+            border-left: 6px solid var(--cross-red);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin: var(--space-8) 0;
-            transition: all var(--transition-fast);
         }
 
-        .critical-callout:hover {
-            transform: translateY(-1px);
-        }
+        .critical-callout:first-child { margin-top: 0; }
+        .critical-callout:last-child  { margin-bottom: 0; }
 
         .critical-title {
-            color: var(--error);
-            font-weight: 700;
-            margin-bottom: var(--space-4);
+            font-family: var(--font-heading);
             font-size: 1.2rem;
-            font-family: var(--font-display);
-        }
-
-        .footer {
-            background: transparent;
-            border: none;
-            padding: var(--space-8);
-            text-align: center;
-            margin-top: var(--space-12);
-        }
-
-        .footer-nav {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-6);
+            font-weight: 700;
+            color: var(--cross-red);
             margin-bottom: var(--space-4);
-            flex-wrap: wrap;
         }
 
-        .footer a {
-            color: var(--white) !important;
-            text-decoration: none;
-            font-size: 0.925rem;
-            font-weight: 400;
-            font-family: var(--font-primary);
+        /* The three check-in items were three text bullets separated by line
+           breaks, which is a list drawn by hand. It is a real list now, and the
+           marker is a hyphen rather than the raw bullet character the file must
+           not carry. */
+        .requirements-list {
+            margin: var(--space-6) 0;
         }
 
-        .footer a:hover {
-            color: var(--warning) !important;
-            text-decoration: underline;
+        /* 12px above and below each item, so two items are 24px apart. At the
+           8px this used to carry, the three things a volunteer has to bring
+           read as one paragraph rather than as three items to check. */
+        .requirements-list li {
+            padding: var(--space-3) 0 var(--space-3) var(--space-8);
+            position: relative;
         }
 
-        .footer-brand {
-            margin-top: var(--space-4);
-            color: var(--white);
-            font-size: 0.9rem;
+        .requirements-list li::before {
+            content: "-";
+            position: absolute;
+            left: var(--space-3);
+            color: var(--gray-mid);
         }
 
-        /* Mobile styles */
+        /* ---- Responsive ------------------------------------------------------ */
+
         @media (max-width: 480px) {
-            body {
-                padding: var(--space-4);
-            }
-
-            .main-container {
-                padding: var(--space-4);
-                padding-top: var(--space-8);
-                min-height: calc(100vh - var(--space-8));
-            }
-
-            .page-title {
-                font-size: 1.75rem;
-                margin-bottom: var(--space-4);
-            }
-
-            .page-subtitle {
-                font-size: 1rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-                margin-bottom: var(--space-4);
-            }
-
-            .content-section {
-                padding: var(--space-4);
-                margin-bottom: var(--space-4);
-            }
-
-            .steps-section {
-                padding: var(--space-4);
-                margin-bottom: var(--space-4);
-            }
-
+            .steps-section,
             .warning-callout,
             .critical-callout {
                 padding: var(--space-4);
-                margin: var(--space-4) 0;
             }
 
             .primary-btn {
                 width: 100%;
-                justify-content: center;
                 padding: var(--space-4);
-                font-size: 1rem;
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-3);
             }
         }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-            .main-container {
-                padding: var(--space-6);
-            }
-
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .section-title {
-                font-size: 1.6rem;
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
-        }
-    </style>
-    <style>
-        /* The Lions Blue page background the marketing site uses. This has to
-           come after the page's own style block, not before it: that block sets
-           body { background: var(--navy-blue) } and an equally specific rule
-           earlier in the source loses. Placing it last is the whole fix. One
-           property, nothing else touched. */
-        body { background: var(--lions-blue); }
     </style>
 </head>
-<body>
-    <!-- Universal Header Container -->
+
+<body class="atc">
+<div class="page-bg">
+
     <!-- Site header. Markup and navigation come from /js/lions-nav.js,
          the single definition on this property, mirroring $nav_items in
          /includes/header.php on lionssports.club. -->
     <header id="site-header" data-nav="sodexo-atc"></header>
 
-    <div class="main-container">
-        <div class="page-header">
-            <h1 class="page-title">Information about Serving Alcohol for Sodexo Live!</h1>
-            <p class="page-subtitle">Alcohol License Requirements and Training Information</p>
-        </div>
+    <main>
 
-        <main>
-            <section class="content-section">
-                <h2 class="section-title">Indiana Alcohol Serving Requirements</h2>
-                <p class="content-text">
-                    Indiana Law requires all alcohol servers to have a valid liquor permit and complete Alcohol Training.
-                </p>
-                <div style="text-align: center; margin: var(--space-6) 0;">
-                    <a href="https://www.in.gov/atc/atc-online-services/" class="primary-btn" target="_blank" rel="noopener">Apply for Permit Online</a>
+        <!-- Hero band. Eyebrow, title, lede on a dark surface, which is the
+             opening every content page on lionssports.club uses. -->
+        <section class="guide-hero">
+            <div class="container">
+                <div class="guide-eyebrow">Volunteer Guide</div>
+                <h1 class="guide-title">Information about Serving Alcohol for Sodexo Live!</h1>
+                <p class="guide-lede">Alcohol License Requirements and Training Information</p>
+            </div>
+        </section>
+
+        <!-- The guide itself. One band holding every section, because these
+             are consecutive steps in one process a volunteer works through,
+             not separate topics that each deserve a full band of their own. -->
+        <section class="guide-band">
+            <div class="container">
+                <div class="guide-measure">
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Indiana Alcohol Serving Requirements</h2>
+                        <p class="content-text">
+                            Indiana Law requires all alcohol servers to have a valid liquor permit and complete Alcohol Training.
+                        </p>
+                        <div class="btn-row">
+                            <a href="https://www.in.gov/atc/atc-online-services/" class="primary-btn" target="_blank" rel="noopener">Apply for Permit Online</a>
+                        </div>
+                        <p class="content-text">
+                            <strong>Choose "Volunteer Employee Permit" when applying.</strong>
+                        </p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Application Process</h2>
+
+                        <div class="steps-section">
+                            <h3 class="step-title">First Time Application</h3>
+                            <div class="step-content">
+                                <p>Apply for a new Employee permit, Volunteer Employee permit, or Restricted (19 &amp; 20 year-old) permit.</p>
+                            </div>
+                        </div>
+
+                        <div class="steps-section">
+                            <h3 class="step-title">Renewal</h3>
+                            <div class="step-content">
+                                <p>Renew existing permits up to 90 days before expiration. Login with your Permit Number and last 4 digits of your SSN.</p>
+                            </div>
+                        </div>
+
+                        <div class="warning-callout">
+                            <h3 class="warning-title">After Processing</h3>
+                            <p class="content-text">Print your receipt immediately. You can work with the receipt for 90 days while waiting for your permit to arrive by mail.</p>
+                        </div>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Required Training</h2>
+                        <p class="content-text">
+                            Complete Server Training within 120 days of permit issuance.
+                        </p>
+                        <div class="btn-row">
+                            <a href="https://www.in.gov/atc/isep/about-isep/certified-server-training/" class="primary-btn" target="_blank" rel="noopener">Complete Training Online</a>
+                        </div>
+                        <p class="content-text">
+                            Print your Training Certificate when complete.
+                        </p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Lucas Oil Stadium Requirements</h2>
+
+                        <div class="critical-callout">
+                            <h3 class="critical-title">Required for Check-in</h3>
+                            <p class="content-text">You must bring all three items to work at Lucas Oil Stadium:</p>
+                            <ul class="requirements-list">
+                                <li><strong>Photo ID</strong></li>
+                                <li><strong>Valid Alcohol Permit</strong> (or receipt)</li>
+                                <li><strong>Training Certificate</strong></li>
+                            </ul>
+                            <p class="content-text">
+                                Forgot to complete training? <a href="https://www.in.gov/atc/isep/about-isep/certified-server-training/" class="info-link" target="_blank" rel="noopener">Complete it here</a>
+                            </p>
+                        </div>
+                    </section>
+
                 </div>
-                <p class="content-text">
-                    <strong>Choose "Volunteer Employee Permit" when applying.</strong>
-                </p>
-            </section>
+            </div>
+        </section>
 
-            <section class="content-section">
-                <h2 class="section-title">Application Process</h2>
-                
-                <div class="steps-section">
-                    <div class="step-title">First Time Application</div>
-                    <div class="step-content">
-                        <p>Apply for a new Employee permit, Volunteer Employee permit, or Restricted (19 & 20 year-old) permit.</p>
-                    </div>
-                </div>
-
-                <div class="steps-section">
-                    <div class="step-title">Renewal</div>
-                    <div class="step-content">
-                        <p>Renew existing permits up to 90 days before expiration. Login with your Permit Number and last 4 digits of your SSN.</p>
-                    </div>
-                </div>
-
-                <div class="warning-callout">
-                    <div class="warning-title">After Processing</div>
-                    <p class="content-text">Print your receipt immediately. You can work with the receipt for 90 days while waiting for your permit to arrive by mail.</p>
-                </div>
-            </section>
-
-            <section class="content-section">
-                <h2 class="section-title">Required Training</h2>
-                <p class="content-text">
-                    Complete Server Training within 120 days of permit issuance.
-                </p>
-                <div style="text-align: center; margin: var(--space-6) 0;">
-                    <a href="https://www.in.gov/atc/isep/about-isep/certified-server-training/" class="primary-btn" target="_blank" rel="noopener">Complete Training Online</a>
-                </div>
-                <p class="content-text">
-                    Print your Training Certificate when complete.
-                </p>
-            </section>
-
-            <section class="content-section">
-                <h2 class="section-title">Lucas Oil Stadium Requirements</h2>
-                
-                <div class="critical-callout">
-                    <div class="critical-title">🚨 Required for Check-in</div>
-                    <p class="content-text">You must bring all three items to work at Lucas Oil Stadium:</p>
-                    <p class="content-text">
-                        • <strong>Photo ID</strong><br>
-                        • <strong>Valid Alcohol Permit</strong> (or receipt)<br>
-                        • <strong>Training Certificate</strong>
-                    </p>
-                    <p class="content-text">
-                        Forgot to complete training? <a href="https://www.in.gov/atc/isep/about-isep/certified-server-training/" class="info-link" target="_blank" rel="noopener">Complete it here</a>
-                    </p>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <footer class="footer">
-        <nav class="footer-nav">
-            <a href="/">Home</a>
-            <a href="/events">Events</a>
-            <a href="/reimbursement">Reimbursement</a>
-            <a href="/dashboard">Dashboard</a>
-            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
-        </nav>
-        <div class="footer-brand">
-            © 2025 Lions Sports Club. All rights reserved.<br>
-            Giving God The Glory Through Sports
-        </div>
-    </footer>
-
-    <script>
-        console.log('🦁 Initializing Sodexo ATC page with Universal Systems v4.1 + v1.6...');
-
-        // Initialize Universal Header System
-        async function initializePage() {
-            try {
-                // Wait for Universal Auth to be ready
-                await window.LIONS_AUTH.initialize();
-                console.log('✅ Universal Auth v4.1 initialized');
-                
-                // The header renders itself from /js/lions-nav.js as soon as
-                // the shell element exists, so there is nothing to await here.
-                
-                console.log('🎉 Page initialization complete');
-                
-            } catch (error) {
-                console.error('❌ Page initialization failed:', error);
-            }
-        }
-
-        // Wait for systems to be available
-        function waitForSystems() {
-            if (window.LIONS_AUTH) {
-                console.log('🚀 Universal systems detected, initializing...');
-                initializePage();
-            } else {
-                console.log('⏳ Waiting for universal systems...');
-                setTimeout(waitForSystems, 100);
-            }
-        }
-
-        // Initialize when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded, starting system detection...');
-            waitForSystems();
-        });
-
-        // Console protection
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                (e.ctrlKey && e.shiftKey && e.key === 'C') ||
-                (e.ctrlKey && e.shiftKey && e.key === 'J')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        console.clear();
-        console.warn('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
-        console.warn('%cThis is a browser feature intended for developers. Assets are protected.', 'color: red; font-size: 16px;');
-    </script>
+    </main>
 
     <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
     <section class="social-section">
@@ -535,7 +521,13 @@
         </div>
     </section>
 
-    <!-- ===== FOOTER ======================================================== -->
+    <!-- ===== FOOTER ========================================================
+         The page previously carried a second footer above this one, holding
+         Home, Events, Reimbursement, Dashboard and an outbound link to the
+         organization's old domain. Dashboard is an administrator surface,
+         /events is not a route, the old domain is a name the content standard
+         no longer permits, and the two live links duplicate the Fundraising
+         dropdown. The canon footer is copyright only. ====================== -->
     <footer class="footer-section">
         <div class="container">
             <p class="footer-copyright">
@@ -545,5 +537,64 @@
         </div>
     </footer>
 
+</div><!-- /page-bg -->
+
+<script>
+/**
+ * /sodexo-atc page behaviour.
+ *
+ * This page has no interactive components of its own. All that remains is
+ * bringing up universal auth so the identity controls in the ported header
+ * match the rest of the property when a volunteer is signed in. The guide
+ * itself is public and renders with or without it.
+ *
+ * Three things the previous version did are deliberately absent.
+ *
+ * Logging goes through LIONS_LOG, which is silent unless the URL carries
+ * ?debug=1. The previous copy printed six unconditional console lines on every
+ * load, each prefixed with an emoji, on a property whose standards allow
+ * neither unconditional diagnostic output nor emoji in any file.
+ *
+ * The keydown handler that swallowed F12 and the three devtools chords is
+ * gone. It did not stop anyone opening devtools from the browser menu, it was
+ * on no other page on this property, and it took four keyboard shortcuts away
+ * from every visitor including the operator debugging a volunteer's problem.
+ * The logo protection that actually works is the CSS in lions-chrome.css.
+ *
+ * The console wipe on load and the red banner that followed it are gone with
+ * it. Clearing the console erases exactly the diagnostic output LIONS_LOG
+ * exists to surface, so the two mechanisms cannot both be on the page.
+ */
+(function () {
+    'use strict';
+
+    var LOG = window.LIONS_LOG || { log: function () {}, error: function () {} };
+
+    function initAuth() {
+        if (!window.LIONS_AUTH || typeof window.LIONS_AUTH.initialize !== 'function') {
+            LOG.log('Universal auth not present; rendering the guide signed out.');
+            return;
+        }
+        window.LIONS_AUTH.initialize()
+            .then(function () { LOG.log('Universal auth initialized.'); })
+            .catch(function (error) { LOG.error('Universal auth failed to initialize:', error); });
+    }
+
+    // A bounded wait. The previous copy polled every 100ms forever, so a page
+    // that never loaded universal-auth.js spun for as long as it was open.
+    var waited = 0;
+    (function waitForSystems() {
+        if (window.LIONS_AUTH) { initAuth(); return; }
+        waited += 100;
+        if (waited >= 3000) {
+            LOG.log('Universal auth did not arrive within 3s; continuing without it.');
+            return;
+        }
+        setTimeout(waitForSystems, 100);
+    }());
+}());
+</script>
+
 </body>
+
 </html>

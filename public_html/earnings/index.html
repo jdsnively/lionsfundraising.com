@@ -5,99 +5,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lions Earnings</title>
-    <!-- Protected favicon implementation -->
-    <link rel="icon" type="image/png" id="dynamicFavicon">
-    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
-    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+
+    <!-- The three links this replaces carried ids for a favicon that was going
+         to be swapped in at runtime and no href, and nothing on the page ever
+         set one, so the browser fell back to /favicon.ico. These are the same
+         static links every other converted page carries. -->
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <!-- League Spartan only. The version this replaces requested the two faces
+         that lions-tokens.css names and forbids for interface use, and never
+         requested the brand heading face at all. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=1" defer></script>
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
 
     <style>
-        :root {
-            /* Primary Brand Colors - Core Palette */
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+        /* --------------------------------------------------------------------
+           Page-local surfaces for the earnings dashboard.
 
-            /* Neutral Grays - Essential Hierarchy */
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
+           There is deliberately no :root color block here any more. The version
+           this replaces declared its own --white as pure white, and because a
+           page style block comes after the stylesheet link it won that cascade
+           against the token bridge in lions-chrome.css. Every ported chrome
+           rule reading var(--white), including the social section, would have
+           painted pure white on this page and Ghost White on /signup. Nothing
+           below introduces a custom property name the bridge already owns.
 
-            /* Semantic Colors - Functional States */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
+           The spacing and radius aliases are kept because the markup and the
+           table templates use them in inline styles throughout, but they now
+           resolve to the canonical scale rather than to a private copy of it.
+           ------------------------------------------------------------------ */
 
-            /* Typography - Professional System */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+        .earn {
+            --space-1:  var(--lions-space-1);
+            --space-2:  var(--lions-space-2);
+            --space-3:  var(--lions-space-3);
+            --space-4:  var(--lions-space-4);
+            --space-6:  var(--lions-space-6);
+            --space-8:  var(--lions-space-8);
+            --space-12: var(--lions-space-12);
 
-            /* Flat Design - No Shadows */
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+            --radius-md: var(--lions-radius);
+            /* The previous file carried both a 12px and a 16px radius. The
+               canonical scale stops at 12px, so both resolve to it. */
+            --radius-lg: var(--lions-radius-lg);
 
-            /* Border Radius - Consistent System */
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-
-            /* Spacing - Harmonious Scale */
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-6: 1.5rem;
-            --space-8: 2rem;
-            --space-12: 3rem;
-            --space-16: 4rem;
-
-            /* Enhanced Transition System */
-            --transition-ultra-fast: 0.15s ease-out;
-            --transition-fast: 0.2s ease-out;
-            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-light:  var(--lions-border);
+            --border-medium: 2px solid var(--gray-border);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
-            min-height: 100vh;
-            color: var(--gray-700);
-            position: relative;
-            padding: var(--space-6);
+        /* The blue page rail. .page-bg supplies the Lions Blue surface, so the
+           body background this page used to set is gone; the canon does it. */
+        .earn-shell {
+            padding: var(--lions-space-6);
         }
 
         .main-container {
             max-width: 1600px;
             margin: 0 auto;
             background: var(--white);
-            border-radius: var(--radius-xl);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
             padding: var(--space-8);
             padding-top: var(--space-12);
-            position: relative;
-            z-index: 1;
             min-height: calc(100vh - var(--space-12));
-            border: var(--border-light);
         }
 
-        /* Login Screen */
+        .earn main {
+            font-family: var(--font-body);
+            color: var(--lions-ink);
+            line-height: 1.5;
+        }
+
+        /* ---- Sign-in screen ------------------------------------------------ */
+
         .login-screen {
             display: flex;
             justify-content: center;
@@ -107,13 +95,12 @@
         }
 
         .login-container {
-            background: var(--gray-50);
-            border-radius: var(--radius-xl);
-            padding: var(--space-12);
-            border: var(--border-medium);
-            border-color: var(--navy-blue);
             max-width: 500px;
             width: 100%;
+            padding: var(--space-12);
+            background: var(--white);
+            border: var(--lions-border-firm);
+            border-radius: var(--radius-lg);
         }
 
         .login-header {
@@ -121,20 +108,22 @@
         }
 
         .login-title {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--blue-primary);
             margin-bottom: var(--space-4);
-            font-weight: 600;
         }
 
         .login-subtitle {
-            color: var(--gray-500);
+            color: var(--gray-mid);
             font-size: 1rem;
             font-weight: 500;
         }
 
-        /* Earnings Page */
+        /* ---- Earnings summary ---------------------------------------------- */
+
         .earnings {
             text-align: center;
         }
@@ -144,11 +133,12 @@
         }
 
         .earnings-title {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--blue-primary);
             margin-bottom: var(--space-6);
-            font-weight: 600;
         }
 
         .earnings-stats {
@@ -158,50 +148,49 @@
             margin-bottom: var(--space-12);
         }
 
+        /* Flat. The version this replaces lifted each card 2px on hover, which
+           is decoration on a surface that is not interactive. */
         .earnings-card {
-            background: var(--navy-blue);
+            padding: var(--space-8);
+            text-align: center;
+            background: var(--blue-primary);
             color: var(--white);
             border: var(--border-light);
             border-radius: var(--radius-lg);
-            padding: var(--space-8);
-            text-align: center;
-            transition: transform var(--transition-fast);
-        }
-
-        .earnings-card:hover {
-            transform: translateY(-2px);
         }
 
         .earnings-number {
+            font-family: var(--font-heading);
             font-size: 3rem;
             font-weight: 700;
             color: var(--white);
             margin-bottom: var(--space-2);
-            font-family: var(--font-display);
         }
 
         .earnings-label {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--white);
             font-weight: 500;
             font-size: 1.2rem;
         }
 
+        /* ---- Panels --------------------------------------------------------- */
+
         .profile-section {
-            background: var(--gray-50);
-            border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin-bottom: var(--space-6);
-            border: var(--border-light);
             text-align: left;
+            background: var(--lions-blue-wash);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
         }
 
         .profile-section h2 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
-            margin-bottom: var(--space-6);
-            text-align: center;
+            font-family: var(--font-heading);
             font-size: 1.8rem;
             font-weight: 600;
+            color: var(--blue-primary);
+            text-align: center;
+            margin-bottom: var(--space-6);
         }
 
         .profile-grid {
@@ -209,6 +198,8 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: var(--space-4);
         }
+
+        /* ---- Form controls --------------------------------------------------- */
 
         .form-group {
             display: flex;
@@ -218,88 +209,94 @@
         }
 
         .form-group label {
+            font-family: var(--font-heading);
             font-weight: 600;
-            color: var(--navy-blue);
             font-size: 0.9rem;
-            text-transform: uppercase;
             letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--blue-primary);
             margin-bottom: var(--space-2);
         }
 
         .form-group input,
         .form-group select {
+            min-height: var(--lions-tap-target);
             padding: var(--space-3);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--lions-ink);
+            background: var(--white);
             border: var(--border-medium);
             border-radius: var(--radius-md);
-            background: var(--white);
-            color: var(--gray-700);
-            font-size: 1rem;
-            font-family: var(--font-primary);
-            min-height: 44px;
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            transition: border-color 0.2s;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--navy-blue);
-            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        /* Focus is an outline plus an offset, which is the canonical ring. The
+           version this replaces suppressed the outline and drew a soft blue
+           box-shadow halo instead, which is both a shadow and invisible to
+           Windows high contrast mode. */
+        .form-group input:focus-visible,
+        .form-group select:focus-visible {
+            border-color: var(--blue-primary);
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
 
         .form-group input:read-only {
-            background: var(--gray-100);
+            background: var(--gray-light);
             cursor: not-allowed;
         }
+
+        /* ---- Buttons -------------------------------------------------------
+           One button treatment, mirroring .btn in /css/lions-app.css so that
+           this page and /signup read as the same product. The version this
+           replaces painted the create and assign controls in a green that is
+           not in the palette; the palette carries one button color, and the
+           distinction between the two controls is solid against outlined. */
 
         .btn {
             display: inline-flex;
             align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-4);
-            background: var(--navy-blue);
-            color: var(--white);
-            text-decoration: none;
-            border-radius: var(--radius-md);
-            border: var(--border-medium);
-            border-color: var(--navy-blue);
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            font-family: var(--font-primary);
-            min-height: 44px;
             justify-content: center;
-            transition: all var(--transition-fast);
+            gap: var(--space-2);
+            min-height: var(--lions-tap-target);
+            padding: 12px 32px;
+            font-family: var(--font-heading);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: var(--blue-primary);
+            border: 2px solid var(--blue-primary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
 
-        .btn:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
+        .btn:hover  { background: var(--blue-hover);  border-color: var(--blue-hover); }
+        .btn:active { background: var(--blue-active); border-color: var(--blue-active); }
+        .btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
-
         .btn:disabled {
-            opacity: 0.5;
+            background: var(--gray-text);
+            border-color: var(--gray-text);
             cursor: not-allowed;
         }
 
-        .btn-secondary {
-            background: var(--gray-500);
-            border-color: var(--gray-500);
+        .btn-secondary { color: var(--blue-primary); background: transparent; }
+        .btn-secondary:hover { color: var(--white); background: var(--blue-primary); }
+        .btn-secondary:disabled {
+            color: var(--gray-text);
+            background: transparent;
+            border-color: var(--gray-text);
         }
 
-        .btn-secondary:hover {
-            background: var(--gray-700);
-            border-color: var(--gray-700);
-        }
-
-        .btn-success {
-            background: var(--success);
-            border-color: var(--success);
-        }
-
-        .btn-success:hover {
-            background: #059669;
-            border-color: #059669;
-        }
+        /* .btn-success is retained on the create and assign controls because the
+           markup and the scripts that key off it are unchanged, but it no longer
+           paints a second color. It inherits the one button treatment above. */
 
         .action-buttons {
             display: flex;
@@ -308,43 +305,7 @@
             margin-top: var(--space-6);
         }
 
-        .footer {
-            background: transparent;
-            border: none;
-            padding: var(--space-8);
-            text-align: center;
-            margin-top: var(--space-12);
-            position: relative;
-            z-index: 1;
-        }
-
-        .footer-nav {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-6);
-            margin-bottom: var(--space-4);
-            flex-wrap: wrap;
-        }
-
-        .footer a {
-            color: var(--white) !important;
-            text-decoration: none;
-            font-size: 0.925rem;
-            font-weight: 400;
-            transition: color var(--transition-fast);
-            font-family: var(--font-primary);
-        }
-
-        .footer a:hover {
-            color: var(--warning) !important;
-            text-decoration: underline;
-        }
-
-        .footer-brand {
-            margin-top: var(--space-4);
-            color: var(--white);
-            font-size: 0.9rem;
-        }
+        /* ---- Status --------------------------------------------------------- */
 
         .hidden {
             display: none !important;
@@ -353,54 +314,55 @@
         .loading {
             text-align: center;
             padding: var(--space-8);
-            color: var(--gray-500);
+            color: var(--gray-mid);
         }
 
         .error {
-            background: #fef2f2;
-            color: var(--error);
-            border-radius: var(--radius-lg);
             margin: var(--space-4) 0;
-            border: 2px solid var(--error);
-            font-weight: 600;
             padding: var(--space-4);
             text-align: center;
+            font-weight: 600;
+            color: var(--lions-error);
+            background: var(--lions-error-bg);
+            border: 2px solid var(--lions-error);
+            border-radius: var(--radius-lg);
         }
 
-        /* Dialogs */
+        /* ---- Group assignment dialog ---------------------------------------- */
+
         .dialog {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            inset: 0;
+            /* Near Black at 55 percent. The scrim was pure black, which the
+               palette does not carry anywhere. */
+            background: rgba(20, 20, 19, 0.55);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: var(--space-4);
         }
 
         .dialog-content {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
             max-width: 500px;
-            width: 90%;
-            border: var(--border-light);
+            width: 100%;
+            padding: var(--space-8);
             text-align: center;
+            background: var(--white);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
         }
 
         .dialog-content h3 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
-            margin-bottom: var(--space-4);
+            font-family: var(--font-heading);
             font-size: 1.5rem;
             font-weight: 600;
+            color: var(--blue-primary);
+            margin-bottom: var(--space-4);
         }
 
         .dialog-content p {
-            color: var(--gray-700);
+            color: var(--lions-ink);
             margin-bottom: var(--space-6);
             line-height: 1.6;
         }
@@ -412,753 +374,841 @@
             margin-top: var(--space-6);
         }
 
-        /* Mobile styles */
+        /* ---- Responsive ------------------------------------------------------ */
+
         @media (max-width: 768px) {
-            body {
-                padding: var(--space-4);
-            }
+            .earn-shell { padding: var(--lions-space-4); }
 
             .main-container {
                 padding: var(--space-4);
                 padding-top: var(--space-8);
             }
 
-            .earnings-title {
-                font-size: 1.75rem;
-            }
+            .login-title    { font-size: 1.75rem; }
+            .earnings-title { font-size: 1.75rem; }
 
             .earnings-stats {
                 grid-template-columns: 1fr;
                 gap: var(--space-4);
             }
 
-            .earnings-number {
-                font-size: 2.5rem;
-            }
+            .earnings-number { font-size: 2.5rem; }
 
-            .profile-grid {
-                grid-template-columns: 1fr;
-            }
+            .profile-grid { grid-template-columns: 1fr; }
 
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
+            .action-buttons { flex-direction: column; }
         }
     </style>
 </head>
 
-<body>
-    <div id="headerContainer"></div>
+<body class="earn">
+<div class="page-bg">
 
-    <div class="main-container">
-        <!-- Login screen -->
-        <div id="loginScreen" class="login-screen hidden">
-            <div class="login-container">
-                <div class="login-header">
-                    <h1 class="login-title">Earnings Access</h1>
-                    <p class="login-subtitle">View your Lions fundraising earnings and profile</p>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         the single definition on this property, mirroring $nav_items in
+         /includes/header.php on lionssports.club. /earnings is not a row in
+         NAV_ITEMS, so data-nav is empty and no item is marked current. -->
+    <header id="site-header" data-nav=""></header>
+
+    <div class="earn-shell">
+        <div class="main-container">
+            <main>
+
+                <!-- One error banner for the whole page, deliberately outside
+                     both views. The previous one lived inside #loginScreen, so
+                     every failure while signed in was written into a hidden
+                     element and the page sat on its spinner saying nothing. -->
+                <div id="pageError" class="error hidden" role="alert"></div>
+
+                <!-- Signed out ------------------------------------------------ -->
+                <div id="loginScreen" class="login-screen hidden">
+                    <div class="login-container">
+                        <div class="login-header">
+                            <h1 class="login-title">Earnings Access</h1>
+                            <p class="login-subtitle">View your Lions fundraising earnings and profile</p>
+                        </div>
+
+                        <p>Sign in with the email address Lions Sports Club has on
+                           file and we will send you a sign-in link. There is no
+                           password to remember.</p>
+                        <p>
+                            <a class="btn" style="display: block; text-align: center; margin-top: var(--space-4);"
+                               href="/auth/signin.html?next=%2Fearnings">Sign in</a>
+                        </p>
+                    </div>
                 </div>
 
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" autocomplete="email" required placeholder="Enter your registered email address">
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn" style="width: 100%; margin-top: var(--space-4);">
-                            Send Magic Link
-                        </button>
-                    </div>
-                    <div id="loginError" class="error hidden"></div>
-                    <div id="loginSuccess" class="loading hidden">Magic link sent! Check your email and click the link to access your earnings.</div>
-                </form>
-            </div>
-        </div>
+                <!-- Signed in -------------------------------------------------- -->
+                <div id="earningsPage" class="earnings hidden">
+                    <div class="earnings-header">
+                        <h1 class="earnings-title">Earnings Dashboard</h1>
 
-        <!-- Earnings page -->
-        <div id="earningsPage" class="earnings hidden">
-            <div class="earnings-header">
-                <h1 class="earnings-title">Earnings Dashboard</h1>
-
-                <div class="earnings-stats">
-                    <div class="earnings-card">
-                        <div class="earnings-number" id="totalEarnings">$0.00</div>
-                        <div class="earnings-label">My Earnings</div>
-                    </div>
-                    <div class="earnings-card hidden" id="groupEarningsCard">
-                        <div class="earnings-number" id="groupEarnings">$0.00</div>
-                        <div class="earnings-label" id="groupEarningsLabel">Group Earnings</div>
-                    </div>
-                    <div class="earnings-card hidden" id="totalUsersCard">
-                        <div class="earnings-number" id="totalUsers">-</div>
-                        <div class="earnings-label">Total Users</div>
-                    </div>
-                    <div class="earnings-card hidden" id="totalGroupsCard">
-                        <div class="earnings-number" id="totalGroups">-</div>
-                        <div class="earnings-label">Active Groups</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Controls -->
-            <div id="adminControls" class="profile-section hidden">
-                <h2>Group Management</h2>
-                <div class="profile-grid">
-                    <div class="form-group">
-                        <label for="searchUsers">Search Users</label>
-                        <input type="text" id="searchUsers" placeholder="Name or email...">
-                    </div>
-                    <div class="form-group">
-                        <label for="filterGroup">Filter by Group</label>
-                        <select id="filterGroup">
-                            <option value="">All Users</option>
-                            <option value="unassigned">Unassigned</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="newGroupName">Create New Group</label>
-                        <input type="text" id="newGroupName" placeholder="Enter group name...">
-                    </div>
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <div style="display: flex; gap: var(--space-2);">
-                            <button type="button" class="btn btn-success" id="createGroupBtn">Create Group</button>
-                            <button type="button" class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
+                        <div class="earnings-stats">
+                            <div class="earnings-card">
+                                <div class="earnings-number" id="totalEarnings">$0.00</div>
+                                <div class="earnings-label">My Earnings</div>
+                            </div>
+                            <div class="earnings-card hidden" id="groupEarningsCard">
+                                <div class="earnings-number" id="groupEarnings">$0.00</div>
+                                <div class="earnings-label" id="groupEarningsLabel">Group Earnings</div>
+                            </div>
+                            <div class="earnings-card hidden" id="totalUsersCard">
+                                <div class="earnings-number" id="totalUsers">-</div>
+                                <div class="earnings-label">Total Users</div>
+                            </div>
+                            <div class="earnings-card hidden" id="totalGroupsCard">
+                                <div class="earnings-number" id="totalGroups">-</div>
+                                <div class="earnings-label">Active Groups</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Users Table (Admin Only) -->
-            <div id="usersTable" class="profile-section hidden">
-                <h2>Users & Group Assignments</h2>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
-                        <thead>
-                            <tr style="background: var(--gray-100);">
-                                <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Name</th>
-                                <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Email</th>
-                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Current Group</th>
-                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Earnings</th>
-                                <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <tr>
-                                <td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-500);">Loading users...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    <!-- Administrator controls -->
+                    <div id="adminControls" class="profile-section hidden">
+                        <h2>Group Management</h2>
+                        <div class="profile-grid">
+                            <div class="form-group">
+                                <label for="searchUsers">Search Users</label>
+                                <input type="text" id="searchUsers" placeholder="Name or email...">
+                            </div>
+                            <div class="form-group">
+                                <label for="filterGroup">Filter by Group</label>
+                                <select id="filterGroup">
+                                    <option value="">All Users</option>
+                                    <option value="unassigned">Unassigned</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="newGroupName">Create New Group</label>
+                                <input type="text" id="newGroupName" placeholder="Enter group name...">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div style="display: flex; gap: var(--space-2);">
+                                    <button type="button" class="btn btn-success" id="createGroupBtn">Create Group</button>
+                                    <button type="button" class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div id="loadingMessage" class="loading">Loading your earnings data...</div>
+                    <!-- Users table, administrator only -->
+                    <div id="usersTable" class="profile-section hidden">
+                        <h2>Users and Group Assignments</h2>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                                <thead>
+                                    <tr style="background: var(--gray-light);">
+                                        <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Name</th>
+                                        <th style="padding: var(--space-3); text-align: left; font-weight: 600; border-bottom: var(--border-light);">Email</th>
+                                        <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Current Group</th>
+                                        <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Earnings</th>
+                                        <th style="padding: var(--space-3); text-align: center; font-weight: 600; border-bottom: var(--border-light);">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-mid);">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="loadingMessage" class="loading">Loading your earnings data...</div>
+                </div>
+
+            </main>
         </div>
     </div>
 
-    <!-- Group Assignment Dialog -->
-    <div id="groupAssignDialog" class="dialog hidden">
-        <div class="dialog-content">
-            <h3>Assign to Group</h3>
-            <p id="assignMessage">Assign user to a group</p>
-            <div class="form-group" style="margin-bottom: var(--space-4);">
-                <label for="selectGroup">Select Group</label>
-                <select id="selectGroup">
-                    <option value="">Remove from group</option>
-                </select>
-            </div>
-            <div class="dialog-buttons">
-                <button class="btn btn-success" id="assignGroupBtn">Assign</button>
-                <button class="btn btn-secondary" id="cancelAssignBtn">Cancel</button>
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <footer class="footer">
-        <nav class="footer-nav">
-            <a href="/">Home</a>
-            <a href="/events">Events</a>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/reimbursement">Reimbursement</a>
-            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
-        </nav>
-        <div class="footer-brand">
-            © 2025 Lions Sports Club. All rights reserved.<br>
-            Giving God The Glory Through Sports
+    <!-- ===== FOOTER ========================================================
+         The page previously carried its own footer holding Home, Events,
+         Dashboard, Reimbursement and a link to the retired
+         lionsfootballclub.com domain. /events is not a route on this property,
+         Dashboard is an administrator surface that most volunteers cannot
+         open, and Home and Reimbursement now live in the header. The canon
+         footer is copyright only. ========================================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
         </div>
     </footer>
 
-    <!-- Load Universal Authentication -->
-    <script src="https://lionsfundraising.com/universal-auth.js"></script>
+</div><!-- /page-bg -->
 
-    <!-- Load Universal Header System -->
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
+<!-- The group assignment dialog sits outside .page-bg so the blue surface
+     cannot clip a fixed overlay, which is the arrangement the page conformance
+     recipe specifies. -->
+<div id="groupAssignDialog" class="dialog hidden" role="dialog" aria-modal="true" aria-labelledby="groupAssignTitle">
+    <div class="dialog-content">
+        <h3 id="groupAssignTitle">Assign to Group</h3>
+        <p id="assignMessage">Assign user to a group</p>
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+            <label for="selectGroup">Select Group</label>
+            <select id="selectGroup">
+                <option value="">Remove from group</option>
+            </select>
+        </div>
+        <div class="dialog-buttons">
+            <button type="button" class="btn btn-success" id="assignGroupBtn">Assign</button>
+            <button type="button" class="btn btn-secondary" id="cancelAssignBtn">Cancel</button>
+        </div>
+    </div>
+</div>
 
-    <script type="module">
-        // Earnings Dashboard - Financial Focus with Group Management
-        console.log('💰 Earnings Dashboard: Financial accounting with group management');
+<script src="https://lionsfundraising.com/universal-auth.js"></script>
 
-        // Global application state
-        let currentUser = null;
-        let userRecord = null;
-        let allUsers = [];
-        let filteredUsers = [];
-        let allGroups = [];
-        let isAdmin = false;
-        let db = null;
-        let currentAssignUser = null;
+<script type="module">
+/**
+ * /earnings
+ *
+ * Personal and, for the fundraising role account, club-wide earnings, plus the
+ * group assignment tooling that sits on top of the Lions-Fundraising-Users
+ * collection.
+ *
+ * Changes in this revision are the chrome port and the standards it carries.
+ * No amount, rounding rule or currency format has been altered; the payout
+ * formula is governed separately and nothing here computes one.
+ *
+ *   - The header is /js/lions-nav.js rather than universal-header.js. The old
+ *     script rendered into an empty div near the top of the body and is frozen
+ *     at v1.9 on the superseded navy palette, so nothing new adopts it. The
+ *     nested guarded call that used to sit inside two setTimeout wrappers went
+ *     with it, along with the follow-up repaint call it made.
+ *
+ *   - Diagnostic output goes through LIONS_LOG, which is silent unless the URL
+ *     carries ?debug=1. The previous copy printed the signed-in address, the
+ *     volunteer's name and the whole userData object on an ordinary load. Every
+ *     surviving informational line now names what happened without naming who
+ *     it happened to.
+ *
+ *   - The one inline onclick, on the per-row Assign Group button, is now a
+ *     delegated listener reading data attributes. Besides being flagged by the
+ *     conformance validator, the old form interpolated the volunteer's name
+ *     into a single-quoted JavaScript string inside an HTML attribute, so a
+ *     roster name containing an apostrophe produced a button that threw.
+ */
 
-        // Performance optimization
-        let searchTimeout = null;
+const LOG = window.LIONS_LOG || {
+    log: function () {}, warn: function () {}, error: function () {}
+};
 
-        // Global functions
-        window.assignToGroup = assignToGroup;
+const FIRESTORE_SDK = 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('💰 Earnings dashboard loading...');
-            
-            try {
-                setupEventListeners();
-                
-                // Setup universal header
-                setTimeout(async () => {
-                    if (window.LIONS_HEADER) {
-                        await window.LIONS_HEADER.setupPage('headerContainer');
-                        setTimeout(() => {
-                            if (window.LIONS_HEADER?.updateUserInterfaceSmooth) {
-                                window.LIONS_HEADER.updateUserInterfaceSmooth();
-                            }
-                        }, 100);
-                    }
-                }, 50);
-                
-                // Check authentication
-                if (window.LIONS_AUTH?.isAuthenticated()) {
-                    currentUser = window.LIONS_AUTH.getCurrentUser();
-                    determineUserRole();
-                    console.log('✅ User authenticated, role:', isAdmin ? 'Admin' : 'User');
-                    showEarningsPage();
-                } else {
-                    console.log('🚪 No authentication, showing login');
-                    showLoginPage();
-                }
-                
-                // Auth state listener
-                if (window.LIONS_AUTH?.onAuthStateChanged) {
-                    window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
-                }
-                
-            } catch (error) {
-                console.error('❌ Earnings dashboard initialization failed:', error);
-                showError('Page failed to load. Please refresh.');
+// Global application state
+let currentUser = null;
+let userRecord = null;
+let allUsers = [];
+let filteredUsers = [];
+let allGroups = [];
+let isAdmin = false;
+let db = null;
+let currentAssignUser = null;
+
+// Performance optimization
+let searchTimeout = null;
+
+/**
+ * Escapes a value bound for innerHTML. Names, email addresses and group names
+ * come from Firestore documents that people fill in, and the table template
+ * interpolated all three raw.
+ */
+function esc(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+async function initPage() {
+    LOG.log('Earnings dashboard loading.');
+
+    try {
+        setupEventListeners();
+
+        // Check authentication
+        if (window.LIONS_AUTH?.isAuthenticated()) {
+            currentUser = window.LIONS_AUTH.getCurrentUser();
+            determineUserRole();
+            LOG.log('Visitor is signed in. Administrator:', isAdmin);
+            showEarningsPage();
+        } else {
+            LOG.log('No authentication; showing the sign-in screen.');
+            showLoginPage();
+        }
+
+        // Auth state listener
+        if (window.LIONS_AUTH?.onAuthStateChanged) {
+            window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
+        }
+
+    } catch (error) {
+        LOG.error('Earnings dashboard initialization failed:', error);
+        showError('Page failed to load. Please refresh.');
+    }
+}
+
+/**
+ * The addresses that reach the club-wide figures on this page. Mirrors the
+ * System Administrator entry in ROLE_ADDRESSES in auth/lions-auth.js. This page
+ * cannot import that module, because it runs on universal-auth.js rather than
+ * lions-auth.js, so the list is duplicated and must be changed in both places.
+ */
+const ADMIN_ADDRESSES = [
+    'fundraising@lionssports.club',
+    'fundraising@lionsfootballclub.com'
+];
+
+function determineUserRole() {
+    if (!currentUser) return;
+    // Both role addresses are accepted, matching ROLE_ADDRESSES in
+    // auth/lions-auth.js, which has carried the pair since the domain move
+    // began. This gate previously matched the legacy address alone, so the
+    // administrator would have lost the club-wide figures the moment he signed
+    // in on fundraising@lionssports.club, which is the address the migration is
+    // moving to. Nobody loses access here: the legacy address still resolves.
+    // Drop the second entry only when every role account has moved and been
+    // verified, and drop it from lions-auth.js and firestore.rules at the same
+    // time or the three will disagree.
+    isAdmin = ADMIN_ADDRESSES.includes(currentUser.email?.toLowerCase());
+}
+
+/**
+ * Fills the header and drawer identity slots. LIONS_NAV writes both and the
+ * stylesheet shows one, so this is called once per auth state change rather
+ * than per breakpoint. The header this replaces rendered its own Sign Out;
+ * dropping it without filling this slot would leave a signed-in volunteer with
+ * no way out of the application.
+ */
+function setHeaderIdentity(signedIn) {
+    if (!window.LIONS_NAV || typeof window.LIONS_NAV.setAuth !== 'function') {
+        LOG.warn('Site navigation is not loaded; identity controls not rendered.');
+        return;
+    }
+
+    window.LIONS_NAV.setAuth({
+        signedIn: signedIn,
+        active: '',
+        onSignOut: function () {
+            if (window.LIONS_AUTH?.forceLogout) {
+                window.LIONS_AUTH.forceLogout();
+            } else {
+                window.location.href = '/';
+            }
+        }
+    });
+}
+
+function handleAuthStateChange(action, userData) {
+    // The userData argument is deliberately not logged. It carries the
+    // signed-in address and the Firebase UID, and this line ran on every load.
+    LOG.log('Auth state change received:', action);
+
+    currentUser = userData;
+
+    if (action === 'login' && currentUser) {
+        determineUserRole();
+        LOG.log('Visitor signed in; showing earnings.');
+        showEarningsPage();
+    } else if (action === 'logout') {
+        LOG.log('Visitor signed out; showing the sign-in screen.');
+        showLoginPage();
+    }
+}
+
+function showLoginPage() {
+    document.getElementById('earningsPage').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    setHeaderIdentity(false);
+    // A failure from a previous session must not greet the next visitor. There
+    // is no field to focus here any more: sign-in is one link to the canonical
+    // page rather than a second form on this one.
+    clearError();
+}
+
+function showEarningsPage() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('earningsPage').classList.remove('hidden');
+    setHeaderIdentity(true);
+
+    // Get Firestore reference
+    db = window.LIONS_AUTH?.firestore;
+
+    // Configure UI based on role
+    configureForRole();
+
+    // Load data
+    if (isAdmin) {
+        loadAllUsersData();
+    } else {
+        loadUserData();
+    }
+}
+
+function configureForRole() {
+    if (isAdmin) {
+        // Show admin controls and users table
+        document.getElementById('adminControls').classList.remove('hidden');
+        document.getElementById('usersTable').classList.remove('hidden');
+        document.getElementById('totalUsersCard').classList.remove('hidden');
+        document.getElementById('totalGroupsCard').classList.remove('hidden');
+
+        // Update title
+        document.querySelector('.earnings-title').textContent = 'Earnings Administration';
+    }
+    // A volunteer sees only their own card. Whether the group card appears is
+    // decided in loadUserData, once the record says which group they are in.
+}
+
+/**
+ * Universal auth builds its Firestore handle in the background, so it can be
+ * absent for a moment after the page decides the visitor is signed in. Waits
+ * up to three seconds for it and then gives up rather than spinning.
+ */
+async function waitForFirestore() {
+    if (db) return db;
+
+    db = window.LIONS_AUTH?.firestore;
+    if (db) return db;
+
+    let attempts = 0;
+    const maxAttempts = 6; // 3 seconds max
+
+    while (!db && attempts < maxAttempts) {
+        if (window.LIONS_AUTH?.firestore) {
+            db = window.LIONS_AUTH.firestore;
+            LOG.log('Firestore obtained from universal auth.');
+            break;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+        LOG.log(`Waiting for Firestore, attempt ${attempts}/${maxAttempts}.`);
+    }
+
+    if (!db) {
+        throw new Error('Firestore not available from universal auth');
+    }
+
+    return db;
+}
+
+async function loadUserData() {
+    if (!currentUser) return;
+
+    try {
+        LOG.log('Loading personal earnings data.');
+
+        await waitForFirestore();
+
+        const { collection, getDocs, query, where } = await import(FIRESTORE_SDK);
+
+        // Find user's record by email
+        const snapshot = await getDocs(query(
+            collection(db, 'Lions-Fundraising-Users'),
+            where('email', '==', currentUser.email.toLowerCase())
+        ));
+
+        if (snapshot.empty) {
+            showError('No registration found for your email address. Please contact the administrator.');
+            return;
+        }
+
+        userRecord = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+        LOG.log('User record loaded.');
+
+        // Update personal earnings
+        updatePersonalEarnings();
+
+        // Check for group membership
+        if (userRecord.groupId) {
+            await loadGroupEarnings();
+        }
+
+        document.getElementById('loadingMessage').classList.add('hidden');
+
+    } catch (error) {
+        LOG.error('Error loading user data:', error);
+        showError('Failed to load your data. Please try again.');
+    }
+}
+
+async function loadAllUsersData() {
+    if (!isAdmin) return;
+
+    try {
+        LOG.log('Loading all users data for the administrator view.');
+
+        await waitForFirestore();
+
+        const { collection, getDocs, query, orderBy } = await import(FIRESTORE_SDK);
+
+        // Load all users
+        const usersSnapshot = await getDocs(query(
+            collection(db, 'Lions-Fundraising-Users'),
+            orderBy('name', 'asc')
+        ));
+
+        allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        filteredUsers = [...allUsers];
+
+        // Load groups
+        await loadGroups();
+
+        LOG.log('Administrator data loaded:', allUsers.length, 'users');
+
+        // Update displays
+        updateAdminStats();
+        displayUsersTable();
+        updateGroupDropdowns();
+
+        document.getElementById('loadingMessage').classList.add('hidden');
+
+    } catch (error) {
+        LOG.error('Error loading admin data:', error);
+        showError('Failed to load data. Please try again.');
+
+        // Show permission error for admin if needed
+        if (error.code === 'permission-denied') {
+            showError('Permission denied. Please contact administrator to grant database access for this account.');
+        } else if (error.code === 'unauthenticated') {
+            showError('Authentication expired. Please log in again.');
+        }
+    }
+}
+
+async function loadGroups() {
+    try {
+        // Extract unique groups from users
+        const groups = new Map();
+
+        allUsers.forEach(user => {
+            if (user.groupId && user.groupName) {
+                groups.set(user.groupId, {
+                    id: user.groupId,
+                    name: user.groupName,
+                    members: []
+                });
             }
         });
 
-        function determineUserRole() {
-            if (!currentUser) return;
-            isAdmin = currentUser.email?.toLowerCase() === 'fundraising@lionsfootballclub.com';
-        }
-
-        function handleAuthStateChange(action, userData) {
-            console.log('💰 Auth state change received', action, userData);
-            
-            currentUser = userData;
-            
-            if (action === 'login' && currentUser) {
-                determineUserRole();
-                console.log('✅ User authenticated, showing earnings');
-                showEarningsPage();
-            } else if (action === 'logout') {
-                console.log('🚪 User logged out, showing login');
-                showLoginPage();
+        // Count members for each group
+        allUsers.forEach(user => {
+            if (user.groupId && groups.has(user.groupId)) {
+                groups.get(user.groupId).members.push(user);
             }
+        });
+
+        allGroups = Array.from(groups.values());
+        LOG.log('Groups loaded:', allGroups.length);
+
+    } catch (error) {
+        LOG.error('Error loading groups:', error);
+    }
+}
+
+async function loadGroupEarnings() {
+    if (!userRecord.groupId) return;
+
+    try {
+        // Find all users in the same group
+        const { collection, getDocs, query, where } = await import(FIRESTORE_SDK);
+
+        const groupSnapshot = await getDocs(query(
+            collection(db, 'Lions-Fundraising-Users'),
+            where('groupId', '==', userRecord.groupId)
+        ));
+
+        const groupMembers = groupSnapshot.docs.map(doc => doc.data());
+
+        // Calculate group earnings (placeholder for Phase 1)
+        const groupTotal = 0; // Phase 2/3: Sum actual earnings
+
+        // Show group earnings card
+        document.getElementById('groupEarningsCard').classList.remove('hidden');
+        document.getElementById('groupEarningsLabel').textContent = `${userRecord.groupName} Earnings`;
+        document.getElementById('groupEarnings').textContent = `${groupTotal.toFixed(2)}`;
+
+    } catch (error) {
+        LOG.error('Error loading group earnings:', error);
+    }
+}
+
+function updatePersonalEarnings() {
+    // Phase 1: Placeholder
+    // Phase 2/3: Calculate from treasurer minus reimbursements
+    document.getElementById('totalEarnings').textContent = '$0.00';
+}
+
+function updateAdminStats() {
+    document.getElementById('totalUsers').textContent = allUsers.length;
+    document.getElementById('totalGroups').textContent = allGroups.length;
+    document.getElementById('totalEarnings').textContent = '$0.00'; // Total system earnings
+}
+
+function displayUsersTable() {
+    const tbody = document.getElementById('usersTableBody');
+
+    if (filteredUsers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-mid);">No users found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filteredUsers.map(user => {
+        const groupName = user.groupName || 'Unassigned';
+        const earnings = '$0.00'; // Phase 1 placeholder
+
+        return `
+            <tr style="border-bottom: var(--border-light);">
+                <td style="padding: var(--space-3);">${esc(user.name || 'N/A')}</td>
+                <td style="padding: var(--space-3);">${esc(user.email || 'N/A')}</td>
+                <td style="padding: var(--space-3); text-align: center;">${esc(groupName)}</td>
+                <td style="padding: var(--space-3); text-align: center;">${earnings}</td>
+                <td style="padding: var(--space-3); text-align: center;">
+                    <button type="button" class="btn" style="padding: var(--space-1) var(--space-2); font-size: 0.75rem;"
+                            data-assign-user="${esc(user.id)}" data-assign-name="${esc(user.name)}">
+                        Assign Group
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateGroupDropdowns() {
+    const filterSelect = document.getElementById('filterGroup');
+    const assignSelect = document.getElementById('selectGroup');
+
+    // Update filter dropdown
+    let filterOptions = '<option value="">All Users</option><option value="unassigned">Unassigned</option>';
+    allGroups.forEach(group => {
+        filterOptions += `<option value="${esc(group.id)}">${esc(group.name)}</option>`;
+    });
+    filterSelect.innerHTML = filterOptions;
+
+    // Update assign dropdown
+    let assignOptions = '<option value="">Remove from group</option>';
+    allGroups.forEach(group => {
+        assignOptions += `<option value="${esc(group.id)}">${esc(group.name)}</option>`;
+    });
+    assignSelect.innerHTML = assignOptions;
+}
+
+// Search and filtering
+function searchUsersDebounced() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(searchUsers, 300);
+}
+
+function searchUsers() {
+    const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
+    const groupFilter = document.getElementById('filterGroup').value;
+
+    filteredUsers = allUsers.filter(user => {
+        // Search filter
+        if (searchTerm) {
+            const matchesSearch = user.name?.toLowerCase().includes(searchTerm) ||
+                                user.email?.toLowerCase().includes(searchTerm);
+            if (!matchesSearch) return false;
         }
 
-        function showLoginPage() {
-            document.getElementById('earningsPage').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            
-            setTimeout(() => {
-                const emailInput = document.getElementById('email');
-                if (emailInput) emailInput.focus();
-            }, 50);
-        }
-
-        function showEarningsPage() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('earningsPage').classList.remove('hidden');
-            
-            // Get Firestore reference
-            db = window.LIONS_AUTH?.firestore;
-            
-            // Configure UI based on role
-            configureUserInterface();
-            
-            // Load data
-            if (isAdmin) {
-                loadAllUsersData();
+        // Group filter
+        if (groupFilter) {
+            if (groupFilter === 'unassigned') {
+                if (user.groupId) return false;
             } else {
-                loadUserData();
+                if (user.groupId !== groupFilter) return false;
             }
         }
 
-        function configureUserInterface() {
-            if (isAdmin) {
-                // Show admin controls and users table
-                document.getElementById('adminControls').classList.remove('hidden');
-                document.getElementById('usersTable').classList.remove('hidden');
-                document.getElementById('totalUsersCard').classList.remove('hidden');
-                document.getElementById('totalGroupsCard').classList.remove('hidden');
-                
-                // Update title
-                document.querySelector('.earnings-title').textContent = 'Earnings Administration';
-            } else {
-                // Show only personal earnings
-                // Check if user has group and show group earnings card if needed
-                // This will be handled in loadUserData()
-            }
+        return true;
+    });
+
+    displayUsersTable();
+}
+
+function clearFilters() {
+    document.getElementById('searchUsers').value = '';
+    document.getElementById('filterGroup').value = '';
+    filteredUsers = [...allUsers];
+    displayUsersTable();
+}
+
+// Group management
+async function createGroup() {
+    const groupName = document.getElementById('newGroupName').value.trim();
+
+    if (!groupName) {
+        showError('Please enter a group name.');
+        return;
+    }
+
+    // Check if group already exists
+    if (allGroups.find(g => g.name.toLowerCase() === groupName.toLowerCase())) {
+        showError('A group with this name already exists.');
+        return;
+    }
+
+    // Generate group ID
+    const groupId = groupName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+    // Add to groups array
+    allGroups.push({
+        id: groupId,
+        name: groupName,
+        members: []
+    });
+
+    updateGroupDropdowns();
+    updateAdminStats();
+
+    document.getElementById('newGroupName').value = '';
+    LOG.log('Group created.');
+}
+
+function assignToGroup(userId, userName) {
+    currentAssignUser = { id: userId, name: userName };
+    document.getElementById('assignMessage').textContent = `Assign "${userName}" to a group`;
+    document.getElementById('groupAssignDialog').classList.remove('hidden');
+}
+
+async function executeGroupAssignment() {
+    if (!currentAssignUser || !db) return;
+
+    const groupId = document.getElementById('selectGroup').value;
+    const groupName = groupId ? allGroups.find(g => g.id === groupId)?.name : null;
+
+    try {
+        const { doc, updateDoc } = await import(FIRESTORE_SDK);
+
+        // Update user record
+        await updateDoc(doc(db, 'Lions-Fundraising-Users', currentAssignUser.id), {
+            groupId: groupId || null,
+            groupName: groupName || null
+        });
+
+        // Update local data
+        const userIndex = allUsers.findIndex(u => u.id === currentAssignUser.id);
+        if (userIndex !== -1) {
+            allUsers[userIndex].groupId = groupId || null;
+            allUsers[userIndex].groupName = groupName || null;
         }
 
-        async function loadUserData() {
-            if (!currentUser) return;
+        // Refresh displays
+        await loadGroups();
+        searchUsers();
+        updateAdminStats();
 
-            try {
-                console.log('💰 Loading personal data for:', currentUser.email);
-                
-                // PERFORMANCE FIX: Get Firestore with same pattern as dashboard
-                if (!db) {
-                    db = window.LIONS_AUTH?.firestore;
-                }
-                
-                // PERFORMANCE FIX: If still no Firestore, wait briefly
-                if (!db) {
-                    let attempts = 0;
-                    const maxAttempts = 6; // 3 seconds max
-                    
-                    while (!db && attempts < maxAttempts) {
-                        if (window.LIONS_AUTH?.firestore) {
-                            db = window.LIONS_AUTH.firestore;
-                            console.log('✅ Firestore obtained from universal auth');
-                            break;
-                        }
-                        
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        attempts++;
-                        console.log(`⏳ Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
-                    }
-                }
-                
-                if (!db) {
-                    throw new Error('Firestore not available from universal auth');
-                }
+        hideGroupAssignDialog();
+        LOG.log('User assigned to group:', groupName || 'Unassigned');
 
-                const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+    } catch (error) {
+        LOG.error('Error assigning group:', error);
+        showError('Failed to assign group. Please try again.');
+    }
+}
 
-                // Find user's record by email
-                const snapshot = await getDocs(query(
-                    collection(db, 'Lions-Fundraising-Users'),
-                    where('email', '==', currentUser.email.toLowerCase())
-                ));
+function hideGroupAssignDialog() {
+    document.getElementById('groupAssignDialog').classList.add('hidden');
+    currentAssignUser = null;
+}
 
-                if (snapshot.empty) {
-                    showError('No registration found for your email address. Please contact the administrator.');
-                    return;
-                }
+/**
+ * Shows a failure to the reader.
+ *
+ * Writes to the page level banner, which sits outside both views, so the
+ * message is visible whichever view is showing. It also clears the loading
+ * message: a page that reports a failure while still saying it is loading has
+ * told the reader two things at once and neither of them usefully.
+ */
+function showError(message) {
+    const banner = document.getElementById('pageError');
+    if (!banner) {
+        LOG.error(message);
+        return;
+    }
 
-                userRecord = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                console.log('✅ User record loaded:', userRecord.name);
-                
-                // Update personal earnings
-                updatePersonalEarnings();
-                
-                // Check for group membership
-                if (userRecord.groupId) {
-                    await loadGroupEarnings();
-                }
-                
-                document.getElementById('loadingMessage').classList.add('hidden');
+    banner.textContent = message;
+    banner.classList.remove('hidden');
 
-            } catch (error) {
-                console.error('❌ Error loading user data:', error);
-                showError('Failed to load your data. Please try again.');
-            }
-        }
+    const loading = document.getElementById('loadingMessage');
+    if (loading) { loading.classList.add('hidden'); }
+}
 
-        async function loadAllUsersData() {
-            if (!isAdmin) return;
+function clearError() {
+    const banner = document.getElementById('pageError');
+    if (banner) { banner.classList.add('hidden'); }
+}
 
-            try {
-                console.log('💰 Loading all users data for admin...');
-                
-                // PERFORMANCE FIX: Get Firestore with same pattern as dashboard
-                if (!db) {
-                    db = window.LIONS_AUTH?.firestore;
-                }
-                
-                // PERFORMANCE FIX: If still no Firestore, wait briefly
-                if (!db) {
-                    let attempts = 0;
-                    const maxAttempts = 6; // 3 seconds max
-                    
-                    while (!db && attempts < maxAttempts) {
-                        if (window.LIONS_AUTH?.firestore) {
-                            db = window.LIONS_AUTH.firestore;
-                            console.log('✅ Firestore obtained from universal auth');
-                            break;
-                        }
-                        
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        attempts++;
-                        console.log(`⏳ Waiting for Firestore... attempt ${attempts}/${maxAttempts}`);
-                    }
-                }
-                
-                if (!db) {
-                    throw new Error('Firestore not available from universal auth');
-                }
+function setupEventListeners() {
+    // Admin controls
+    if (document.getElementById('searchUsers')) {
+        document.getElementById('searchUsers').addEventListener('input', searchUsersDebounced);
+        document.getElementById('filterGroup').addEventListener('change', searchUsers);
+        document.getElementById('createGroupBtn').addEventListener('click', createGroup);
+        document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
+    }
 
-                const { collection, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
+    // The Assign Group buttons are delegated because the table body is rebuilt
+    // from innerHTML on every search, filter and assignment, which discards any
+    // listener bound directly to a row.
+    document.getElementById('usersTableBody').addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-assign-user]');
+        if (!trigger) { return; }
+        assignToGroup(
+            trigger.getAttribute('data-assign-user'),
+            trigger.getAttribute('data-assign-name')
+        );
+    });
 
-                // Load all users
-                const usersSnapshot = await getDocs(query(
-                    collection(db, 'Lions-Fundraising-Users'),
-                    orderBy('name', 'asc')
-                ));
+    // Group assignment dialog
+    document.getElementById('assignGroupBtn').addEventListener('click', executeGroupAssignment);
+    document.getElementById('cancelAssignBtn').addEventListener('click', hideGroupAssignDialog);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { hideGroupAssignDialog(); }
+    });
+}
 
-                allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                filteredUsers = [...allUsers];
-                
-                // Load groups
-                await loadGroups();
-                
-                console.log('✅ Admin data loaded:', allUsers.length, 'users');
-                
-                // Update displays
-                updateAdminStats();
-                displayUsersTable();
-                updateGroupDropdowns();
-                
-                document.getElementById('loadingMessage').classList.add('hidden');
+/**
+ * A module script is deferred, so the document is already parsed by the time
+ * this runs and DOMContentLoaded may have fired. Waiting on it unconditionally
+ * is a race that leaves the page blank when the event has already gone by.
+ */
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+} else {
+    initPage();
+}
 
-            } catch (error) {
-                console.error('❌ Error loading admin data:', error);
-                showError('Failed to load data. Please try again.');
-                
-                // Show permission error for admin if needed
-                if (error.code === 'permission-denied') {
-                    showError('Permission denied. Please contact administrator to grant database access for this account.');
-                } else if (error.code === 'unauthenticated') {
-                    showError('Authentication expired. Please log in again.');
-                }
-            }
-        }
+// assignToGroup is deliberately no longer published on window. Its only caller
+// was the inline onclick attribute that this revision removed.
+</script>
 
-        async function loadGroups() {
-            try {
-                // Extract unique groups from users
-                const groups = new Map();
-                
-                allUsers.forEach(user => {
-                    if (user.groupId && user.groupName) {
-                        groups.set(user.groupId, {
-                            id: user.groupId,
-                            name: user.groupName,
-                            members: []
-                        });
-                    }
-                });
-
-                // Count members for each group
-                allUsers.forEach(user => {
-                    if (user.groupId && groups.has(user.groupId)) {
-                        groups.get(user.groupId).members.push(user);
-                    }
-                });
-
-                allGroups = Array.from(groups.values());
-                console.log('✅ Groups loaded:', allGroups.length);
-                
-            } catch (error) {
-                console.error('❌ Error loading groups:', error);
-            }
-        }
-
-        async function loadGroupEarnings() {
-            if (!userRecord.groupId) return;
-
-            try {
-                // Find all users in the same group
-                const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
-
-                const groupSnapshot = await getDocs(query(
-                    collection(db, 'Lions-Fundraising-Users'),
-                    where('groupId', '==', userRecord.groupId)
-                ));
-
-                const groupMembers = groupSnapshot.docs.map(doc => doc.data());
-                
-                // Calculate group earnings (placeholder for Phase 1)
-                const groupTotal = 0; // Phase 2/3: Sum actual earnings
-                
-                // Show group earnings card
-                document.getElementById('groupEarningsCard').classList.remove('hidden');
-                document.getElementById('groupEarningsLabel').textContent = `${userRecord.groupName} Earnings`;
-                document.getElementById('groupEarnings').textContent = `${groupTotal.toFixed(2)}`;
-                
-            } catch (error) {
-                console.error('❌ Error loading group earnings:', error);
-            }
-        }
-
-        function updatePersonalEarnings() {
-            // Phase 1: Placeholder
-            // Phase 2/3: Calculate from treasurer minus reimbursements
-            document.getElementById('totalEarnings').textContent = '$0.00';
-        }
-
-        function updateAdminStats() {
-            document.getElementById('totalUsers').textContent = allUsers.length;
-            document.getElementById('totalGroups').textContent = allGroups.length;
-            document.getElementById('totalEarnings').textContent = '$0.00'; // Total system earnings
-        }
-
-        function displayUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            
-            if (filteredUsers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="padding: var(--space-4); text-align: center; color: var(--gray-500);">No users found</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filteredUsers.map(user => {
-                const groupName = user.groupName || 'Unassigned';
-                const earnings = '$0.00'; // Phase 1 placeholder
-                
-                return `
-                    <tr style="border-bottom: var(--border-light);">
-                        <td style="padding: var(--space-3);">${user.name || 'N/A'}</td>
-                        <td style="padding: var(--space-3);">${user.email || 'N/A'}</td>
-                        <td style="padding: var(--space-3); text-align: center;">${groupName}</td>
-                        <td style="padding: var(--space-3); text-align: center;">${earnings}</td>
-                        <td style="padding: var(--space-3); text-align: center;">
-                            <button class="btn" style="padding: var(--space-1) var(--space-2); font-size: 0.75rem;" 
-                                    onclick="assignToGroup('${user.id}', '${user.name}')">
-                                Assign Group
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateGroupDropdowns() {
-            const filterSelect = document.getElementById('filterGroup');
-            const assignSelect = document.getElementById('selectGroup');
-            
-            // Update filter dropdown
-            let filterOptions = '<option value="">All Users</option><option value="unassigned">Unassigned</option>';
-            allGroups.forEach(group => {
-                filterOptions += `<option value="${group.id}">${group.name}</option>`;
-            });
-            filterSelect.innerHTML = filterOptions;
-            
-            // Update assign dropdown
-            let assignOptions = '<option value="">Remove from group</option>';
-            allGroups.forEach(group => {
-                assignOptions += `<option value="${group.id}">${group.name}</option>`;
-            });
-            assignSelect.innerHTML = assignOptions;
-        }
-
-        // Search and filtering
-        function searchUsersDebounced() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(searchUsers, 300);
-        }
-
-        function searchUsers() {
-            const searchTerm = document.getElementById('searchUsers').value.toLowerCase();
-            const groupFilter = document.getElementById('filterGroup').value;
-
-            filteredUsers = allUsers.filter(user => {
-                // Search filter
-                if (searchTerm) {
-                    const matchesSearch = user.name?.toLowerCase().includes(searchTerm) ||
-                                        user.email?.toLowerCase().includes(searchTerm);
-                    if (!matchesSearch) return false;
-                }
-
-                // Group filter
-                if (groupFilter) {
-                    if (groupFilter === 'unassigned') {
-                        if (user.groupId) return false;
-                    } else {
-                        if (user.groupId !== groupFilter) return false;
-                    }
-                }
-
-                return true;
-            });
-
-            displayUsersTable();
-        }
-
-        function clearFilters() {
-            document.getElementById('searchUsers').value = '';
-            document.getElementById('filterGroup').value = '';
-            filteredUsers = [...allUsers];
-            displayUsersTable();
-        }
-
-        // Group management
-        async function createGroup() {
-            const groupName = document.getElementById('newGroupName').value.trim();
-            
-            if (!groupName) {
-                showError('Please enter a group name.');
-                return;
-            }
-
-            // Check if group already exists
-            if (allGroups.find(g => g.name.toLowerCase() === groupName.toLowerCase())) {
-                showError('A group with this name already exists.');
-                return;
-            }
-
-            // Generate group ID
-            const groupId = groupName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            
-            // Add to groups array
-            allGroups.push({
-                id: groupId,
-                name: groupName,
-                members: []
-            });
-
-            updateGroupDropdowns();
-            updateAdminStats();
-            
-            document.getElementById('newGroupName').value = '';
-            console.log('✅ Group created:', groupName);
-        }
-
-        function assignToGroup(userId, userName) {
-            currentAssignUser = { id: userId, name: userName };
-            document.getElementById('assignMessage').textContent = `Assign "${userName}" to a group`;
-            document.getElementById('groupAssignDialog').classList.remove('hidden');
-        }
-
-        async function executeGroupAssignment() {
-            if (!currentAssignUser || !db) return;
-
-            const groupId = document.getElementById('selectGroup').value;
-            const groupName = groupId ? allGroups.find(g => g.id === groupId)?.name : null;
-
-            try {
-                const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js');
-                
-                // Update user record
-                await updateDoc(doc(db, 'Lions-Fundraising-Users', currentAssignUser.id), {
-                    groupId: groupId || null,
-                    groupName: groupName || null
-                });
-
-                // Update local data
-                const userIndex = allUsers.findIndex(u => u.id === currentAssignUser.id);
-                if (userIndex !== -1) {
-                    allUsers[userIndex].groupId = groupId || null;
-                    allUsers[userIndex].groupName = groupName || null;
-                }
-
-                // Refresh displays
-                await loadGroups();
-                searchUsers();
-                updateAdminStats();
-                
-                hideGroupAssignDialog();
-                console.log('✅ User assigned to group:', currentAssignUser.name, '→', groupName || 'Unassigned');
-
-            } catch (error) {
-                console.error('❌ Error assigning group:', error);
-                showError('Failed to assign group. Please try again.');
-            }
-        }
-
-        function hideGroupAssignDialog() {
-            document.getElementById('groupAssignDialog').classList.add('hidden');
-            currentAssignUser = null;
-        }
-
-        async function handleMagicLinkLogin(event) {
-            event.preventDefault();
-
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const errorElement = document.getElementById('loginError');
-            const successElement = document.getElementById('loginSuccess');
-
-            try {
-                errorElement.classList.add('hidden');
-                successElement.classList.add('hidden');
-
-                if (!email) {
-                    throw new Error('Please enter your email address.');
-                }
-
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    throw new Error('Please enter a valid email address.');
-                }
-
-                const result = await window.LIONS_AUTH.sendMagicLink(email);
-                
-                if (result.success) {
-                    successElement.classList.remove('hidden');
-                    document.getElementById('loginForm').style.display = 'none';
-                } else {
-                    throw new Error(result.error || 'Failed to send magic link');
-                }
-                
-            } catch (error) {
-                console.error('❌ Magic link error:', error);
-                errorElement.textContent = error.message;
-                errorElement.classList.remove('hidden');
-            }
-        }
-
-        function showError(message) {
-            const errorElement = document.getElementById('loginError');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.remove('hidden');
-            } else {
-                alert(message);
-            }
-        }
-
-        function setupEventListeners() {
-            // Login form
-            document.getElementById('loginForm').addEventListener('submit', handleMagicLinkLogin);
-            
-            // Admin controls
-            if (document.getElementById('searchUsers')) {
-                document.getElementById('searchUsers').addEventListener('input', searchUsersDebounced);
-                document.getElementById('filterGroup').addEventListener('change', searchUsers);
-                document.getElementById('createGroupBtn').addEventListener('click', createGroup);
-                document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
-            }
-            
-            // Group assignment dialog
-            document.getElementById('assignGroupBtn').addEventListener('click', executeGroupAssignment);
-            document.getElementById('cancelAssignBtn').addEventListener('click', hideGroupAssignDialog);
-        }
-
-        console.log('✅ Earnings dashboard loaded successfully - Financial focus with group management');
-    </script>
 </body>
 
 </html>

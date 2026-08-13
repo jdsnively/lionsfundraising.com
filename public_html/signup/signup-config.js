@@ -69,9 +69,47 @@ const SIGNUP_CONFIG = {
         ]
     },
 
+    // ------------------------------------------------------------------
+    // Stands
+    //
+    // Lions Sports Club works two stands at Lucas Oil Stadium. They are
+    // staffed independently and each needs its own lead, so a target is a
+    // property of a stand and not of a shift.
+    //
+    // 124 is the main stand, the Indy Doghouse, and runs four licensed and
+    // four unlicensed.
+    //
+    // 132PB runs three people, one licensed and two unlicensed. It was seeded
+    // at a single licensed person on the earlier understanding that Jason
+    // staffed it alone as the need appeared. That is superseded: it is a
+    // three-person stand with a lead, and the seed reflects that.
+    //
+    // Every one of these is still editable per event on the assignment screen,
+    // so an event that genuinely needs different numbers is a change on that
+    // screen and not in this file.
+    //
+    // The volunteer side knows nothing about stands. A volunteer signs up for
+    // a shift in a licensed or unlicensed role and the administrator decides
+    // which stand they work, because that decision needs both stands in view
+    // at once and a volunteer only ever sees their own row.
+    //
+    // Each stand has a lead. The lead is one of the people counted in the
+    // targets, not an extra body, so naming a lead does not change how many
+    // the stand needs.
+    // ------------------------------------------------------------------
+
+    STAND_TEMPLATES: [
+        { key: '124',   label: 'Stand 124, Indy Doghouse', targets: { licensed: 4, unlicensed: 4 } },
+        { key: '132PB', label: 'Stand 132PB',              targets: { licensed: 1, unlicensed: 2 } }
+    ],
+
+    // The stand a declaration belongs to until an administrator moves it, and
+    // the stand a shift carrying no stand list is assumed to be.
+    DEFAULT_STAND_KEY: '124',
+
     // Assignment targets, not limits enforced against volunteers. Anyone may
-    // declare availability for any shift; capacity governs how many the
-    // administrator schedules.
+    // sign up for any shift. Retained as the shape of a shift that predates
+    // the stand list, and as the fallback when a stored shift carries neither.
     DEFAULT_TARGETS: {
         licensed: 4,
         unlicensed: 4
@@ -82,6 +120,79 @@ const SIGNUP_CONFIG = {
         { key: 'unlicensed', label: 'No License Needed',        requiresLicense: false }
     ],
 
+    /** A fresh copy of the seed stand list, safe for a caller to mutate. */
+    standsTemplate() {
+        return this.STAND_TEMPLATES.map(s => ({
+            key: s.key,
+            label: s.label,
+            targets: Object.assign({}, s.targets)
+        }));
+    },
+
+    /**
+     * The stands on a stored shift.
+     *
+     * Every event seeded before 2026-08-05 carries a shift with a flat targets
+     * map and no stands array. This used to answer that case with stand 124
+     * alone, on the reasoning that such an event would gain the second stand
+     * the first time an administrator saved it.
+     *
+     * That reasoning was wrong in practice and the cost was invisible. All
+     * fifty seeded events reached the assignment screen showing one stand, so
+     * 132PB was not there to move anybody to, and the per-row move control is
+     * built by filtering this list for stands other than the current one,
+     * which returned nothing. The screen offered no second stand and no way to
+     * add or move, and it looked like a missing feature rather than a shift
+     * that had never been saved. Corrected 2026-08-05.
+     *
+     * Both stands are returned now. Stand 124 keeps the stored flat targets,
+     * which on every seeded event is exactly 124's own figures, so nothing an
+     * administrator had customised is lost. 132PB takes its seed and starts
+     * empty.
+     */
+    standsOf(shift) {
+        if (shift && Array.isArray(shift.stands) && shift.stands.length) {
+            return shift.stands;
+        }
+
+        const stands = this.standsTemplate();
+        stands[0].targets = Object.assign({}, this.DEFAULT_TARGETS,
+            (shift && shift.targets) || {});
+        return stands;
+    },
+
+    /**
+     * Places wanted for one group on one shift, counted at the main stand only.
+     *
+     * This is what the volunteer side compares an occupancy count against, and
+     * it decides whether the next person to sign up lands on the schedule or on
+     * standby.
+     *
+     * Counted at stand 124 alone, not summed across both. Everyone is assigned
+     * to 124 by default and standby begins once 124 is full.
+     *
+     * 132PB is staffed by three named people rather than from the signup pool,
+     * so its three places are deliberately not counted here. Counting them
+     * would hold three places open on every shift for a stand nobody is going
+     * to be routed into, and the twelfth volunteer would be told there is room
+     * when there is not.
+     *
+     * With 124 seeded at four licensed and four unlicensed, the ninth volunteer
+     * on a shift goes to standby. 132PB is filled on the assignment screen, not
+     * by the signup form.
+     *
+     * A shift whose stored stand list has no 124 falls back to the first stand
+     * on it, so an event configured differently still yields a number.
+     */
+    targetFor(shift, groupKey) {
+        const stands = this.standsOf(shift);
+        const main = stands.filter(s => s.key === this.DEFAULT_STAND_KEY)[0] || stands[0];
+        if (!main) { return 0; }
+
+        const value = main.targets && main.targets[groupKey];
+        return Number.isFinite(Number(value)) ? Number(value) : 0;
+    },
+
     /** Shift structure for a new event. */
     shiftsFor(splitShifts) {
         const template = splitShifts ? this.SHIFT_TEMPLATES.split : this.SHIFT_TEMPLATES.allDay;
@@ -90,26 +201,97 @@ const SIGNUP_CONFIG = {
             label: s.label,
             startTime: s.startTime,
             endTime: s.endTime,
-            targets: Object.assign({}, this.DEFAULT_TARGETS)
+            // Kept in step with the stand list so that anything still reading
+            // the flat map, including the assignment screen's over-target
+            // marker, agrees with what the stands add up to.
+            targets: {
+                licensed: this.STAND_TEMPLATES.reduce((n, x) => n + x.targets.licensed, 0),
+                unlicensed: this.STAND_TEMPLATES.reduce((n, x) => n + x.targets.unlicensed, 0)
+            },
+            stands: this.standsTemplate()
         }));
     },
 
     // ------------------------------------------------------------------
     // Signup states
+    //
+    // Signing up puts a volunteer on the schedule. Decided 2026-08-05, and it
+    // reverses Event-Signup-v1-Build-Spec.md revision 2, which had moved from
+    // first come to request and assign on 2026-07-27.
+    //
+    // `available` is no longer produced by a signup. It is kept because rows
+    // written before this date hold it, the assignment screen can still move a
+    // row back to it, and a state that disappears from the code while it still
+    // exists in the data renders as a blank chip.
     // ------------------------------------------------------------------
 
     STATES: {
-        AVAILABLE: 'available',   // declared, committed to hold the date
-        SCHEDULED: 'scheduled',   // assigned to work
-        STANDBY:   'standby',     // not scheduled, holding the date
-        RELEASED:  'released'     // not scheduled, date given up
+        AVAILABLE: 'available',   // declared before 2026-08-05, awaiting assignment
+        SCHEDULED: 'scheduled',   // on the schedule to work
+        STANDBY:   'standby',     // signed up after the group filled, holding the date
+        RELEASED:  'released'     // not working, date given up
+    },
+
+    /**
+     * The state a new signup is created in.
+     *
+     * A group with room puts the volunteer straight on the schedule. A group
+     * already at its target puts them on standby, which is an invitation and
+     * never a refusal: the form still accepts them and the copy says so.
+     *
+     * Capacity is not enforced. `occupied` is a count the administrator wrote
+     * the last time the assignment screen was open, so it lags real signups.
+     * It lags LOW, which puts a volunteer on the schedule when the group may
+     * have just filled, and that is the safe direction: an extra name on the
+     * schedule is a decision Jason makes, an unnecessary standby is a
+     * volunteer told not to come who could have.
+     *
+     * A missing or unreadable count means room. A season that has never had
+     * the assignment screen opened must not put its first volunteer on
+     * standby.
+     */
+    entryStateFor(occupied, target) {
+        const taken = Number(occupied);
+        const wanted = Number(target);
+        if (!Number.isFinite(wanted) || wanted <= 0) {
+            return this.STATES.SCHEDULED;
+        }
+        if (!Number.isFinite(taken) || taken < 0) {
+            return this.STATES.SCHEDULED;
+        }
+        return taken >= wanted ? this.STATES.STANDBY : this.STATES.SCHEDULED;
+    },
+
+    /**
+     * Key into the occupancy map stored on an event document.
+     *
+     * One flat map rather than a nested object, because the security rule
+     * grants `changedKeys().hasOnly(['counts'])` on the whole field and a flat
+     * map is the shape that survives a merge-free overwrite unambiguously.
+     */
+    countsKey(shiftKey, groupKey) {
+        return String(shiftKey) + ':' + String(groupKey);
+    },
+
+    /** Places taken in one group on one shift, from an event's counts map. */
+    occupancyOf(event, shiftKey, groupKey) {
+        const counts = (event && event.counts) || {};
+        const value = counts[this.countsKey(shiftKey, groupKey)];
+        return Number.isFinite(Number(value)) ? Number(value) : 0;
     },
 
     // ------------------------------------------------------------------
     // Timing
+    //
+    // None of these is shown to a volunteer. Every reference to how long
+    // before an event something happens was removed from volunteer-facing
+    // copy on 2026-08-05: a published lead time is a promise, and the
+    // schedule is reviewed as signups arrive rather than on a clock.
+    // ASSIGNMENT_LEAD_DAYS survives as the administrator's own urgency
+    // marker on the assignment screen and must not reach a volunteer.
     // ------------------------------------------------------------------
 
-    ASSIGNMENT_LEAD_DAYS: 7,      // target for publishing the schedule
+    ASSIGNMENT_LEAD_DAYS: 7,      // administrator urgency marker, never published
     CANCELLATION_CUTOFF_DAYS: 4,  // self-service cancellation closes here
     LICENSE_WARNING_DAYS: 60,     // permit renewal takes several weeks
 
@@ -261,19 +443,27 @@ const SIGNUP_CONFIG = {
     // ------------------------------------------------------------------
     // Commitment acknowledgment
     //
-    // Presented at declaration rather than at standby, because that is where
-    // the obligation begins. The version is stored alongside the timestamp so
-    // there is a record of the exact wording each volunteer agreed to.
+    // Presented at signup, because that is where the obligation begins. The
+    // version is stored alongside the timestamp so there is a record of the
+    // exact wording each volunteer agreed to.
+    //
+    // v1 promised a schedule about a week ahead and an email either way. v2
+    // drops both. Signing up now puts a volunteer on the schedule, so there is
+    // no result to wait for, and no time reference before an event appears in
+    // anything a volunteer reads. The version is bumped rather than edited in
+    // place: rows written under v1 agreed to different words and the record
+    // has to stay honest about which.
     // ------------------------------------------------------------------
 
-    COMMITMENT_VERSION: 'v1',
+    COMMITMENT_VERSION: 'v2',
 
     COMMITMENT_TEXT:
-        'Marking yourself available is a commitment to keep the date open. ' +
-        'We schedule about a week ahead and will email you either way. ' +
-        'If you are not scheduled you can choose to stay on standby or release the date.',
+        'Signing up puts you on the schedule for the shifts you tick, in the ' +
+        'role your alcohol permit allows. Please treat these as dates you are ' +
+        'working. If a role is already full you can still sign up and you will ' +
+        'go on standby, which we would rather you did than not sign up at all.',
 
-    COMMITMENT_CHECKBOX: 'I understand and will hold these dates until I hear back.',
+    COMMITMENT_CHECKBOX: 'I understand these are dates I am working.',
 
     // ------------------------------------------------------------------
     // Outbound email

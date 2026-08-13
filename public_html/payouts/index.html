@@ -4,55 +4,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>Lions Payouts Management</title>
-    <!-- Protected favicon implementation -->
-    <link rel="icon" type="image/png" id="dynamicFavicon">
-    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
-    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <title>Payouts - Lions Sports Club</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- League Spartan, and only League Spartan. A page that does not request
+         it renders the SHARED header in the Arial fallback while its siblings
+         render correctly, which is the same markup showing two typefaces. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Shared chrome. lions-chrome.css carries the header, navigation, social
+         section and footer and is a port of css/site.css on the marketing site.
+         lions-app.css is deliberately NOT loaded here: this page defines .btn,
+         .btn-secondary and .loading itself, and handing it the component sheet
+         to get a header would restyle controls that work. That is exactly why
+         the two files were split on 2026-08-03. -->
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
 
     <style>
         :root {
-            /* Primary Brand Colors - Core Palette */
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+            /* Brand, resolved from the palette rather than restated.
+               Every name on this block carries a --po- prefix so that none of
+               them can collide with the token bridge in lions-chrome.css,
+               which owns --white, --black, --dark, --blue-*, --gold,
+               --cross-red, --gray-* and --font-*. This style block comes after
+               that stylesheet and would win the cascade, repainting the shared
+               header and footer on this page alone. */
+            --po-blue: var(--blue-primary);
+            --po-blue-hover: var(--blue-hover);
+            --po-blue-active: var(--blue-active);
 
-            /* Neutral Grays - Essential Hierarchy */
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
+            /* Neutral grays. Ghost White, never pure white. */
+            --po-surface: var(--white);
+            --po-gray-50: #fafafa;
+            --po-gray-100: #f4f4f5;
+            --po-gray-200: #e5e7eb;
+            --po-gray-400: #9ca3af;
+            --po-gray-300: #d1d5db;
+            --po-gray-500: #6b7280;
+            --po-gray-700: #374151;
+            --po-gray-900: #111827;
 
-            /* Enhanced Professional Color Palette */
-            --success: #10b981;
-            --error: #ef4444;
-            --info: #3b82f6;
+            /* Status colours, moved onto the palette's own accessible set.
+               The previous values were an off-system green, red and blue. */
+            --success: var(--lions-success);
+            --error: var(--lions-error);
+            --info: var(--blue-primary);
 
-            /* New Sophisticated Action Colors */
-            --action-primary: #1a365d;
-            --action-secondary: #475569;
-            --action-success: #059669;
-            --action-info: #0369a1;
-            --action-warning: #dc2626;
-            --action-neutral: #64748b;
+            /* Action colours. Primary and info resolve to Lions Blue, because a
+               button that starts work is the same button whatever it starts.
+               Success and warning keep a distinct hue: on a screen that pays
+               people, "finalize" and "delete" have to be told apart at a glance
+               and colour is doing real work there, not decoration. */
+            --action-primary: var(--blue-primary);
+            --action-secondary: var(--lions-gray-dark);
+            --action-success: var(--lions-success);
+            --action-info: var(--blue-primary);
+            --action-warning: var(--lions-error);
+            --action-neutral: var(--lions-gray-text);
 
-            /* Typography - Professional System */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+            /* Typography. League Spartan headings, Helvetica World body,
+               resolved through the bridge so this page cannot drift from the
+               rest of the property. The page previously loaded two typefaces
+               that are not in the design system. */
+            --po-font-body: var(--font-body);
+            --po-font-heading: var(--font-heading);
 
             /* Flat Design - No Shadows */
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+            --border-light: 1px solid var(--po-gray-200);
+            --border-medium: 2px solid var(--po-gray-300);
+            --border-focus: 2px solid var(--po-blue);
 
             /* Border Radius - Consistent System */
             --radius-sm: 6px;
@@ -88,10 +118,10 @@
         }
 
         body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
+            font-family: var(--po-font-body);
+            background: var(--po-blue);
             min-height: 100vh;
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             position: relative;
             padding: var(--space-6);
             transform: var(--transform-gpu);
@@ -102,7 +132,7 @@
         .main-container {
             max-width: 1600px;
             margin: 0 auto;
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             padding-top: var(--space-12);
@@ -125,8 +155,8 @@
         }
 
         .calculation-mode-toggle {
-            background: var(--gray-50);
-            border: 1px solid var(--gray-300);
+            background: var(--po-gray-50);
+            border: 1px solid var(--po-gray-300);
             border-radius: var(--radius-md);
             padding: var(--space-4);
             margin-bottom: var(--space-4);
@@ -150,16 +180,16 @@
         .radio-custom {
             width: 18px;
             height: 18px;
-            border: 2px solid var(--gray-300);
+            border: 2px solid var(--po-gray-300);
             border-radius: 50%;
             position: relative;
-            background: var(--white);
+            background: var(--po-surface);
             transition: all var(--transition-fast);
         }
 
         .radio-custom.checked {
-            border-color: var(--navy-blue);
-            background: var(--navy-blue);
+            border-color: var(--po-blue);
+            background: var(--po-blue);
         }
 
         .radio-custom.checked::after {
@@ -170,13 +200,13 @@
             transform: translate(-50%, -50%);
             width: 8px;
             height: 8px;
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: 50%;
         }
 
         .radio-label {
             font-weight: 500;
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             font-size: 0.9rem;
             cursor: pointer;
         }
@@ -225,7 +255,7 @@
             position: absolute;
             top: -12px;
             left: 16px;
-            background: var(--white);
+            background: var(--po-surface);
             padding: 2px var(--space-3);
             font-size: 0.7rem;
             font-weight: 700;
@@ -237,7 +267,7 @@
         }
 
         .primary-stand-section .stand-section-label {
-            color: var(--navy-blue);
+            color: var(--po-blue);
             border: 1px solid rgba(26, 54, 93, 0.3);
         }
 
@@ -291,25 +321,25 @@
         }
 
         .login-container {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-xl);
             padding: var(--space-12);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--po-blue);
             max-width: 500px;
             width: 100%;
         }
 
         .login-title {
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-4);
             font-weight: 600;
         }
 
         .login-subtitle {
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             font-size: 1rem;
             font-weight: 500;
             margin-bottom: var(--space-8);
@@ -324,9 +354,9 @@
         }
 
         .dashboard-title {
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
             font-size: 2.5rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-6);
             font-weight: 600;
         }
@@ -339,8 +369,8 @@
         }
 
         .stat-card {
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--po-blue);
+            color: var(--po-surface);
             border: var(--border-light);
             border-radius: var(--radius-lg);
             padding: var(--space-8);
@@ -350,9 +380,9 @@
         .stat-number {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--white);
+            color: var(--po-surface);
             margin-bottom: var(--space-2);
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
         }
 
         .stat-label {
@@ -362,7 +392,7 @@
         }
 
         .controls {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin-bottom: var(--space-6);
@@ -386,7 +416,7 @@
 
         .form-group label {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -399,10 +429,10 @@
             padding: var(--space-4);
             border: var(--border-medium);
             border-radius: var(--radius-md);
-            background: var(--white);
-            color: var(--gray-700);
+            background: var(--po-surface);
+            color: var(--po-gray-700);
             font-size: 1rem;
-            font-family: var(--font-primary);
+            font-family: var(--po-font-body);
             min-height: 48px;
             transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
             will-change: border-color, box-shadow, transform;
@@ -421,7 +451,7 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--navy-blue);
+            border-color: var(--po-blue);
             box-shadow: 0 0 0 4px rgba(26, 54, 93, 0.15);
             transform: translateY(-1px) var(--transform-gpu);
         }
@@ -438,7 +468,7 @@
             gap: var(--space-2);
             padding: var(--space-4) var(--space-6);
             background: var(--action-primary);
-            color: var(--white);
+            color: var(--po-surface);
             text-decoration: none;
             border-radius: var(--radius-md);
             border: var(--border-medium);
@@ -446,7 +476,7 @@
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
-            font-family: var(--font-primary);
+            font-family: var(--po-font-body);
             min-height: 48px;
             justify-content: center;
             transition: all var(--transition-fast);
@@ -458,8 +488,8 @@
         }
 
         .btn:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
+            background: var(--po-blue-active);
+            border-color: var(--po-blue-active);
             transform: translateY(-2px) var(--transform-gpu);
             box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
         }
@@ -527,7 +557,7 @@
         }
 
         .action-section {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-4);
             margin-bottom: var(--space-6);
@@ -548,7 +578,7 @@
         }
 
         .shift-card {
-            background: var(--white);
+            background: var(--po-surface);
             border: var(--border-medium);
             border-radius: var(--radius-lg);
             padding: 0;
@@ -565,7 +595,7 @@
         }
 
         .shift-card.locked::before {
-            content: "🔒 LOCKED - REQUIRES REVIEW";
+            content: "LOCKED, REQUIRES REVIEW";
             position: absolute;
             top: -1px;
             left: -1px;
@@ -600,15 +630,15 @@
         }
 
         .shift-title {
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
             font-size: 1.25rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-weight: 600;
             margin-bottom: var(--space-2);
         }
 
         .shift-date {
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             font-size: 0.9rem;
             font-weight: 500;
         }
@@ -655,7 +685,7 @@
 
         .detail-label {
             font-size: 0.8rem;
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -663,12 +693,12 @@
 
         .detail-value {
             font-size: 1rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-weight: 600;
         }
 
         .workers-summary {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-md);
             padding: var(--space-4);
             margin-bottom: var(--space-4);
@@ -676,7 +706,7 @@
 
         .workers-title {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-3);
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -688,7 +718,7 @@
             justify-content: space-between;
             align-items: center;
             padding: var(--space-2) 0;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--po-gray-200);
             font-size: 0.9rem;
         }
 
@@ -697,12 +727,12 @@
         }
 
         .worker-name {
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-weight: 500;
         }
 
         .worker-hours {
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             font-weight: 600;
         }
 
@@ -713,8 +743,8 @@
             align-items: center;
             margin-top: auto;
             padding: var(--space-4);
-            border-top: 1px solid var(--gray-200);
-            background: var(--gray-50);
+            border-top: 1px solid var(--po-gray-200);
+            background: var(--po-gray-50);
         }
 
         .shift-actions .btn {
@@ -779,7 +809,7 @@
         }
 
         .shift-form {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border: var(--border-light);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
@@ -792,8 +822,8 @@
         }
 
         .form-title {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
+            font-family: var(--po-font-heading);
+            color: var(--po-blue);
             margin-bottom: var(--space-6);
             text-align: center;
             font-size: 1.75rem;
@@ -833,7 +863,7 @@
         }
 
         .workers-section {
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin: var(--space-6) 0;
@@ -860,7 +890,7 @@
             align-items: end;
             padding: var(--space-6);
             padding-bottom: var(--space-16);
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-md);
             border: var(--border-light);
             width: 100%;
@@ -870,23 +900,26 @@
             position: relative;
         }
 
-        /* NEW: Visual indicator for inherited vs manual time */
+        /* An inherited time, carried down from the first worker, against one
+           typed in by hand. Flat: the design system allows no gradient, so the
+           distinction is a tint and a left edge rather than a fade. */
         .worker-entry[data-time-inherited="true"] .time-input-group input {
-            background: linear-gradient(to right, var(--white) 0%, rgba(16, 185, 129, 0.08) 100%);
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 3px solid var(--action-success);
         }
 
         .worker-entry[data-time-manual="true"] .time-input-group input {
-            background: var(--white);
+            background: var(--po-surface);
         }
 
-        /* NEW: Master worker indicator */
+        /* Master worker indicator */
         .worker-entry.master-worker::after {
-            content: "⏱️ Master Times";
+            content: "Master Times";
             position: absolute;
             top: var(--space-2);
             right: var(--space-2);
             font-size: 0.7rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             background: rgba(26, 54, 93, 0.1);
             padding: 2px 8px;
             border-radius: var(--radius-sm);
@@ -923,12 +956,12 @@
             bottom: -18px;
             left: 0;
             font-size: 0.7rem;
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             white-space: nowrap;
         }
 
         .hours-display {
-            background: var(--gray-100) !important;
+            background: var(--po-gray-100) !important;
             color: var(--gray-600) !important;
             font-weight: 500;
             cursor: not-allowed;
@@ -943,18 +976,18 @@
         }
 
         .calculations-section {
-            background: var(--white);
+            background: var(--po-surface);
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--po-blue);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             margin-bottom: var(--space-6);
         }
 
         .calc-title {
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
             font-size: 1.5rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-6);
             text-align: center;
             font-weight: 600;
@@ -973,7 +1006,7 @@
 
         .calc-label {
             font-size: 0.9rem;
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             margin-bottom: var(--space-2);
             font-weight: 500;
             text-transform: uppercase;
@@ -982,13 +1015,13 @@
 
         .calc-value {
             font-size: 1.5rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-weight: 700;
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
         }
 
         .calc-breakdown {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             border-radius: var(--radius-lg);
             padding: var(--space-6);
             margin-top: var(--space-6);
@@ -996,7 +1029,7 @@
 
         .breakdown-title {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-4);
             text-align: center;
         }
@@ -1006,13 +1039,13 @@
             justify-content: space-between;
             align-items: center;
             padding: var(--space-3) 0;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--po-gray-200);
         }
 
         .breakdown-item:last-child {
             border-bottom: none;
             font-weight: 700;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-size: 1.1rem;
         }
 
@@ -1032,7 +1065,7 @@
         }
 
         .dialog-content {
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: var(--radius-xl);
             padding: var(--space-8);
             max-width: 950px;
@@ -1040,14 +1073,14 @@
             max-height: 85vh;
             overflow-y: auto;
             border: var(--border-medium);
-            border-color: var(--navy-blue);
+            border-color: var(--po-blue);
             -webkit-overflow-scrolling: touch;
             position: relative;
         }
 
         .dialog-title {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
+            font-family: var(--po-font-heading);
+            color: var(--po-blue);
             margin-bottom: var(--space-4);
             font-size: 1.5rem;
             font-weight: 600;
@@ -1055,7 +1088,7 @@
         }
 
         .dialog-message {
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             margin-bottom: var(--space-6);
             line-height: 1.6;
             text-align: center;
@@ -1078,15 +1111,15 @@
         }
 
         .shift-details-title {
-            font-family: var(--font-display);
+            font-family: var(--po-font-heading);
             font-size: 1.75rem;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-2);
             font-weight: 600;
         }
 
         .shift-details-subtitle {
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             font-size: 1rem;
             font-weight: 500;
             margin-bottom: var(--space-6);
@@ -1105,19 +1138,19 @@
 
         .info-label {
             font-weight: 600;
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             margin-bottom: var(--space-1);
             font-size: 0.9rem;
         }
 
         .info-value {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-size: 1rem;
         }
 
         .breakdown-section {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
             padding: var(--space-6);
             border-radius: var(--radius-lg);
             margin-bottom: var(--space-6);
@@ -1126,7 +1159,7 @@
 
         .breakdown-section .breakdown-title {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             margin-bottom: var(--space-6);
             font-size: 1.1rem;
             text-align: left;
@@ -1148,13 +1181,13 @@
         }
 
         .breakdown-label {
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             font-weight: 500;
             font-size: 0.9rem;
         }
 
         .breakdown-value {
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-weight: 600;
             font-size: 0.9rem;
         }
@@ -1164,7 +1197,7 @@
         }
 
         .breakdown-value.waived {
-            color: var(--gray-400);
+            color: var(--po-gray-400);
             text-decoration: line-through;
         }
 
@@ -1173,7 +1206,7 @@
             grid-template-columns: 1fr 1fr;
             gap: var(--space-8);
             padding-top: var(--space-4);
-            border-top: 1px solid var(--gray-300);
+            border-top: 1px solid var(--po-gray-300);
             margin-top: var(--space-4);
         }
 
@@ -1185,12 +1218,12 @@
 
         .summary-label {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
         }
 
         .summary-value {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
             font-size: 1rem;
         }
 
@@ -1198,7 +1231,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: var(--space-6);
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: var(--radius-lg);
             overflow: hidden;
             border: var(--border-light);
@@ -1206,8 +1239,8 @@
         }
 
         .worker-details-table th {
-            background: var(--navy-blue);
-            color: var(--white);
+            background: var(--po-blue);
+            color: var(--po-surface);
             padding: var(--space-4);
             text-align: center;
             font-weight: 600;
@@ -1225,7 +1258,7 @@
 
         .worker-details-table td:first-child {
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--po-blue);
         }
 
         .worker-details-table th:nth-child(2),
@@ -1236,13 +1269,13 @@
 
         .worker-details-table td {
             padding: var(--space-4);
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--po-gray-200);
             text-align: center;
             font-size: 0.875rem;
         }
 
         .worker-details-table tr:nth-child(even) {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
         }
 
         .worker-details-table tr:last-child td {
@@ -1273,7 +1306,7 @@
         }
 
         .table-container {
-            background: var(--white);
+            background: var(--po-surface);
             border-radius: var(--radius-lg);
             border: var(--border-light);
             overflow: auto;
@@ -1289,11 +1322,11 @@
         }
 
         .table th {
-            background: var(--gray-100);
+            background: var(--po-gray-100);
             padding: var(--space-4);
             text-align: center;
             font-weight: 600;
-            color: var(--gray-900);
+            color: var(--po-gray-900);
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -1306,7 +1339,7 @@
         .table td {
             padding: var(--space-4);
             border-bottom: var(--border-light);
-            color: var(--gray-700);
+            color: var(--po-gray-700);
             font-size: 0.875rem;
             text-align: center;
         }
@@ -1316,7 +1349,7 @@
         }
 
         .table tr:hover {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
         }
 
         .table tr:last-child td {
@@ -1324,11 +1357,11 @@
         }
 
         .table tbody tr:nth-child(even) {
-            background: var(--gray-50);
+            background: var(--po-gray-50);
         }
 
         .table tbody tr:nth-child(odd) {
-            background: var(--white);
+            background: var(--po-surface);
         }
 
         .table tbody tr:nth-child(even):hover {
@@ -1336,7 +1369,7 @@
         }
 
         .table tbody tr:nth-child(odd):hover {
-            background: var(--gray-100);
+            background: var(--po-gray-100);
         }
 
         .hidden {
@@ -1346,7 +1379,7 @@
         .loading {
             text-align: center;
             padding: var(--space-8);
-            color: var(--gray-500);
+            color: var(--po-gray-500);
         }
 
         .error {
@@ -1370,7 +1403,7 @@
 
         .time-help {
             font-size: 0.7rem;
-            color: var(--gray-500);
+            color: var(--po-gray-500);
             margin-top: var(--space-1);
         }
 
@@ -1600,8 +1633,15 @@
 </head>
 
 <body>
-    <!-- Universal Header Container -->
-    <div id="headerContainer"></div>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js, which is
+         the single definition on this property and mirrors $nav_items in
+         /includes/header.php on lionssports.club. universal-header.js is frozen
+         and is no longer loaded here: read at v1.9 it carries the retired navy
+         hex, the wrong typeface, a text-shadow, emoji navigation icons and
+         three retired addresses.
+         data-nav is empty because this route has no counterpart in the
+         marketing navigation, so no item is marked current. -->
+    <header id="site-header" data-nav=""></header>
 
     <div class="main-container">
         <!-- Login Screen -->
@@ -1679,10 +1719,10 @@
             </div>
 
             <div class="action-section">
-                <button class="btn btn-neutral" id="refreshBtn">🔄 Refresh</button>
-                <button class="btn btn-secondary" id="exportPayoutsBtn">📊 Export Payouts</button>
-                <button class="btn btn-success" id="finalizeAllBtn">✅ Finalize All Drafts</button>
-                <button class="btn btn-info" id="workerTotalsBtn">👥 Worker Summary</button>
+                <button class="btn btn-neutral" id="refreshBtn">Refresh</button>
+                <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payouts</button>
+                <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
+                <button class="btn btn-info" id="workerTotalsBtn">Worker Summary</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -1750,11 +1790,11 @@
 
                     <div class="form-group form-grid-full">
                         <div
-                            style="background: var(--gray-100); padding: var(--space-4); border-radius: var(--radius-md); text-align: center;">
+                            style="background: var(--po-gray-100); padding: var(--space-4); border-radius: var(--radius-md); text-align: center;">
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
-                                <span style="font-weight: 600; color: var(--navy-blue);">Combined Sodexo Total:</span>
-                                <span id="combinedSodexoTotal" style="font-size: 1.25rem; font-weight: 700; color: var(--navy-blue);">$0.00</span>
+                                <span style="font-weight: 600; color: var(--po-blue);">Combined Sodexo Total:</span>
+                                <span id="combinedSodexoTotal" style="font-size: 1.25rem; font-weight: 700; color: var(--po-blue);">$0.00</span>
                             </div>
                         </div>
                     </div>
@@ -1794,7 +1834,7 @@
                     <div class="workers-list" id="workersList">
                     </div>
                     <div class="workers-footer"
-                        style="display: flex; justify-content: flex-end; margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
+                        style="display: flex; justify-content: flex-end; margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--po-gray-200);">
                         <button class="btn btn-secondary" id="addWorkerBtn">Add Worker</button>
                     </div>
                 </div>
@@ -1804,7 +1844,7 @@
 
                     <div id="individualPayouts" style="margin-bottom: var(--space-6);">
                         <h5
-                            style="text-align: center; margin-bottom: var(--space-4); color: var(--navy-blue); font-weight: 600;">
+                            style="text-align: center; margin-bottom: var(--space-4); color: var(--po-blue); font-weight: 600;">
                             Individual Worker Payouts</h5>
                         <div class="table-container">
                             <table class="table">
@@ -1887,9 +1927,9 @@
                 </div>
 
                 <div class="form-buttons">
-                    <button class="btn btn-info" id="saveShiftBtn">💾 Save Shift</button>
-                    <button class="btn btn-success" id="finalizeShiftBtn">🔒 Finalize Shift</button>
-                    <button class="btn btn-secondary" id="cancelShiftBtn">❌ Cancel</button>
+                    <button class="btn btn-info" id="saveShiftBtn">Save Shift</button>
+                    <button class="btn btn-success" id="finalizeShiftBtn">Finalize Shift</button>
+                    <button class="btn btn-secondary" id="cancelShiftBtn">Cancel</button>
                 </div>
             </div>
 
@@ -1900,7 +1940,7 @@
 
             <div id="workerTotalsSection" class="hidden">
                 <h3
-                    style="text-align: center; margin-bottom: var(--space-6); font-family: var(--font-display); color: var(--navy-blue);">
+                    style="text-align: center; margin-bottom: var(--space-6); font-family: var(--po-font-heading); color: var(--po-blue);">
                     Worker Earnings Summary</h3>
                 <div class="table-container">
                     <table class="table" role="table" aria-label="Worker earnings summary">
@@ -1964,7 +2004,7 @@
                 calculations and any changes will require confirmation.
             </div>
             <div class="dialog-buttons">
-                <button class="btn btn-success" id="confirmFinalizeBtn">✅ Finalize</button>
+                <button class="btn btn-success" id="confirmFinalizeBtn">Finalize</button>
                 <button class="btn btn-secondary" id="cancelFinalizeBtn">Cancel</button>
             </div>
         </div>
@@ -1972,7 +2012,7 @@
 
     <div id="editFinalizedDialog" class="dialog hidden">
         <div class="dialog-content">
-            <h3 class="dialog-title">⚠️ Edit Finalized Shift</h3>
+            <h3 class="dialog-title">Edit Finalized Shift</h3>
             <div class="dialog-message">
                 This shift has been finalized and is visible to the treasurer. Editing will affect calculations that may
                 have already been reviewed.
@@ -2001,12 +2041,12 @@
 
     <div id="secondaryDeleteDialog" class="dialog hidden">
         <div class="dialog-content">
-            <h3 class="dialog-title" style="color: var(--error);">⚠️ Final Confirmation</h3>
+            <h3 class="dialog-title" style="color: var(--error);">Final Confirmation</h3>
             <div class="dialog-message">
                 <strong style="color: var(--error); font-size: 1.1rem;">This will permanently delete the work shift.</strong>
                 <br><br>
                 <div id="secondaryDeleteDetails"
-                    style="background: var(--gray-50); padding: var(--space-4); border-radius: var(--radius-md); margin: var(--space-4) 0;">
+                    style="background: var(--po-gray-50); padding: var(--space-4); border-radius: var(--radius-md); margin: var(--space-4) 0;">
                 </div>
                 <strong>Type "DELETE" to confirm:</strong>
                 <input type="text" id="deleteConfirmationInput" placeholder="Type DELETE" style="margin-top: var(--space-2); width: 100%; padding: var(--space-3); border: 2px solid var(--error); border-radius: var(--radius-md);">
@@ -2020,7 +2060,7 @@
 
     <div id="unlockDialog" class="dialog hidden">
         <div class="dialog-content">
-            <h3 class="dialog-title">⚠️ Unlock Work Shift</h3>
+            <h3 class="dialog-title">Unlock Work Shift</h3>
             <div class="dialog-message" id="unlockMessage">
                 This will unlock the finalized shift and allow editing. The treasurer will still be able to see the
                 shift but changes may affect their records.
@@ -2028,25 +2068,76 @@
                 <strong>Are you sure you want to unlock this shift?</strong>
             </div>
             <div class="dialog-buttons">
-                <button class="btn btn-neutral" id="confirmUnlockBtn">🔓 Unlock Shift</button>
+                <button class="btn btn-neutral" id="confirmUnlockBtn">Unlock Shift</button>
                 <button class="btn btn-secondary" id="cancelUnlockBtn">Cancel</button>
             </div>
         </div>
     </div>
 
-    <script src="https://lionsfundraising.com/universal-auth.js"></script>
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER =========================================================
+         Copyright only, matching every other ported page. The canon footer on
+         the marketing site carries nothing else, and a second nav down here
+         would be a third place navigation is defined. =================== -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- universal-auth.js still owns the session on this page. Moving it to
+         auth/lions-auth.js would put Firebase SDK 11.10.0 and 10.7.1 in one
+         document, where getApp() from one registry cannot see the other's app.
+         That is a property-wide decision, not a page edit. -->
+    <script src="/universal-auth.js"></script>
 
     <script type="module">
         // ============================================================
-        // LIONS PAYOUTS PORTAL - v2.3 with FROZEN SHIRT DATA FIX
-        // ============================================================
-        // ✅ CRITICAL FIX #1: Separate calculation mode properly saved/restored
-        // ✅ CRITICAL FIX #2: Custom worker sort order
-        // ✅ CRITICAL FIX #3: Shirts count uses finalizedShirtDeduction when available
-        // ✅ NEW: Low Rate Rule - Skip org deductions when rate < $20/hr
-        // ✅ NEW: Time Inheritance - First worker times propagate to subsequent workers
-        // ✅ NEW: Stat cards show net payouts + weighted avg hourly rate
+        // Payouts portal
+        //
+        // Behaviour worth knowing before editing a calculation:
+        //
+        //   Separate calculation mode is stored on the shift, not derived, so
+        //   reopening a finalized shift shows the mode it was finalized under.
+        //
+        //   Worker order is the administrator's, not alphabetical, because the
+        //   payout sheet is read against the sign-in sheet.
+        //
+        //   Shirt counts prefer finalizedShirtDeduction when it is present. A
+        //   shirt bought after finalization must not change a payout already
+        //   agreed.
+        //
+        //   Organization deductions are skipped below twenty dollars an hour.
+        //
+        //   The first worker's times propagate to the workers after them,
+        //   which is what the inherited time indicator in the stylesheet marks.
+        //
+        // The payout formula itself is canonical and is set out in
+        // ADR-005-payout-formula-canonical.md. Do not change it here.
         // ============================================================
         
         import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, query, orderBy, where, writeBatch } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
@@ -2414,7 +2505,7 @@
         let calculationMode = 'combined';
 
         // =======================
-        // NEW: TIME INHERITANCE SYSTEM
+        // TIME INHERITANCE SYSTEM
         // =======================
         let isPropagatingTime = false;
 
@@ -2551,7 +2642,11 @@
         window.toggleCalculationMode = toggleCalculationMode;
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await window.LIONS_HEADER.setupPage('headerContainer');
+            // lions-nav.js renders the header itself as soon as the shell
+            // element exists, so there is nothing to await. The previous line
+            // awaited window.LIONS_HEADER.setupPage, which is undefined now
+            // that universal-header.js is gone and would have thrown before
+            // any of the code below ran.
             if (await waitForAuthAndFirebase()) {
                 window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
                 setupEventListeners();
@@ -2583,12 +2678,77 @@
             return false;
         }
 
+        /**
+         * Addresses that reach the payout figures. Mirrors the System
+         * Administrator entry in ROLE_ADDRESSES in auth/lions-auth.js, which is
+         * canonical, and isSystemAdmin in firestore.rules.
+         *
+         * Both domains resolve. This gate matched the lionsfootballclub.com
+         * address alone until 2026-08-05, so the administrator lost this page
+         * the moment he signed in on the address the migration is moving to.
+         * The list prefers the copy published by universal-auth.js and falls
+         * back to a literal, because deployment is a manual upload and this page
+         * must not lose its role check if universal-auth.js has not gone up yet.
+         */
+        const PAYOUTS_ADMIN_ADDRESSES =
+            (window.LIONS_ROLE_ADDRESSES && window.LIONS_ROLE_ADDRESSES.administrator) || [
+                'fundraising@lionssports.club',
+                'fundraising@lionsfootballclub.com'
+            ];
+
+
+        /**
+         * Fills the identity controls in the shared header.
+         *
+         * Without this the ported header renders with no My Account link and no
+         * Sign out control, so this page becomes somewhere you can arrive and
+         * not leave except by the browser's back button. That is the exact
+         * complaint the port exists to answer.
+         *
+         * canAccess is handed over so lions-nav.js renders the administrator
+         * group in the Fundraising menu here, the same as it does on /account
+         * and /signup. Withholding it used to be deliberate, on the grounds
+         * that canAccess lived on auth/lions-auth.js while this page runs on
+         * universal-auth.js. The cost of that was an administrator seeing no
+         * administrator menu on the three pages only administrators can open,
+         * which is worse than the drift it avoided and breaks ADR-001.
+         *
+         * universal-auth.js now answers canAccess itself, keyed on
+         * LIONS_ROLE_ADDRESSES rather than on a role label, so the two modules
+         * cannot disagree without one of the address lists changing first.
+         */
+        function fillHeaderIdentity(signedIn) {
+            if (!window.LIONS_NAV || typeof window.LIONS_NAV.setAuth !== 'function') { return; }
+            window.LIONS_NAV.setAuth({
+                signedIn: !!signedIn,
+                active: '',
+                canAccess: function (system) {
+                    return !!(window.LIONS_AUTH
+                           && typeof window.LIONS_AUTH.canAccess === 'function'
+                           && window.LIONS_AUTH.canAccess(system));
+                },
+                onSignOut: function () {
+                    if (window.LIONS_AUTH && window.LIONS_AUTH.forceLogout) {
+                        window.LIONS_AUTH.forceLogout();
+                    }
+                }
+            });
+        }
+
         function handleAuthStateChange(action, userData) {
+            fillHeaderIdentity(action === 'login' && !!userData);
+
             if (action === 'login' && userData) {
                 currentUser = userData;
-                isAdmin = userData.email?.toLowerCase() === 'fundraising@lionsfootballclub.com';
+                isAdmin = PAYOUTS_ADMIN_ADDRESSES.includes(
+                    String(userData.email || '').toLowerCase().trim()
+                );
                 if (!isAdmin) {
-                    showError('Administrator access required. Only fundraising@lionsfootballclub.com can access payouts.');
+                    // The address is deliberately not named back to the reader.
+                    // A visitor who does not hold the role does not need the
+                    // administrator's mailbox recited to them, and the previous
+                    // wording published a retired address on a live page.
+                    showError('Administrator access is required to view payouts. If you believe you should have access, email fundraising@lionssports.club.');
                     return;
                 }
                 showDashboard();
@@ -2694,7 +2854,7 @@
             if ((shift.workers || []).length > 0) {
                 workersHtml = '<div class="workers-summary"><div class="workers-title">Workers by Stand</div>';
                 Object.entries(workersByStand).slice(0, 3).forEach(([stand, workers]) => {
-                    workersHtml += '<div style="margin-bottom: var(--space-3);"><div style="font-weight: 600; color: var(--gray-500); font-size: 0.8rem; margin-bottom: var(--space-1);">Stand ' + stand + '</div>';
+                    workersHtml += '<div style="margin-bottom: var(--space-3);"><div style="font-weight: 600; color: var(--po-gray-500); font-size: 0.8rem; margin-bottom: var(--space-1);">Stand ' + stand + '</div>';
                     workers.slice(0, 2).forEach(worker => {
                         const hours = calculateHours(worker.startTime, worker.endTime);
                         workersHtml += '<div class="worker-item"><span class="worker-name">' + worker.name + '</span><span class="worker-hours">' + formatHours(hours) + 'h</span></div>';
@@ -2702,11 +2862,11 @@
                     if (workers.length > 2) workersHtml += '<div class="worker-item" style="text-align: center; font-style: italic;">+' + (workers.length - 2) + ' more</div>';
                     workersHtml += '</div>';
                 });
-                if (Object.keys(workersByStand).length > 3) workersHtml += '<div style="text-align: center; font-style: italic; color: var(--gray-500);">+' + (Object.keys(workersByStand).length - 3) + ' more stands</div>';
+                if (Object.keys(workersByStand).length > 3) workersHtml += '<div style="text-align: center; font-style: italic; color: var(--po-gray-500);">+' + (Object.keys(workersByStand).length - 3) + ' more stands</div>';
                 workersHtml += '</div>';
             }
             
-            return '<div class="' + cardClasses + '"><div class="shift-card-content"><div class="shift-header"><div><div class="shift-title">' + (shift.eventName || 'Unnamed Event') + '</div><div class="shift-date">' + formatDate(shift.eventDate) + ' • Primary Stand ' + primaryStand + '</div></div><div class="shift-status ' + statusClass + '">' + shiftStatus + '</div></div><div class="shift-details"><div class="detail-item"><div class="detail-label">Total Sodexo Payment</div><div class="detail-value">' + formatCurrency(totalPayout) + '</div></div><div class="detail-item"><div class="detail-label">Total Hours</div><div class="detail-value">' + calculations.totalHoursFormatted + '</div></div><div class="detail-item"><div class="detail-label">Hourly Rate</div><div class="detail-value">' + calculations.hourlyRateFormatted + '</div></div><div class="detail-item"><div class="detail-label">Workers</div><div class="detail-value">' + (shift.workers || []).length + '</div></div></div>' + workersHtml + '</div><div class="shift-actions">' + actionButtons + '</div></div>';
+            return '<div class="' + cardClasses + '"><div class="shift-card-content"><div class="shift-header"><div><div class="shift-title">' + (shift.eventName || 'Unnamed Event') + '</div><div class="shift-date">' + formatDate(shift.eventDate) + ', Primary Stand ' + primaryStand + '</div></div><div class="shift-status ' + statusClass + '">' + shiftStatus + '</div></div><div class="shift-details"><div class="detail-item"><div class="detail-label">Total Sodexo Payment</div><div class="detail-value">' + formatCurrency(totalPayout) + '</div></div><div class="detail-item"><div class="detail-label">Total Hours</div><div class="detail-value">' + calculations.totalHoursFormatted + '</div></div><div class="detail-item"><div class="detail-label">Hourly Rate</div><div class="detail-value">' + calculations.hourlyRateFormatted + '</div></div><div class="detail-item"><div class="detail-label">Workers</div><div class="detail-value">' + (shift.workers || []).length + '</div></div></div>' + workersHtml + '</div><div class="shift-actions">' + actionButtons + '</div></div>';
         }
 
         function updateStats() {
@@ -2764,7 +2924,7 @@
             if (modalTitle) modalTitle.textContent = 'Shift Details';
             if (modalSubtitle) {
                 const displayStatus = shift.isLocked ? 'locked' : (shift.status || 'draft');
-                modalSubtitle.textContent = formatDate(shift.eventDate) + ' • Status: ' + displayStatus;
+                modalSubtitle.textContent = formatDate(shift.eventDate) + ', status ' + displayStatus;
             }
 
             const modalInfoGrid = document.getElementById('modalInfoGrid');
@@ -2792,7 +2952,7 @@
 
             const modalWorkerDetails = document.getElementById('modalWorkerDetails');
             if (modalWorkerDetails && shift.workers && shift.workers.length > 0) {
-                let workerHtml = '<h4 style="color: var(--navy-blue); margin-bottom: var(--space-4); font-weight: 600;">Worker Details</h4><table class="worker-details-table"><thead><tr><th>Worker</th><th>Stand</th><th>CR#</th><th>Hours</th><th>Rate</th><th>Gross</th><th>Shirt $</th><th>Net</th></tr></thead><tbody>';
+                let workerHtml = '<h4 style="color: var(--po-blue); margin-bottom: var(--space-4); font-weight: 600;">Worker Details</h4><table class="worker-details-table"><thead><tr><th>Worker</th><th>Stand</th><th>CR#</th><th>Hours</th><th>Rate</th><th>Gross</th><th>Shirt $</th><th>Net</th></tr></thead><tbody>';
                 calculations.workerPayouts.forEach(worker => {
                     const workerCrNumber = getWorkerCrNumber(worker, shift);
                     workerHtml += '<tr><td>' + worker.name + '</td><td>' + worker.stand + '</td><td>' + (workerCrNumber || 'N/A') + '</td><td>' + worker.hoursFormatted + '</td><td>' + worker.workerHourlyRateFormatted + '</td><td>' + worker.grossAmountFormatted + '</td><td>' + worker.shirtDeductionFormatted + '</td><td><strong>' + worker.netAmountFormatted + '</strong></td></tr>';
@@ -2800,7 +2960,7 @@
                 workerHtml += '</tbody></table>';
                 modalWorkerDetails.innerHTML = workerHtml;
             } else if (modalWorkerDetails) {
-                modalWorkerDetails.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: var(--space-4);">No worker data available.</p>';
+                modalWorkerDetails.innerHTML = '<p style="text-align: center; color: var(--po-gray-500); padding: var(--space-4);">No worker data available.</p>';
             }
 
             document.getElementById('shiftDetailsModal')?.classList.remove('hidden');
@@ -2949,11 +3109,11 @@
                 workerEntry.dataset.timeManual = 'true';
             } else {
                 await setDefaultWorkerStand(workerId, primaryStand);
-                // NEW: Copy times from previous worker if this is not the first worker
+                // Copy times from previous worker if this is not the first worker
                 copyTimesFromPreviousWorker(workerId);
             }
             
-            await setupWorkerInteractions(workerId);
+            await setupWorkerControls(workerId);
             updateMasterWorkerIndicator();
         }
 
@@ -3014,7 +3174,7 @@
             }
         }
 
-        async function setupWorkerInteractions(workerId) {
+        async function setupWorkerControls(workerId) {
             setupWorkerEventListeners(workerId);
             setupWorkerNameAutocomplete(workerId);
             updateWorkerHours(workerId);
@@ -3033,15 +3193,15 @@
                 if (matches.length === 0) return;
                 
                 suggestionsList = document.createElement('div');
-                suggestionsList.style.cssText = 'position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--gray-300); border-radius: var(--radius-md); max-height: 150px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);';
+                suggestionsList.style.cssText = 'position: absolute; top: 100%; left: 0; right: 0; background: var(--po-surface); border: 1px solid var(--po-gray-300); border-radius: var(--radius-md); max-height: 150px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);';
                 
                 matches.forEach((user, index) => {
                     const item = document.createElement('div');
-                    item.style.cssText = 'padding: var(--space-2) var(--space-3); cursor: pointer; border-bottom: 1px solid var(--gray-100);';
+                    item.style.cssText = 'padding: var(--space-2) var(--space-3); cursor: pointer; border-bottom: 1px solid var(--po-gray-100);';
                     item.textContent = user.name;
                     item.dataset.index = index;
                     item.addEventListener('click', () => selectUser(user.name));
-                    item.addEventListener('mouseenter', () => { item.style.backgroundColor = 'var(--gray-50)'; selectedIndex = index; updateSelection(); });
+                    item.addEventListener('mouseenter', () => { item.style.backgroundColor = 'var(--po-gray-50)'; selectedIndex = index; updateSelection(); });
                     item.addEventListener('mouseleave', () => { item.style.backgroundColor = 'white'; });
                     suggestionsList.appendChild(item);
                 });
@@ -3065,7 +3225,7 @@
                 if (!suggestionsList) return;
                 const items = suggestionsList.querySelectorAll('div');
                 items.forEach((item, index) => {
-                    if (index === selectedIndex) { item.style.backgroundColor = 'var(--navy-blue)'; item.style.color = 'white'; }
+                    if (index === selectedIndex) { item.style.backgroundColor = 'var(--po-blue)'; item.style.color = 'var(--po-surface)'; }
                     else { item.style.backgroundColor = 'white'; item.style.color = 'inherit'; }
                 });
             }
@@ -3108,7 +3268,7 @@
                         if (field === 'start' || field === 'end') {
                             updateWorkerHours(workerId);
                             
-                            // NEW: If this is the master worker, propagate changes
+                            // If this is the master worker, propagate changes
                             if (isMasterWorker(workerId)) {
                                 propagateMasterTimeChange(field);
                             } else {
@@ -3123,7 +3283,7 @@
                         if (field === 'start' || field === 'end') {
                             updateWorkerHours(workerId);
                             
-                            // NEW: If this is the master worker, propagate changes
+                            // If this is the master worker, propagate changes
                             if (isMasterWorker(workerId)) {
                                 propagateMasterTimeChange(field);
                             } else {
@@ -3243,19 +3403,19 @@
             if (lionsPercentRow) {
                 const label = lionsPercentRow.querySelector('span:first-child');
                 const value = lionsPercentRow.querySelector('span:last-child');
-                if (lowRateApplied) { label.innerHTML = 'Lions (2.0%) <em style="color: var(--gray-400); font-size: 0.8em;">(waived - rate < $20/hr)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--gray-400)'; } }
+                if (lowRateApplied) { label.innerHTML = 'Lions (2.0%) <em style="color: var(--po-gray-400); font-size: 0.8em;">(waived - rate < $20/hr)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--po-gray-400)'; } }
                 else { label.textContent = 'Lions (2.0%)'; if (value) { value.style.textDecoration = 'none'; value.style.color = ''; } }
             }
             if (coachesPercentRow) {
                 const label = coachesPercentRow.querySelector('span:first-child');
                 const value = coachesPercentRow.querySelector('span:last-child');
-                if (lowRateApplied) { label.innerHTML = 'Coaches (1.5%) <em style="color: var(--gray-400); font-size: 0.8em;">(waived)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--gray-400)'; } }
+                if (lowRateApplied) { label.innerHTML = 'Coaches (1.5%) <em style="color: var(--po-gray-400); font-size: 0.8em;">(waived)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--po-gray-400)'; } }
                 else { label.textContent = 'Coaches (1.5%)'; if (value) { value.style.textDecoration = 'none'; value.style.color = ''; } }
             }
             if (coordinatorPercentRow) {
                 const label = coordinatorPercentRow.querySelector('span:first-child');
                 const value = coordinatorPercentRow.querySelector('span:last-child');
-                if (lowRateApplied) { label.innerHTML = 'Coordinator (1.5%) <em style="color: var(--gray-400); font-size: 0.8em;">(waived)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--gray-400)'; } }
+                if (lowRateApplied) { label.innerHTML = 'Coordinator (1.5%) <em style="color: var(--po-gray-400); font-size: 0.8em;">(waived)</em>'; if (value) { value.style.textDecoration = 'line-through'; value.style.color = 'var(--po-gray-400)'; } }
                 else { label.textContent = 'Coordinator (1.5%)'; if (value) { value.style.textDecoration = 'none'; value.style.color = ''; } }
             }
             

@@ -5,103 +5,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lucas Oil Stadium Information - Lions Sports Club</title>
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
+    <!-- League Spartan, matching /signup and /account. This page previously
+         requested the two off-brand faces that lions-tokens.css names and
+         forbids. It also meant League Spartan was never loaded at all, so the
+         ported header rendered in the Arial fallback here while the same header
+         rendered correctly on /signup. The two pages carried the same markup
+         and did not look the same. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
 
-    <!-- Universal Authentication System v4.1 -->
     <script src="https://lionsfundraising.com/universal-auth.js"></script>
 
-    <!-- Universal Header System v1.6 -->
     <script src="/js/lions-log.js?v=1"></script>
-    <script src="/js/lions-nav.js?v=1" defer></script>
+    <script src="/js/lions-access.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
+    <script src="/js/lions-header-identity.js?v=1" defer></script>
     <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
     <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
 
     <style>
-        :root {
-            /* Primary Brand Colors - Core Palette */
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+        /* --------------------------------------------------------------------
+           Page-local surfaces for the Lucas Oil guide.
 
-            /* Neutral Grays - Essential Hierarchy */
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
+           There is deliberately no :root color block here any more. The version
+           this replaces declared its own --white as pure white, and because a
+           page style block comes after the stylesheet link it won that cascade
+           against the token bridge in lions-chrome.css. Every ported chrome
+           rule reading var(--white), including the social section, painted pure
+           white on this page and Ghost White on /signup. Redefining a bridge
+           token name from inside a page silently restyles the shared chrome, so
+           nothing below introduces a name the bridge already owns.
 
-            /* Semantic Colors - Functional States */
-            --success: #10b981;
-            --warning: #16a085;
-            --error: #ef4444;
-            --info: #3b82f6;
+           The spacing and radius aliases are kept because the markup uses them
+           throughout, but they now resolve to the canonical scale rather than
+           to a private copy of it.
 
-            /* Typography - Professional System */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+           LAYOUT, 2026-08-03. The guide used to sit in one Ghost White card
+           capped at 1600px. Measured at 1440 that gave a body line of 1326px,
+           about 166 characters, where a reader loses the start of the next line
+           past roughly 75. Sections were 32px apart. The frame was already
+           correct and the rhythm was not.
 
-            /* Flat Design - No Shadows */
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+           A content page on lionssports.club is not a card. It is a stack of
+           full width bands with the 1160px .container rail inside each, and the
+           numbers below are measured off /who-we-are rather than chosen here:
+           band padding 80px top and 96px bottom, 56px and 64px under 768px,
+           64px on the closing call to action, 56px between groups inside a
+           band, a 720px hero lede, a 600px reading measure, 20px under a title,
+           18px under an eyebrow. Nothing in this block is a new number.
+           ------------------------------------------------------------------ */
 
-            /* Border Radius - Consistent System */
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
+        .los {
+            --space-2: var(--lions-space-2);
+            --space-3: var(--lions-space-3);
+            --space-4: var(--lions-space-4);
+            --space-6: var(--lions-space-6);
+            --space-8: var(--lions-space-8);
+            --space-12: var(--lions-space-12);
 
-            /* Spacing - Harmonious Scale */
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-6: 1.5rem;
-            --space-8: 2rem;
-            --space-12: 3rem;
-            --space-16: 4rem;
+            --radius-md: var(--lions-radius);
+            --radius-lg: var(--lions-radius-lg);
 
-            /* Enhanced Transition System */
-            --transition-ultra-fast: 0.15s ease-out;
-            --transition-fast: 0.2s ease-out;
-            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-light: var(--lions-border);
 
-            /* Logo Data */
-            --logo-data: url('https://lionsfundraising.com/media/lsc_head.png');
+            /* Band rhythm. The shared spacing scale tops out at 64px and the
+               canon's band padding is 80 and 96, so these two carry literals.
+               They are the canon's literals, taken from .who-hero and
+               .board-section, not sizes invented for this page. Declared as
+               custom properties so the phone override below moves the hero and
+               every band together rather than one rule at a time. */
+            --guide-band-top: 80px;
+            --guide-band-bottom: 96px;
+
+            /* Separation between two consecutive sections of the same document
+               inside one band. The canon uses 56px for a break of this weight,
+               both under .board-section-lede and as the .social-section band
+               padding. */
+            --guide-gap: 56px;
+
+            /* The reading measure. 600px of 17px body copy is close to 70
+               characters a line, which is the range a reader tracks without
+               losing the return sweep. Both numbers are the canon's: 600px is
+               the .board-section-lede measure and 17px is the .who-cta-sub
+               body size. */
+            --guide-measure-width: 600px;
         }
 
-        /* NPO Playbook Requirement Banner */
+        @media (max-width: 767px) {
+            .los {
+                --guide-band-top: 56px;
+                --guide-band-bottom: 64px;
+                --guide-gap: 40px;
+            }
+        }
+
+        /* ---- Hero band ----------------------------------------------------
+           Ported from .who-hero. Dark band over the Lions Blue page surface,
+           which is hero pattern A, the canonical one. */
+
+        .guide-hero {
+            background: var(--black);
+            padding: var(--guide-band-top) 0 var(--guide-band-bottom);
+            text-align: center;
+        }
+
+        .guide-eyebrow {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--blue-light);
+            margin-bottom: 18px;
+        }
+
+        .guide-title {
+            font-family: var(--font-heading);
+            font-size: 44px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px)  { .guide-title { font-size: 60px; } }
+        @media (min-width: 1280px) { .guide-title { font-size: 72px; } }
+
+        .guide-lede {
+            font-family: var(--font-body);
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) { .guide-lede { font-size: 20px; } }
+
+        /* ---- Content bands -------------------------------------------------
+           One Ghost White reading surface for the whole guide. The canon's two
+           body bands differ by three points of luminance, which the eye cannot
+           resolve; the hairline at the top of each band is what actually
+           separates them, so that is the mechanism used here too. */
+
+        .guide-band {
+            background: var(--white);
+            padding: var(--guide-band-top) 0 var(--guide-band-bottom);
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* The column the prose actually sits in, centered inside the 1160px
+           rail. Capping the measure rather than the rail is what keeps a line
+           readable on a wide monitor while leaving the bands full bleed. */
+        .guide-measure {
+            max-width: var(--guide-measure-width);
+            margin: 0 auto;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .guide-measure p { margin-bottom: var(--space-6); }
+        .guide-measure p:last-child { margin-bottom: 0; }
+
+        /* Consecutive sections of one document, not separate pages, so the
+           break between them is the canon's within-band 56px rather than the
+           176px two full bands would put there. */
+        .guide-section + .guide-section {
+            margin-top: var(--guide-gap);
+            padding-top: var(--guide-gap);
+            border-top: 1px solid var(--gray-light);
+        }
+
+        /* Ported from .who-cta-heading. The canon's .board-section-heading
+           ramp starts at 32px and runs to 42px, which is a page banner. Seven
+           of those inside one guide would each read as the start of a new
+           page, so the smaller of the canon's two section ramps is the right
+           one here. Left aligned, unlike the canon's centered headings,
+           because a reference document needs the heading and the first line of
+           its body to share a left edge. */
+        .guide-section-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--blue-primary);
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) { .guide-section-title { font-size: 34px; } }
+
+        /* ---- NPO Playbook requirement banner ------------------------------
+           Cross Red is the accent the design system reserves for urgent calls,
+           which is exactly what this is. It replaces #dc2626, which was close
+           enough to read as intentional and was not the brand red.
+
+           It sits in a band of its own directly under the hero because it is
+           the one thing on this page that blocks a volunteer from working. */
+
         .critical-requirement-banner {
-            border: 3px solid #dc2626;
-            border-radius: var(--radius-xl);
-            padding: var(--space-6) var(--space-8);
-            margin-bottom: var(--space-12);
+            border: 3px solid var(--cross-red);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
         }
 
         .critical-title {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 1.25rem;
             font-weight: 600;
-            color: #dc2626;
-            margin-bottom: var(--space-4);
+            line-height: 1.3;
+            color: var(--cross-red);
+            margin-bottom: var(--space-6);
         }
 
         .critical-steps {
             list-style: none;
-            padding: 0;
-            margin: 0 0 var(--space-4);
+            margin: 0;
             counter-reset: step-counter;
         }
 
         .critical-steps li {
-            padding: var(--space-2) 0 var(--space-2) var(--space-6);
+            padding: var(--space-3) 0 var(--space-3) var(--space-8);
             position: relative;
             line-height: 1.6;
         }
@@ -110,268 +237,191 @@
             content: counter(step-counter) ".";
             counter-increment: step-counter;
             font-weight: 700;
-            color: #dc2626;
+            color: var(--cross-red);
             position: absolute;
             left: 0;
         }
 
-        .critical-steps a {
-            color: var(--navy-blue);
-        }
+        .critical-steps a { color: var(--blue-primary); }
 
+        /* 28px above the action is the gap the canon leaves between the last
+           line of .who-cta-sub and its button row. */
         .critical-action {
             text-align: center;
-            margin-top: var(--space-4);
+            margin-top: 28px;
         }
 
         .critical-btn {
             display: inline-block;
-            background: #dc2626;
+            background: var(--cross-red);
             color: var(--white);
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 700;
             padding: var(--space-3) var(--space-8);
             border-radius: var(--radius-md);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
             border: none;
-            transition: all var(--transition-fast);
-            font-family: var(--font-primary);
+            transition: background 0.2s;
         }
 
-        .critical-btn:hover {
-            background: #b91c1c;
+        /* --lions-error is the palette's darker red, tuned for AA contrast. It
+           is used here as the pressed state rather than introducing a new red
+           literal, which is what the previous #dc2626 / #b91c1c pair did. */
+        .critical-btn:hover { background: var(--lions-error); }
+        .critical-btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ---- Body copy ----------------------------------------------------- */
+
+        .los main {
+            font-family: var(--font-body);
+            color: var(--lions-ink);
         }
 
-        body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
-            min-height: 100vh;
-            color: var(--gray-700);
-            position: relative;
-            padding: var(--space-6);
-            line-height: 1.6;
-        }
+        /* A callout is a paragraph the eye should stop on, so it gets a full
+           space either side of it rather than the 16px it used to carry, which
+           left it indistinguishable from the paragraph above.
 
-        .main-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            position: relative;
-            z-index: 1;
-            min-height: calc(100vh - var(--space-12));
-            border: var(--border-light);
-        }
-
-        /* Main Content */
-        .page-title {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
-            color: var(--navy-blue);
-            text-align: center;
-            margin-bottom: var(--space-2);
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .page-subtitle {
-            text-align: center;
-            color: var(--gray-500);
-            font-size: 1.125rem;
-            margin-bottom: var(--space-12);
-            font-style: italic;
+           Scoped to the measure so it outranks the .guide-measure p rule
+           above, which is a class plus a type and would otherwise win the
+           bottom margin and leave the callout with 32px above and 24px
+           below. */
+        .guide-measure .callout {
+            border-left: 3px solid var(--cross-red);
+            padding: var(--space-4) var(--space-6);
+            margin: var(--space-8) 0;
             font-weight: 500;
         }
 
-        .section {
-            margin-bottom: var(--space-8);
-            padding-bottom: var(--space-8);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .section:last-of-type {
-            border-bottom: none;
-        }
-
-        .section-title {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            color: var(--navy-blue);
-            margin-bottom: var(--space-4);
-            font-weight: 600;
-        }
-
-        .section-content {
-            padding: 0;
-        }
-
-        .section-content p {
-            margin-bottom: var(--space-4);
-            line-height: 1.7;
-        }
-
-        .section-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Single callout style — used sparingly for compliance items */
-        .callout {
-            border-left: 3px solid #dc2626;
-            padding: var(--space-3) var(--space-4);
-            margin: var(--space-4) 0;
-            color: var(--gray-700);
-            font-weight: 500;
-            line-height: 1.6;
-        }
-
-        /* Clean list without flex — fixes bold text spacing */
         .requirements-list {
             list-style: none;
-            padding: 0;
-            margin: var(--space-4) 0;
+            margin: var(--space-6) 0;
         }
 
+        /* 12px above and below each item, so two items are 24px apart. At the
+           8px this used to carry, a five item list read as a block of text
+           rather than as five things to check. */
         .requirements-list li {
-            padding: var(--space-2) 0 var(--space-2) var(--space-6);
+            padding: var(--space-3) 0 var(--space-3) var(--space-8);
             position: relative;
-            line-height: 1.6;
         }
 
+        /* A hyphen, not the en dash this used to carry. The content standard
+           allows neither an em nor an en dash anywhere on the property. */
         .requirements-list li::before {
-            content: "–";
+            content: "-";
             position: absolute;
-            left: var(--space-2);
-            color: var(--gray-500);
+            left: var(--space-3);
+            color: var(--gray-mid);
         }
 
-        .contact-section {
-            text-align: center;
-            padding: var(--space-8) 0;
-        }
+        /* ---- Buttons ------------------------------------------------------
+           One button treatment, Lions Blue. The version this replaces used a
+           teal #16a085 for the guide buttons and a #3b82f6 for the maps link,
+           neither of which is in the palette, and both of which read as another
+           product's controls sitting inside a Lions page. */
 
-        .contact-section h3 {
-            font-family: var(--font-display);
-            font-size: 1.4rem;
+        /* The margin this used to carry is gone. Spacing around a control now
+           comes from .btn-row, so a button cannot set its own distance from the
+           paragraph above it and end up different from the one on the next
+           section. */
+        .view-guide-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            min-height: var(--lions-tap-target);
+            min-width: 180px;
+            padding: var(--space-3) var(--space-6);
+            background: var(--blue-primary);
+            color: var(--white);
+            font-family: var(--font-heading);
+            font-size: 0.875rem;
             font-weight: 600;
-            margin-bottom: var(--space-4);
-            color: var(--navy-blue);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .view-guide-btn:hover  { background: var(--blue-hover); }
+        .view-guide-btn:active { background: var(--blue-active); }
+        .view-guide-btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
+        }
+
+        /* ---- Contact band --------------------------------------------------
+           Ported from .who-cta-section: 64px of padding rather than a full
+           band, a 28px heading rising to 34px, a 560px capped sub line, and a
+           12px gap between the controls. The canon uses the lighter band for a
+           closing call to action because it is a coda, not a section. */
+
+        .guide-cta {
+            background: var(--white);
+            border-top: 1px solid var(--gray-light);
+            padding: 64px 0;
+            text-align: center;
+        }
+
+        .guide-cta-heading {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--blue-primary);
+            margin-bottom: 12px;
+        }
+        @media (min-width: 768px) { .guide-cta-heading { font-size: 34px; } }
+
+        .guide-cta-sub {
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--gray-mid);
+            max-width: 560px;
+            margin: 0 auto 28px;
         }
 
         .contact-methods {
             display: flex;
             justify-content: center;
-            gap: var(--space-6);
+            gap: 12px;
             flex-wrap: wrap;
-            margin-top: var(--space-4);
         }
 
         .contact-method {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-4);
-            background: var(--navy-blue);
-            color: var(--white);
-            text-decoration: none;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            transition: all var(--transition-fast);
-            min-width: 160px;
-            justify-content: center;
-        }
-
-        .contact-method:hover {
-            background: var(--navy-blue-light);
-            transform: translateY(-1px);
-            color: var(--white);
-        }
-
-        .map-link {
             display: inline-flex;
             align-items: center;
-            gap: var(--space-2);
-            background: var(--info);
-            color: var(--white);
-            padding: var(--space-3) var(--space-4);
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all var(--transition-fast);
-            margin: var(--space-3) 0;
-        }
-
-        .map-link:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-            color: var(--white);
-        }
-
-        .contact-card {
-            background: var(--navy-blue);
-            color: var(--white);
-            padding: var(--space-8);
-            border-radius: var(--radius-lg);
-            text-align: center;
-            margin-top: var(--space-12);
-            transition: all var(--transition-fast);
-        }
-
-        .contact-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .contact-name {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: var(--space-2);
-        }
-
-        .contact-title {
-            font-style: italic;
-            margin-bottom: var(--space-4);
-            opacity: 0.9;
-        }
-
-        .contact-info {
-            display: flex;
             justify-content: center;
-            gap: var(--space-8);
-            flex-wrap: wrap;
-            margin-top: var(--space-6);
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
             gap: var(--space-2);
-        }
-
-        .contact-item a {
+            min-width: 160px;
+            min-height: var(--lions-tap-target);
+            padding: var(--space-3) var(--space-4);
+            background: var(--blue-primary);
             color: var(--white);
-            text-decoration: none;
-            transition: all var(--transition-fast);
+            font-family: var(--font-heading);
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            transition: background 0.2s;
         }
 
-        .contact-item a:hover {
-            text-decoration: underline;
-            transform: translateY(-1px);
+        .contact-method:hover  { background: var(--blue-hover); color: var(--white); }
+        .contact-method:active { background: var(--blue-active); }
+        .contact-method:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
 
-        /* Modal Styles */
+        /* ---- Modals -------------------------------------------------------- */
+
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            inset: 0;
+            /* Near Black at 55 percent. The scrim was pure black, which the
+               palette does not carry anywhere. */
+            background: rgba(20, 20, 19, 0.55);
             display: none;
             justify-content: center;
             align-items: center;
@@ -379,21 +429,17 @@
             padding: var(--space-4);
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.is-open { display: flex; }
 
         .modal-content {
             background: var(--white);
-            border-radius: var(--radius-xl);
+            border: var(--border-light);
+            border-radius: var(--radius-lg);
             padding: var(--space-8);
             max-width: 600px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            position: relative;
-            border: var(--border-light);
-            transition: all var(--transition-smooth);
         }
 
         .modal-header {
@@ -406,385 +452,253 @@
         }
 
         .modal-title {
-            font-family: var(--font-display);
+            font-family: var(--font-heading);
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--blue-primary);
         }
 
         .close-btn {
+            width: var(--lions-tap-target);
+            height: var(--lions-tap-target);
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--gray-mid);
             background: none;
             border: none;
-            font-size: 1.5rem;
+            border-radius: var(--lions-radius-sm);
             cursor: pointer;
-            color: var(--gray-500);
-            padding: var(--space-2);
-            border-radius: 50%;
-            transition: all var(--transition-fast);
+            transition: background 0.2s, color 0.2s;
         }
 
-        .close-btn:hover {
-            background: var(--gray-100);
-            color: var(--navy-blue);
-            transform: scale(1.1);
+        .close-btn:hover { background: var(--lions-blue-wash); color: var(--blue-primary); }
+        .close-btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
         }
 
-        .dress-code-item {
-            margin-bottom: var(--space-6);
-            text-align: center;
-        }
+        .dress-code-item { margin-bottom: var(--space-6); text-align: center; }
 
         .dress-code-item h4 {
+            font-family: var(--font-heading);
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--navy-blue);
+            color: var(--blue-primary);
             margin-bottom: var(--space-4);
         }
 
         .dress-code-visual {
             background: var(--white);
             border: var(--border-light);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             padding: var(--space-4);
             margin-bottom: var(--space-4);
-            min-height: 600px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            transition: all var(--transition-fast);
         }
 
-        .dress-code-visual:hover {
-            transform: scale(1.02);
+        .dress-code-visual img { max-height: 580px; object-fit: contain; }
+
+        .dress-code-description { font-weight: 500; line-height: 1.5; }
+
+        /* lions-chrome.css sets img { pointer-events: none } as part of the
+           image protection pass, so a cursor declared on the image itself never
+           shows. It belongs on the anchor, which is what the pointer actually
+           hits. */
+        .map-zoom { display: inline-block; cursor: zoom-in; }
+
+        .map-caption {
+            color: var(--gray-mid);
+            font-size: 0.85rem;
+            margin-top: var(--space-2);
         }
 
-        .dress-code-visual img {
-            max-width: 100%;
-            max-height: 580px;
-            object-fit: contain;
-            border-radius: var(--radius-md);
-        }
-
-        .dress-code-description {
-            color: var(--gray-700);
-            font-weight: 500;
-            line-height: 1.5;
-        }
-
-        .view-guide-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-4);
-            background: var(--warning);
-            color: var(--white);
-            text-decoration: none;
-            border-radius: var(--radius-md);
-            font-weight: 600;
-            font-size: 0.875rem;
-            border: none;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            margin: var(--space-2);
-            min-width: 180px;
-            justify-content: center;
-            flex: 0 1 auto;
-            font-family: var(--font-primary);
-        }
-
-        .view-guide-btn:hover {
-            background: #138c75;
-            transform: translateY(-1px);
-        }
-
-        /* Footer */
-        .footer {
-            background: transparent;
-            border: none;
-            padding: var(--space-8);
-            text-align: center;
-            margin-top: var(--space-12);
-            position: relative;
-            z-index: 1;
-        }
-
-        .footer-nav {
+        /* A control row is a break in the reading flow, so it gets 32px either
+           side of it and the canon's 12px between the controls themselves. The
+           bottom margin is dropped when the row ends a section, because the
+           band padding below it is already the separation. */
+        .btn-row {
             display: flex;
-            justify-content: center;
-            gap: var(--space-6);
-            margin-bottom: var(--space-4);
+            gap: 12px;
             flex-wrap: wrap;
+            margin: var(--space-8) 0;
         }
 
-        .footer a {
-            color: var(--white) !important;
-            text-decoration: none;
-            font-size: 0.925rem;
-            font-weight: 400;
-            transition: color var(--transition-fast);
-            font-family: var(--font-primary);
-        }
+        .btn-row:last-child { margin-bottom: 0; }
 
-        .footer a:hover {
-            color: var(--warning) !important;
-            text-decoration: underline;
-        }
+        /* ---- Responsive ---------------------------------------------------- */
 
-        .footer-brand {
-            margin-top: var(--space-4);
-            color: var(--white);
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .view-guide-btn {
-                min-width: 200px;
-                margin: var(--space-2);
-            }
-        }
-
-        /* Mobile styles */
         @media (max-width: 768px) {
-            body {
-                padding: var(--space-4);
-            }
-
-            .main-container {
-                padding: var(--space-6);
-                padding-top: var(--space-8);
-                min-height: calc(100vh - var(--space-8));
-            }
-
-            .page-title {
-                font-size: 2rem;
-                margin-bottom: var(--space-4);
-            }
-
-            .page-subtitle {
-                font-size: 1rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-                margin-bottom: var(--space-4);
-            }
-
-            .section-content {
-                padding: var(--space-4);
-            }
-
-            .highlight-box,
-            .alert-box,
-            .info-box {
-                padding: var(--space-4);
-                margin: var(--space-4) 0;
-            }
-
-            .contact-info {
-                flex-direction: column;
-                gap: var(--space-4);
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-4);
-            }
+            .contact-methods { flex-direction: column; align-items: center; }
         }
 
         @media (max-width: 640px) {
             .view-guide-btn {
                 width: 100%;
                 max-width: 280px;
-                margin: var(--space-2) auto;
-                display: block;
-                text-align: center;
             }
+            .btn-row { flex-direction: column; align-items: center; }
         }
 
         @media (max-width: 480px) {
-            .main-container {
-                padding: var(--space-4);
-                padding-top: var(--space-8);
-            }
-
-            .page-title {
-                font-size: 1.75rem;
-            }
-
-            .section-title {
-                font-size: 1.25rem;
-                flex-direction: column;
-                gap: var(--space-2);
-                text-align: center;
-            }
-
-            .modal-content {
-                margin: var(--space-4);
-                padding: var(--space-6);
-                max-height: 95vh;
-            }
-
-            .view-guide-btn {
-                display: block;
-                width: 100%;
-                max-width: 280px;
-                margin: var(--space-2) auto;
-                text-align: center;
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
+            /* The banner keeps a visible inset at the narrowest width, but 32px
+               of it either side leaves too little room for the line. */
+            .critical-requirement-banner { padding: var(--space-6); }
+            .modal-content { padding: var(--space-6); max-height: 95vh; }
         }
-    </style>
-    <style>
-        /* The Lions Blue page background the marketing site uses. This has to
-           come after the page's own style block, not before it: that block sets
-           body { background: var(--navy-blue) } and an equally specific rule
-           earlier in the source loses. Placing it last is the whole fix. One
-           property, nothing else touched. */
-        body { background: var(--lions-blue); }
     </style>
 </head>
 
-<body>
-    <!-- Universal Header Container -->
+<body class="los">
+<div class="page-bg">
+
     <!-- Site header. Markup and navigation come from /js/lions-nav.js,
          the single definition on this property, mirroring $nav_items in
          /includes/header.php on lionssports.club. -->
     <header id="site-header" data-nav="los"></header>
 
-    <div class="main-container">
-        <!-- Main Content -->
-        <main>
-            <h1 class="page-title">Lucas Oil Stadium Information</h1>
-            <p class="page-subtitle">Essential guidelines for working fundraising events at LOS</p>
+    <main>
 
-            <!-- NPO Playbook Requirement -->
-            <section class="critical-requirement-banner">
-                <h2 class="critical-title">You must complete the NPO Playbook before working at LOS</h2>
-                <ol class="critical-steps">
-                    <li>Review all content and watch all embedded videos in the <strong>NPO Playbook</strong></li>
-                    <li>Complete the <strong>Exit Survey</strong> on the final page and check "send me a copy of my responses"</li>
-                    <li>Forward your confirmation email to <strong>Jason Snively</strong> at <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a></li>
-                </ol>
-                <div class="critical-action">
-                    <a href="https://sodexo.pagetiger.com/chjewpx/1" target="_blank" rel="noopener" class="critical-btn">
-                        ACCESS NPO PLAYBOOK
-                    </a>
-                </div>
-            </section>
+        <!-- Hero band. Eyebrow, title, lede on a dark surface, which is the
+             opening every content page on lionssports.club uses. -->
+        <section class="guide-hero">
+            <div class="container">
+                <div class="guide-eyebrow">Volunteer Guide</div>
+                <h1 class="guide-title">Lucas Oil Stadium Information</h1>
+                <p class="guide-lede">Essential guidelines for working fundraising events at LOS</p>
+            </div>
+        </section>
 
-            <!-- What to Bring -->
-            <section class="section">
-                <h2 class="section-title">What to Bring</h2>
-                <div class="section-content">
-                    <p class="callout"><strong>Required documentation</strong> (printed copies — phone screens are not accepted):</p>
-                    <ul class="requirements-list">
-                        <li><strong>Valid state-issued picture ID</strong> (required for all volunteers)</li>
-                        <li><strong>16-year-olds without state ID:</strong> school ID with a copy of their birth certificate</li>
-                        <li><strong>Liquor license</strong> (if applicable) — printed copy</li>
-                        <li><strong>Training certificate</strong> (if applicable) — printed copy</li>
-                    </ul>
-
-                    <p><strong>Bags:</strong> You may bring a small purse, clutch, or belt bag no larger than 4.5" x 6.5", or a clear stadium bag 12" x 6" x 12" or smaller. Non-compliant bags will require a trip back to your car.</p>
-                </div>
-            </section>
-
-            <!-- What to Wear -->
-            <section class="section">
-                <h2 class="section-title">What to Wear</h2>
-                <div class="section-content">
-                    <p>You will be wearing your Lucas Oil Stadium shirt that was previously provided. If you do not have one yet, a shirt will be issued.</p>
-
-                    <ul class="requirements-list">
-                        <li><strong>Black pants</strong> — comfortable and professional (no workout pants, yoga pants, leggings, or jeans)</li>
-                        <li><strong>Lucas Oil Stadium shirt</strong> — previously provided; new volunteers will receive one</li>
-                        <li><strong>All black shoes</strong> — plain black athletic shoes</li>
-                        <li><strong>Hat</strong> — bring yours if you have one, otherwise one will be provided</li>
-                        <li><strong>Apron</strong> — provided; must always be worn inside the booth and removed when leaving the stand</li>
-                    </ul>
-
-                    <p class="callout">Fines are assessed for being out of compliance. Leggings, jeans, and sweatpants are not acceptable and you will be sent home.</p>
-
-                    <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-4);">
-                        <button class="view-guide-btn" onclick="openModal('womensModal')">
-                            View Women's Dress Code
-                        </button>
-                        <button class="view-guide-btn" onclick="openModal('mensModal')">
-                            View Men's Dress Code
-                        </button>
+        <!-- The NPO Playbook is the one requirement that stops a volunteer
+             working, so it holds a band on its own rather than sitting as the
+             first item in the guide. -->
+        <section class="guide-band">
+            <div class="container">
+                <div class="guide-measure">
+                    <div class="critical-requirement-banner">
+                        <h2 class="critical-title">You must complete the NPO Playbook before working at LOS</h2>
+                        <ol class="critical-steps">
+                            <li>Review all content and watch all embedded videos in the <strong>NPO Playbook</strong></li>
+                            <li>Complete the <strong>Exit Survey</strong> on the final page and check "send me a copy of my responses"</li>
+                            <li>Forward your confirmation email to <strong>Jason Snively</strong> at <a href="mailto:fundraising@lionssports.club">fundraising@lionssports.club</a></li>
+                        </ol>
+                        <div class="critical-action">
+                            <a href="https://sodexo.pagetiger.com/chjewpx/1" target="_blank" rel="noopener" class="critical-btn">
+                                ACCESS NPO PLAYBOOK
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Parking -->
-            <section class="section">
-                <h2 class="section-title">Parking</h2>
-                <div class="section-content">
-                    <p>Arrive downtown early to find free street parking near Lucas Oil Stadium. Paid lots are also available. Carpooling with other volunteers is strongly recommended. Allow extra time for parking and walking to check-in.</p>
+        <!-- The guide itself. One band holding every section, because these
+             are consecutive parts of one document a volunteer reads through,
+             not separate topics that each deserve a full band of their own. -->
+        <section class="guide-band">
+            <div class="container">
+                <div class="guide-measure">
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">What to Bring</h2>
+                        <p class="callout"><strong>Required documentation.</strong> Printed copies only; phone screens are not accepted.</p>
+                        <ul class="requirements-list">
+                            <li><strong>Valid state-issued picture ID</strong> (required for all volunteers)</li>
+                            <li><strong>16-year-olds without state ID:</strong> school ID with a copy of their birth certificate</li>
+                            <li><strong>Liquor license</strong> (if applicable), printed copy</li>
+                            <li><strong>Training certificate</strong> (if applicable), printed copy</li>
+                        </ul>
+
+                        <p><strong>Bags:</strong> You may bring a small purse, clutch, or belt bag no larger than 4.5" x 6.5", or a clear stadium bag 12" x 6" x 12" or smaller. Non-compliant bags will require a trip back to your car.</p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">What to Wear</h2>
+                        <p>You will be wearing your Lucas Oil Stadium shirt that was previously provided. If you do not have one yet, a shirt will be issued.</p>
+
+                        <ul class="requirements-list">
+                            <li><strong>Black pants.</strong> Comfortable and professional. No workout pants, yoga pants, leggings, or jeans.</li>
+                            <li><strong>Lucas Oil Stadium shirt.</strong> Previously provided; new volunteers will receive one.</li>
+                            <li><strong>All black shoes.</strong> Plain black athletic shoes.</li>
+                            <li><strong>Hat.</strong> Bring yours if you have one, otherwise one will be provided.</li>
+                            <li><strong>Apron.</strong> Provided. It must always be worn inside the booth and removed when leaving the stand.</li>
+                        </ul>
+
+                        <p class="callout">Fines are assessed for being out of compliance. Leggings, jeans, and sweatpants are not acceptable and you will be sent home.</p>
+
+                        <div class="btn-row">
+                            <button type="button" class="view-guide-btn" data-modal-open="womensModal">
+                                View Women's Dress Code
+                            </button>
+                            <button type="button" class="view-guide-btn" data-modal-open="mensModal">
+                                View Men's Dress Code
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Parking</h2>
+                        <p>Arrive downtown early to find free street parking near Lucas Oil Stadium. Paid lots are also available. Carpooling with other volunteers is strongly recommended. Allow extra time for parking and walking to check-in.</p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Arriving and Check-in</h2>
+                        <p>Enter through the <strong>ICC and LOS connector tunnel entrance</strong>, located on the northwest corner of South Street and Capitol Avenue. This is directly across the street from the north end of Lucas Oil Stadium. Look for the brick building that says "Indiana Convention Center."</p>
+
+                        <p><strong>GPS address:</strong> 200 W. South Street</p>
+
+                        <div class="btn-row">
+                            <a href="https://maps.google.com/maps?q=200+W.+South+Street,+Indianapolis,+IN" target="_blank" rel="noopener" class="view-guide-btn">Open in Maps</a>
+                        </div>
+
+                        <p><strong>Landmark:</strong> If you walk to the Peyton Manning statue and look north, you will see the connector tunnel entrance. This is the only entrance we use.</p>
+
+                        <p>Check-in is promptly at the designated time. When you walk in the doors, check-in is located <strong>to the left in the hallway</strong>. Complete check-in before going down the escalator.</p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Our Stand, Stand 124</h2>
+                        <p>Lions Sports Club is assigned to <strong>Stand 124</strong> (Indy Doghouse). After checking in, head through the connector tunnel, go through the doors at the end of the hallway, and take the main escalator up. At the top, <strong>turn left</strong> and walk until you reach Stand 124. Jason will meet you at the stand.</p>
+
+                        <div class="btn-row">
+                            <button type="button" class="view-guide-btn" data-modal-open="mapModal">
+                                View Concessions Map
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Stadium Rules</h2>
+                        <p class="callout">Violations of these rules can result in Lions being terminated from fundraising at LOS. Follow all instructions carefully.</p>
+
+                        <ul class="requirements-list">
+                            <li>No going into the stadium area at any time</li>
+                            <li>Do not sit in the concourse during the event</li>
+                            <li>No photography or video recording</li>
+                            <li>Do not take any giveaways from tables. They are for paying guests only.</li>
+                            <li>No eating in the stand</li>
+                            <li>Drinks are allowed on the grease trap only, nowhere else in the stand</li>
+                            <li><strong>Everyone must be ID'd for alcohol purchases.</strong> No exceptions.</li>
+                            <li>Wear your PPE at all times and check temperatures of every batch</li>
+                        </ul>
+
+                        <p><strong>Food:</strong> A meal is provided after check-in before your shift starts. You may bring your own snacks in your clear bag, and personal drinking containers are permitted.</p>
+                    </section>
+
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Arriving & Check-in -->
-            <section class="section">
-                <h2 class="section-title">Arriving & Check-in</h2>
-                <div class="section-content">
-                    <p>Enter through the <strong>ICC and LOS connector tunnel entrance</strong>, located on the northwest corner of South Street and Capitol Avenue. This is directly across the street from the north end of Lucas Oil Stadium. Look for the brick building that says "Indiana Convention Center."</p>
-
-                    <p><strong>GPS address:</strong> 200 W. South Street
-                        <br>
-                        <a href="https://maps.google.com/maps?q=200+W.+South+Street,+Indianapolis,+IN" target="_blank" rel="noopener" class="view-guide-btn" style="display: inline-flex; margin-top: var(--space-2);">Open in Maps</a>
-                    </p>
-
-                    <p><strong>Landmark:</strong> If you walk to the Peyton Manning statue and look north, you will see the connector tunnel entrance. This is the only entrance we use.</p>
-
-                    <p>Check-in is promptly at the designated time. When you walk in the doors, check-in is located <strong>to the left in the hallway</strong>. Complete check-in before going down the escalator.</p>
-                </div>
-            </section>
-
-            <!-- Our Stand -->
-            <section class="section">
-                <h2 class="section-title">Our Stand — Stand 124</h2>
-                <div class="section-content">
-                    <p>Lions Sports Club is assigned to <strong>Stand 124</strong> (Indy Doghouse). After checking in, head through the connector tunnel, go through the doors at the end of the hallway, and take the main escalator up. At the top, <strong>turn left</strong> and walk until you reach Stand 124. Jason will meet you at the stand.</p>
-
-                    <div style="margin-top: var(--space-4);">
-                        <button class="view-guide-btn" onclick="openModal('mapModal')">
-                            View Concessions Map
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Stadium Rules -->
-            <section class="section">
-                <h2 class="section-title">Stadium Rules</h2>
-                <div class="section-content">
-                    <p class="callout">Violations of these rules can result in Lions being terminated from fundraising at LOS. Follow all instructions carefully.</p>
-
-                    <ul class="requirements-list">
-                        <li>No going into the stadium area at any time</li>
-                        <li>Do not sit in the concourse during the event</li>
-                        <li>No photography or video recording</li>
-                        <li>Do not take any giveaways from tables — they are for paying guests only</li>
-                        <li>No eating in the stand</li>
-                        <li>Drinks are allowed on the grease trap only — nowhere else in the stand</li>
-                        <li><strong>Everyone must be ID'd for alcohol purchases</strong> — no exceptions</li>
-                        <li>Wear your PPE at all times and check temperatures of every batch</li>
-                    </ul>
-
-                    <p><strong>Food:</strong> A meal is provided after check-in before your shift starts. You may bring your own snacks in your clear bag, and personal drinking containers are permitted.</p>
-                </div>
-            </section>
-
-            <!-- Contact -->
-            <section class="contact-section">
-                <h3>Questions?</h3>
-                <p><strong>Jason Snively</strong> — Lions Fundraising Coordinator</p>
+        <!-- Closing band, ported from .who-cta-section. The heading was an h3
+             sitting under a run of h2 section titles, which skipped a level for
+             a screen reader; it is the last section of the page, so it is an
+             h2 like the rest. -->
+        <section class="guide-cta">
+            <div class="container">
+                <h2 class="guide-cta-heading">Questions?</h2>
+                <p class="guide-cta-sub"><strong>Jason Snively</strong>, Lions Fundraising Coordinator</p>
                 <div class="contact-methods">
                     <a href="mailto:fundraising@lionssports.club" class="contact-method">
                         Email
@@ -793,156 +707,10 @@
                         Text/Call (317) 796-8048
                     </a>
                 </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <nav class="footer-nav">
-            <a href="/">Home</a>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/events">Events</a>
-            <a href="/reimbursement">Reimbursement</a>
-            <a href="/sodexo-atc">Alcohol License Info</a>
-            <a href="https://lionssports.club" target="_blank" rel="noopener">Lions Sports Club</a>
-        </nav>
-        <div class="footer-brand">
-            © <span id="copyrightYear"></span> Lions Sports Club. All rights reserved.<br>
-            Giving God The Glory Through Sports
-        </div>
-    </footer>
-
-    <!-- Women's Dress Code Modal -->
-    <div id="womensModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Women's Attire</h3>
-                <button class="close-btn" onclick="closeModal('womensModal')">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="dress-code-item">
-                    <h4>Official Dress Code Requirements</h4>
-                    <div class="dress-code-visual">
-                        <img src="https://lionsfundraising.com/media/sodexo-women.jpg" alt="Women's Dress Code - Official Sodexo requirements for women's attire at Lucas Oil Stadium" style="max-width: 100%; height: auto; border-radius: var(--radius-md);">
-                    </div>
-                    <div class="dress-code-description">
-                        <strong>Follow the official Sodexo dress code requirements shown above.</strong><br>
-                        Professional appearance required - no exceptions.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Men's Dress Code Modal -->
-    <div id="mensModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Men's Attire</h3>
-                <button class="close-btn" onclick="closeModal('mensModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="dress-code-item">
-                    <h4>Official Dress Code Requirements</h4>
-                    <div class="dress-code-visual">
-                        <img src="https://lionsfundraising.com/media/sodexo-men.jpg" alt="Men's Dress Code - Official Sodexo requirements for men's attire at Lucas Oil Stadium" style="max-width: 100%; height: auto; border-radius: var(--radius-md);">
-                    </div>
-                    <div class="dress-code-description">
-                        <strong>Follow the official Sodexo dress code requirements shown above.</strong><br>
-                        Professional appearance required - no exceptions.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Concessions Map Modal -->
-    <div id="mapModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Concessions Street Level</h3>
-                <button class="close-btn" onclick="closeModal('mapModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center;">
-                    <a href="https://lionsfundraising.com/media/los-concessions-map.png" target="_blank" rel="noopener" title="Click to open full size">
-                        <img src="https://lionsfundraising.com/media/los-concessions-map.png" alt="Lucas Oil Stadium Concessions Map - Stand 124 circled" style="max-width: 100%; height: auto; border-radius: var(--radius-md); cursor: zoom-in;">
-                    </a>
-                    <p style="color: var(--gray-500); font-size: 0.85rem; margin-top: var(--space-2);">Click image to open full size</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        console.log('🦁 Initializing LOS page with Universal Systems v4.1 + v1.6...');
-
-        // Initialize Universal Header System
-        async function initializePage() {
-            try {
-                // Wait for Universal Auth to be ready
-                await window.LIONS_AUTH.initialize();
-                console.log('✅ Universal Auth v4.1 initialized');
-                
-                // The header renders itself from /js/lions-nav.js as soon as
-                // the shell element exists, so there is nothing to await here.
-                
-                console.log('🎉 Page initialization complete');
-                
-            } catch (error) {
-                console.error('❌ Page initialization failed:', error);
-            }
-        }
-
-        // Wait for systems to be available
-        function waitForSystems() {
-            if (window.LIONS_AUTH) {
-                console.log('🚀 Universal systems detected, initializing...');
-                initializePage();
-            } else {
-                console.log('⏳ Waiting for universal systems...');
-                setTimeout(waitForSystems, 100);
-            }
-        }
-
-        // Modal functionality
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // Initialize when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, starting system detection...');
-
-            // Dynamic year update
-            var currentYear = new Date().getFullYear();
-            document.getElementById('copyrightYear').textContent = currentYear;
-            
-            waitForSystems();
-            
-            // Close modals when clicking outside
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('active');
-                }
-            });
-
-            // Close modals with Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal.active').forEach(modal => {
-                        modal.classList.remove('active');
-                    });
-                }
-            });
-        });
-
-    </script>
+    </main>
 
     <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
     <section class="social-section">
@@ -966,7 +734,13 @@
         </div>
     </section>
 
-    <!-- ===== FOOTER ======================================================== -->
+    <!-- ===== FOOTER ========================================================
+         The page previously carried a second footer above this one, holding
+         Home, Dashboard, Events, Reimbursement, Alcohol License Info and a
+         Lions Sports Club link. Dashboard is an administrator surface, /events
+         is not a route, and the rest now live in the Fundraising dropdown, so
+         it was six links of which two were dead and four were duplicates. The
+         canon footer is copyright only. ==================================== -->
     <footer class="footer-section">
         <div class="container">
             <p class="footer-copyright">
@@ -975,6 +749,167 @@
             </p>
         </div>
     </footer>
+
+</div><!-- /page-bg -->
+
+<!-- Modals sit outside .page-bg so the blue surface cannot clip a fixed
+     overlay, which is the arrangement the page conformance recipe specifies. -->
+
+<div id="womensModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="womensModalTitle" hidden>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="womensModalTitle">Women's Attire</h3>
+            <button type="button" class="close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="dress-code-item">
+                <h4>Official Dress Code Requirements</h4>
+                <div class="dress-code-visual">
+                    <img src="/media/sodexo-women.jpg" alt="Official Sodexo dress code requirements for women's attire at Lucas Oil Stadium">
+                </div>
+                <div class="dress-code-description">
+                    <strong>Follow the official Sodexo dress code requirements shown above.</strong><br>
+                    Professional appearance required, no exceptions.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="mensModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="mensModalTitle" hidden>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="mensModalTitle">Men's Attire</h3>
+            <button type="button" class="close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="dress-code-item">
+                <h4>Official Dress Code Requirements</h4>
+                <div class="dress-code-visual">
+                    <img src="/media/sodexo-men.jpg" alt="Official Sodexo dress code requirements for men's attire at Lucas Oil Stadium">
+                </div>
+                <div class="dress-code-description">
+                    <strong>Follow the official Sodexo dress code requirements shown above.</strong><br>
+                    Professional appearance required, no exceptions.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="mapModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle" hidden>
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="mapModalTitle">Concessions Street Level</h3>
+            <button type="button" class="close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center;">
+                <a href="/media/los-concessions-map.png" target="_blank" rel="noopener" class="map-zoom" title="Open full size">
+                    <img src="/media/los-concessions-map.png" alt="Lucas Oil Stadium concessions map with Stand 124 circled">
+                </a>
+                <p class="map-caption">Click the image to open full size</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * /LOS page behaviour.
+ *
+ * Two changes from the version this replaces, both required by the standards
+ * rather than by taste.
+ *
+ * Logging goes through LIONS_LOG, which is silent unless the URL carries
+ * ?debug=1. The previous copy printed six unconditional console lines on every
+ * load, each prefixed with an emoji, on a property whose standards allow
+ * neither unconditional diagnostic output nor emoji in any file.
+ *
+ * The modals are wired with delegated listeners instead of six inline onclick
+ * attributes. Inline handlers are flagged by the conformance validator, cannot
+ * be reached by a content security policy, and put behaviour in the markup
+ * where the next person editing the copy will not look for it.
+ */
+(function () {
+    'use strict';
+
+    var LOG = window.LIONS_LOG || { log: function () {}, error: function () {} };
+
+    // The hidden attribute is the source of truth for whether a modal is up.
+    // lions-chrome.css carries [hidden] { display: none !important }, so the
+    // .is-open class only has to supply the flex layout once hidden is removed.
+    function openModal(id) {
+        var modal = document.getElementById(id);
+        if (!modal) { return; }
+        modal.removeAttribute('hidden');
+        modal.classList.add('is-open');
+        var close = modal.querySelector('[data-modal-close]');
+        if (close) { close.focus(); }
+    }
+
+    function closeModal(modal) {
+        if (!modal) { return; }
+        modal.classList.remove('is-open');
+        modal.setAttribute('hidden', '');
+    }
+
+    function closeAll() {
+        document.querySelectorAll('.modal.is-open').forEach(closeModal);
+    }
+
+    document.addEventListener('click', function (e) {
+        var opener = e.target.closest('[data-modal-open]');
+        if (opener) {
+            openModal(opener.getAttribute('data-modal-open'));
+            return;
+        }
+
+        if (e.target.closest('[data-modal-close]')) {
+            closeModal(e.target.closest('.modal'));
+            return;
+        }
+
+        // A click landing on the scrim itself, rather than on the panel inside
+        // it, dismisses. Testing the target directly rather than using closest
+        // is what distinguishes the two.
+        if (e.target.classList.contains('modal')) {
+            closeModal(e.target);
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeAll(); }
+    });
+
+    // Universal auth is not required to render this page; the guide is public
+    // and the header renders itself from lions-nav.js as soon as the shell
+    // element exists. Initializing it here keeps the identity controls
+    // consistent with the rest of the property when a volunteer is signed in.
+    function initAuth() {
+        if (!window.LIONS_AUTH || typeof window.LIONS_AUTH.initialize !== 'function') {
+            LOG.log('Universal auth not present; rendering the guide signed out.');
+            return;
+        }
+        window.LIONS_AUTH.initialize()
+            .then(function () { LOG.log('Universal auth initialized.'); })
+            .catch(function (error) { LOG.error('Universal auth failed to initialize:', error); });
+    }
+
+    // A bounded wait. The previous copy polled every 100ms forever, so a page
+    // that never loaded universal-auth.js spun for as long as it was open.
+    var waited = 0;
+    (function waitForSystems() {
+        if (window.LIONS_AUTH) { initAuth(); return; }
+        waited += 100;
+        if (waited >= 3000) {
+            LOG.log('Universal auth did not arrive within 3s; continuing without it.');
+            return;
+        }
+        setTimeout(waitForSystems, 100);
+    }());
+}());
+</script>
 
 </body>
 

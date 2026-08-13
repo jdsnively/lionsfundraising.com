@@ -98,6 +98,20 @@
             return next && next.startsWith('/') && !next.startsWith('//') ? next : null;
         }
 
+        /*
+         * Prefills the address when the visitor arrives from a page that already
+         * knows it, which today means the registration success screen. It is a
+         * convenience only: nothing is asserted about the address and the link
+         * is still emailed, so a wrong or hostile value costs the sender a mail
+         * to an inbox they already control.
+         */
+        (function prefillAddress() {
+            const supplied = new URLSearchParams(window.location.search).get('email');
+            if (supplied && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supplied.trim())) {
+                input.value = supplied.trim();
+            }
+        }());
+
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 

@@ -26,7 +26,8 @@ import {
     isSignInWithEmailLink,
     signInWithEmailLink,
     onAuthStateChanged,
-    signOut
+    signOut,
+    updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
     getFirestore,
@@ -37,7 +38,6 @@ import {
     getDocs,
     query,
     where,
-    limit,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -190,6 +190,26 @@ function safeInternalPath(value) {
         return null;
     }
     return path;
+}
+
+/**
+ * When a roster record was registered, in milliseconds, or Infinity when there
+ * is no usable date.
+ *
+ * /register writes registrationTimestamp. Older imports carry createdAt or
+ * timestamp. All three are read rather than assuming one, and a record with no
+ * usable date sorts LAST rather than sorting first as a zero would. Duplicated
+ * from signup/index.html rather than shared: this module is imported by pages
+ * that load nothing else, and the two copies exist to agree, so if one changes
+ * the other changes with it.
+ */
+function registeredAtMs(data) {
+    const raw = (data && (data.registrationTimestamp || data.createdAt || data.timestamp)) || null;
+    if (!raw) { return Number.POSITIVE_INFINITY; }
+    if (typeof raw.toDate === 'function') { return raw.toDate().getTime(); }
+    const d = raw instanceof Date ? raw : new Date(raw);
+    const t = d.getTime();
+    return isNaN(t) ? Number.POSITIVE_INFINITY : t;
 }
 
 function readStored(storage, key) {
@@ -359,7 +379,13 @@ class LionsAuthManager {
         // created an account for this address regardless, so an unregistered
         // visitor is signed straight back out rather than left holding a
         // session with no record behind it.
-        const record = await this.getUserData(credential.user.email);
+        //
+        // Every record on the address is read rather than one, because whether
+        // there is exactly one decides whether a display name can honestly be
+        // written. The first is the record this session represents, under the
+        // ordering getUserRecords documents.
+        const records = await this.getUserRecords(credential.user.email);
+        const record = records.length ? records[0].data : null;
 
         if (!record) {
             log.warn('Authenticated address has no roster record.');
@@ -369,6 +395,8 @@ class LionsAuthManager {
               + 'first, or email fundraising@lionssports.club and we will add you.'
             );
         }
+
+        await this.syncDisplayName(credential.user, records);
 
         this.currentUser = credential.user;
         this.userData = record;
@@ -386,29 +414,120 @@ class LionsAuthManager {
     }
 
     /**
-     * Returns the roster record for an address, or null.
+     * Copies the volunteer's roster name onto their Firebase Auth record.
      *
-     * The roster is keyed by volunteer name, so the lookup is a query on the
-     * email field. Records store the address in lower case following the July
-     * 2026 deduplication; a record saved with different casing will not match.
+     * WHY THIS EXISTS
+     *
+     * The sign-in email template resolves %DISPLAY_NAME% from the Firebase Auth
+     * user record and from nowhere else. This module never wrote one, so
+     * displayName is null on every account in production and a template reading
+     * "Hello %DISPLAY_NAME%," renders "Hello,". This has to land before the
+     * template is changed in the console, or the greeting ships empty.
+     *
+     * WHY AT SIGN-IN AND NOT AT REGISTRATION
+     *
+     * Registration happens before there is a Firebase Auth account: the form is
+     * submitted by someone with no session, which is why the create rule on
+     * Lions-Fundraising-Users is the one unauthenticated grant on the project.
+     * There is no user object to write to at that point. The first completed
+     * sign-in is the earliest moment both halves exist.
+     *
+     * Existing accounts therefore pick a name up the next time they sign in,
+     * and the greeting fills in gradually rather than all at once. That is
+     * acceptable: the alternative is a one-off administrative script against
+     * every account, for a greeting.
+     *
+     * WHY A SHARED ADDRESS GETS NO NAME AT ALL
+     *
+     * Firebase Auth holds one account per address, so a family sharing one
+     * address has one displayName between them. Whatever is written, somebody
+     * in that household is greeted by another member's name. "Hello, Deborah"
+     * arriving for her husband is worse than "Hello,": the first is wrong and
+     * the second is merely plain. So the name is written only when the address
+     * resolves to exactly one roster record, which is most of the roster.
+     *
+     * Written only when it would change. A volunteer signing in for the tenth
+     * time should not cost a profile write, and an unchanged write would still
+     * count against the account's rate limits.
+     *
+     * Failure is swallowed on purpose. A greeting in an email is not worth
+     * refusing somebody entry to the application over.
      */
-    async getUserData(email) {
+    async syncDisplayName(firebaseUser, records) {
+        if (!Array.isArray(records) || records.length !== 1) {
+            log.log('Display name left unset: the address carries '
+                  + ((records && records.length) || 0) + ' roster records.');
+            return;
+        }
+
+        const name = String((records[0].data && records[0].data.name) || '').trim();
+        if (!name || name === firebaseUser.displayName) {
+            return;
+        }
+
+        try {
+            await updateProfile(firebaseUser, { displayName: name });
+            log.log('Display name set from the roster record.');
+        } catch (error) {
+            log.warn('Display name could not be set. Sign-in continues.', error);
+        }
+    }
+
+    /**
+     * Every roster record on an address, ordered, or an empty array.
+     *
+     * The roster is keyed by volunteer name and a family shares one email
+     * address, so an address can carry several records. Records store the
+     * address in lower case following the July 2026 deduplication; a record
+     * saved with different casing will not match.
+     *
+     * ORDERING. Earliest registration first, document id ascending to break a
+     * tie. Both keys come from the documents themselves, so the answer is the
+     * same on every load and on every device. This is the same total order
+     * signup/index.html uses, deliberately: two pages that disagree about which
+     * family member is at the keyboard is worse than either answer.
+     */
+    async getUserRecords(email) {
         const address = normalizeEmail(email);
         if (!address) {
-            return null;
+            return [];
         }
 
         try {
             const snapshot = await getDocs(query(
                 collection(db, COLLECTIONS.USERS),
-                where('email', '==', address),
-                limit(1)
+                where('email', '==', address)
             ));
-            return snapshot.empty ? null : snapshot.docs[0].data();
+
+            return snapshot.docs
+                .map(d => ({ id: d.id, data: d.data() }))
+                .sort((a, b) => {
+                    const ta = registeredAtMs(a.data);
+                    const tb = registeredAtMs(b.data);
+                    if (ta !== tb) { return ta < tb ? -1 : 1; }
+                    if (a.id === b.id) { return 0; }
+                    return a.id < b.id ? -1 : 1;
+                });
+
         } catch (error) {
             log.error('Roster lookup failed.', error);
-            return null;
+            return [];
         }
+    }
+
+    /**
+     * Returns one roster record for an address, or null.
+     *
+     * This previously issued `where('email','==') + limit(1)`. Firestore
+     * promises no ordering on a query without orderBy, so on any address
+     * carrying more than one record it returned an arbitrary family member,
+     * and a different one between page loads was permitted. Callers use this
+     * for the volunteer's name and their profile, so the answer has to be
+     * stable even when it cannot be certain.
+     */
+    async getUserData(email) {
+        const records = await this.getUserRecords(email);
+        return records.length ? records[0].data : null;
     }
 
     /**

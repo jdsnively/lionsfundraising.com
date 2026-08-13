@@ -4,1004 +4,825 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lions Fundraising</title>
-    <!-- Protected favicon implementation -->
-    <link rel="icon" type="image/png" id="dynamicFavicon">
-    <link rel="shortcut icon" type="image/png" id="dynamicFaviconShortcut">
-    <link rel="apple-touch-icon" id="dynamicFaviconApple">
+    <title>Lions Fundraising - Lions Sports Club</title>
+    <meta name="description"
+          content="Work concessions at Lucas Oil Stadium and earn toward your season with Lions Sports Club.">
+
+    <link rel="icon" type="image/png" href="/media/lsc_head_128.png">
+    <link rel="apple-touch-icon" href="/media/lsc_head_128.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Photography and the brand lockup are served from lionssports.club.
+         Warming the connection early keeps the split band from painting an
+         empty column while the socket is still being negotiated. -->
+    <link rel="preconnect" href="https://lionssports.club">
+
+    <link rel="stylesheet" href="/css/lions-tokens.css?v=1">
+    <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
+
+    <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-access.js?v=1"></script>
+    <script src="/js/lions-nav.js?v=2" defer></script>
+    <script src="/js/lions-header-identity.js?v=1" defer></script>
+
     <style>
-        :root {
-            /* PRIMARY BRAND COLORS - EXACT MATCH TO DASHBOARD */
-            --navy-blue: #1a365d;
-            --navy-blue-light: #2c5282;
-            --navy-blue-dark: #1a202c;
+        /* --------------------------------------------------------------------
+           Lions Fundraising landing page.
 
-            /* NEUTRAL GRAYS - EXACT MATCH TO DASHBOARD */
-            --white: #ffffff;
-            --gray-50: #fafafa;
-            --gray-100: #f4f4f5;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-900: #111827;
+           REFERENCE. This page is modelled on lionssports.club/ and
+           lionssports.club/fundraising, which are the marketing site's landing
+           pages. An earlier version of this file was modelled on /who-we-are,
+           which is a board directory: one flat blue field, three light cards,
+           a bulleted list and no photography. Correct against the validator,
+           wrong against the site. Every number below is measured off the
+           marketing stylesheet site.css or off the two pages named above;
+           none is invented here. Where a number is a blend of two canon
+           sources the comment says so.
 
-            /* SEMANTIC COLORS - EXACT MATCH TO DASHBOARD */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --info: #3b82f6;
+           The devices that give the marketing landing pages their life, in the
+           order they appear here:
+             1. Gold accent phrase inside a headline. The strongest device on
+                the property. Ported from .intro-title span and
+                .fundraising-hero h1 span.
+             2. A large branded panel carrying the full club lockup rather
+                than the small head mark. Ported from .hero-container. The
+                reference panel is Near Black; this one is Ghost White, for
+                the artwork reason set out at .hero-panel below.
+             3. A full-bleed split band: photograph on one side, dark content
+                panel on the other. Ported from .intro-section / .intro-grid.
+             4. Dark and blue bands alternating down the page rather than one
+                continuous blue field.
+             5. Paired calls to action, one solid and one outlined. Ported from
+                .btn-blue and .btn-outline.
+             6. Centered section headings with a short rule beneath. The shared
+                .section-heading and .hr-accent already supply this.
 
-            /* TYPOGRAPHY - EXACT MATCH TO DASHBOARD */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --font-display: 'Playfair Display', 'Times New Roman', serif;
+           TOKENS. No custom property is declared in this block. The token
+           bridge in lions-chrome.css owns --white, --black, --dark, --blue-*,
+           --gold, --cross-red, --gray-* and --font-*, and a page style block
+           comes after the stylesheet link and wins that cascade. Redeclaring
+           one of those names silently repaints the shared header, social
+           section and footer. That defect has already shipped once on this
+           property, so this page introduces no property names at all.
 
-            /* FLAT DESIGN - EXACT MATCH TO DASHBOARD */
-            --border-light: 1px solid var(--gray-200);
-            --border-medium: 2px solid var(--gray-300);
-            --border-focus: 2px solid var(--navy-blue);
+           FLAT. No gradient, shadow, blur or transform anywhere. The energy on
+           this page is meant to come from color, scale, type and photography.
+           Hover states move color only.
 
-            /* BORDER RADIUS - EXACT MATCH TO DASHBOARD */
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
+           IMAGES. lions-chrome.css sets img { pointer-events: none } as part
+           of image protection, so an image can never be its own cursor or
+           click target. Nothing here wraps an image in a link; if that ever
+           changes, the anchor and not the img carries the affordance.
+           -------------------------------------------------------------------- */
 
-            /* SPACING - EXACT MATCH TO DASHBOARD */
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-6: 1.5rem;
-            --space-8: 2rem;
-            --space-12: 3rem;
-            --space-16: 4rem;
+        /* ---- Shared band scaffolding --------------------------------------
+           Blue bands use the /about and /affiliations rhythm from the
+           marketing home: 64px top and bottom, 48px under 768. Full-bleed dark
+           bands take their height from the panel inside them instead. */
 
-            /* LOGO DATA - EXACT MATCH TO DASHBOARD */
-            --logo-data: url('https://lionsfundraising.com/media/lsc_head.png');
+        .band {
+            padding: 64px 0;
+        }
+        @media (max-width: 767px) { .band { padding: 48px 0; } }
+
+        /* The gold accent phrase. On the marketing site this is written inline
+           as style="color: #D4AF37" on a span. It is used often enough here to
+           earn a class, and the class reads the token rather than repeating
+           the literal. */
+        .accent { color: var(--gold); }
+
+        /* ---- Buttons ------------------------------------------------------
+           Ported from .btn-primary, .btn-blue and .btn-outline in site.css.
+
+           lions-app.css already carries a .btn, and it is deliberately not
+           used here: that button is the application control used on the signup
+           and account forms, League Spartan and 8px radius. The marketing
+           landing pattern is a wider, quieter Helvetica World control at 4px,
+           and this page is a landing page. The two never appear together. */
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px 32px;
+            min-height: 56px;
+            border-radius: 4px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.071em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .btn-blue {
+            background: var(--blue-primary);
+            border-color: var(--blue-primary);
+            color: var(--white);
+        }
+        .btn-blue:hover {
+            background: var(--blue-hover);
+            border-color: var(--blue-hover);
+        }
+        .btn-blue:active {
+            background: var(--blue-active);
+            border-color: var(--blue-active);
         }
 
-        body {
-            font-family: var(--font-primary);
-            background: var(--navy-blue);
-            min-height: 100vh;
-            color: var(--gray-700);
-            position: relative;
-            padding: var(--space-6);
+        .btn-outline {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.35);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .btn-outline:hover {
+            border-color: var(--white);
+            color: var(--white);
         }
 
-        /* STANDARDIZED MAIN CONTAINER - matches header system exactly */
-        .main-container {
-            max-width: 1600px;
+        /* Every button on this page sits on a Near Black or dark panel, so the
+           on-dark focus ring is the correct one throughout. */
+        .btn-primary:focus-visible {
+            outline: var(--lions-focus-ring-on-dark);
+            outline-offset: var(--lions-focus-offset);
+        }
+
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        /* Under 420px two buttons side by side each fall to about 150px and the
+           uppercase labels break mid-word. Stack them instead. */
+        @media (max-width: 419px) {
+            .cta-row { flex-direction: column; align-items: stretch; }
+        }
+
+        /* ---- Band 1: branded hero panel -----------------------------------
+           Ported from .hero-container on the marketing home: a fixed width
+           panel centered on the Royal Blue page, carrying the full club lockup
+           rather than the small head mark the header uses.
+
+           Three departures from the source, all deliberate.
+
+           Height. The marketing panel is locked to aspect-ratio 16/9 because
+           it holds a video. With only a logo inside that leaves roughly 300px
+           of empty surface above the fold, so height here comes from padding.
+
+           Corners. The marketing panel rounds 12px 12px 0 0 because a second
+           element used to sit flush beneath it. Nothing sits flush beneath
+           this one, so all four corners round.
+
+           Surface. The marketing panel is Near Black, and it can be, because
+           the mark it shows during the brand reveal is lsc_legacy_mark_640,
+           the retired LIONS lockup, which is drawn with white keylines for
+           exactly that surface. The current lockup, lsc_full_1024, was
+           generated from LSC_Full_Transparent and is drawn for light
+           surfaces: the LSC wordmark is Near Black with a thin blue keyline
+           and the tagline is small blue type. Rendered on Near Black at hero
+           scale the wordmark and tagline vanish and the panel reads as a hole;
+           that was checked in a screenshot, not assumed.
+           The current mark is the canonical one (it is the JSON-LD logo and
+           the default og:image on the marketing site), so the mark stays and
+           the surface changes: Ghost White, which is what the artwork was
+           drawn against. It is also the only light note on a page that is
+           otherwise Royal Blue and Near Black throughout, and it puts the
+           brand at full strength above the fold. */
+
+        .hero-brand {
+            padding: 32px 0 40px;
+        }
+        @media (min-width: 768px) { .hero-brand { padding: 40px 0 48px; } }
+
+        /* Width. The marketing panel is capped at 1000px and holds its logo at
+           40 percent of that. Held to 1000px here the mark would sit in a wide
+           empty plate and read as letterhead, so the cap comes in to 720 and
+           the 40 percent proportion is kept. */
+        .hero-panel {
+            max-width: 720px;
             margin: 0 auto;
             background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            position: relative;
-            z-index: 1;
-            min-height: calc(100vh - calc(var(--space-6) * 2) - calc(var(--space-4) * 2) - 120px);
-            border: var(--border-light);
-        }
-
-        /* HOME PAGE SPECIFIC STYLES */
-        .hero-section {
+            border-radius: 12px;
+            padding: 36px 24px;
             text-align: center;
-            margin-bottom: var(--space-12);
         }
+        @media (min-width: 768px)  { .hero-panel { padding: 44px 40px; } }
+        @media (min-width: 1280px) { .hero-panel { padding: 48px; } }
 
-        .hero-title {
-            font-family: var(--font-display);
-            font-size: 3.5rem;
-            color: var(--navy-blue);
-            font-weight: 700;
-            margin-bottom: var(--space-4);
-            line-height: 1.1;
+        /* Source artwork is 1024px wide and renders here at 200 to 280, which
+           holds up on a high density display without a second asset. */
+        .hero-mark {
+            width: 200px;
+            height: auto;
+            margin: 0 auto;
         }
+        @media (min-width: 768px)  { .hero-mark { width: 240px; } }
+        @media (min-width: 1280px) { .hero-mark { width: 280px; } }
 
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--gray-500);
-            max-width: 600px;
-            margin: 0 auto var(--space-8);
-            line-height: 1.5;
-            font-weight: 500;
-        }
+        /* ---- Band 2: split hero -------------------------------------------
+           Ported from .intro-section and .intro-grid: full bleed, Near Black,
+           photograph filling one half and a content panel filling the other,
+           stacking below 1024. */
 
-        .hero-actions {
+        .split {
+            background: var(--black);
+            overflow: hidden;
             display: flex;
-            gap: var(--space-4);
-            justify-content: center;
-            align-items: center;
             flex-wrap: wrap;
         }
 
-        .hero-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-3);
-            padding: var(--space-6) var(--space-8);
-            text-decoration: none;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            font-size: 1.125rem;
-            border: var(--border-medium);
-            min-height: 56px;
-            transition: all 0.2s ease;
-            min-width: 150px;
-            justify-content: center;
-            cursor: pointer;
+        .split-media,
+        .split-panel {
+            flex: 1 1 100%;
+        }
+        @media (min-width: 1024px) {
+            .split-media,
+            .split-panel { flex: 1 1 50%; max-width: 50%; }
         }
 
-        .hero-btn-signin {
-            background: var(--white);
-            color: var(--navy-blue);
-            border-color: var(--navy-blue);
-        }
-
-        .hero-btn-register {
-            background: var(--navy-blue);
-            color: var(--white);
-            border-color: var(--navy-blue);
-        }
-
-        .hero-btn-signin:hover {
-            background: var(--navy-blue);
-            color: var(--white);
-            transform: translateY(-1px);
-        }
-
-        .hero-btn-register:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
-            transform: translateY(-1px);
-        }
-
-        /* Features Section */
-        .features-section {
-            margin-bottom: var(--space-12);
-            text-align: center;
-        }
-
-        .features-title {
-            font-family: var(--font-display);
-            font-size: 2.25rem;
-            color: var(--navy-blue);
-            margin-bottom: var(--space-8);
-            font-weight: 600;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-6);
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            background: var(--white);
-            border: var(--border-light);
-            border-radius: var(--radius-lg);
-            padding: var(--space-8);
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .feature-card:hover {
-            border-color: var(--navy-blue);
-            transform: translateY(-2px);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: var(--space-4);
-        }
-
-        .feature-title {
-            font-family: var(--font-display);
-            font-size: 1.25rem;
-            color: var(--navy-blue);
-            margin-bottom: var(--space-3);
-            font-weight: 600;
-        }
-
-        .feature-description {
-            color: var(--gray-700);
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        /* Process Steps Section */
-        .upcoming-section {
-            background: var(--gray-50);
-            border-radius: var(--radius-xl);
-            padding: var(--space-12);
-            margin-bottom: var(--space-12);
-            border: var(--border-light);
-        }
-
-        .upcoming-title {
-            font-family: var(--font-display);
-            font-size: 2.25rem;
-            color: var(--navy-blue);
-            text-align: center;
-            margin-bottom: var(--space-8);
-            font-weight: 600;
-        }
-
-        .process-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-8);
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .step {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--space-4);
-            text-align: left;
-        }
-
-        .step-number {
-            width: 50px;
-            height: 50px;
-            background: var(--navy-blue);
-            color: var(--white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .step-content h3 {
-            font-family: var(--font-display);
-            color: var(--navy-blue);
-            margin-bottom: var(--space-2);
-            font-weight: 600;
-            font-size: 1.125rem;
-        }
-
-        .step-content p {
-            color: var(--gray-700);
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        /* LOGIN MODAL STYLES */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* height:100% is required because the chrome reset sets img to
+           height:auto; without it object-fit has no box to cover and the
+           column letterboxes. min-height keeps the photograph readable when
+           the panel beside it is short. */
+        .split-media img {
             width: 100%;
             height: 100%;
-            background: rgba(26, 54, 93, 0.75);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            padding: var(--space-4);
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-container {
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
-            border: var(--border-medium);
-            border-color: var(--navy-blue);
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: var(--space-4);
-            right: var(--space-4);
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--gray-500);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-
-        .modal-close:hover {
-            background: var(--gray-100);
-            color: var(--gray-700);
-        }
-
-        .login-header {
-            margin-bottom: var(--space-8);
-            text-align: center;
-        }
-
-        .login-title {
-            font-family: var(--font-display);
-            font-size: 2.5rem;
-            color: var(--navy-blue);
-            margin-bottom: var(--space-4);
-            font-weight: 600;
-        }
-
-        .login-subtitle {
-            color: var(--gray-500);
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: var(--space-6);
-        }
-
-        .form-group {
-            margin-bottom: var(--space-4);
-        }
-
-        .form-group label {
+            min-height: 250px;
+            object-fit: cover;
+            object-position: center;
             display: block;
-            font-weight: 600;
-            color: var(--navy-blue);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-2);
+        }
+        @media (min-width: 1024px) {
+            .split-media img { min-height: 420px; }
         }
 
-        .form-group input {
-            width: 100%;
-            padding: var(--space-3);
-            border: var(--border-medium);
-            border-radius: var(--radius-md);
-            background: var(--white);
-            color: var(--gray-700);
-            font-size: 1rem;
-            font-family: var(--font-primary);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        /* The marketing source puts the photograph first in the DOM, which on
+           a phone pushes the headline below the fold. On a landing page whose
+           only job is the signup, the message leads and the photograph
+           follows; at 1024 and up the order returns to the canon layout. */
+        .split-media { order: 2; }
+        @media (min-width: 1024px) { .split-media { order: 0; } }
+
+        .split-panel {
+            display: flex;
+            align-items: stretch;
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--navy-blue);
-            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
-        }
-
-        .password-container {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: var(--space-3);
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--gray-500);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: var(--space-1);
-            transition: color 0.2s ease;
-        }
-
-        .password-toggle:hover {
-            color: var(--navy-blue);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-4);
-            background: var(--navy-blue);
-            color: var(--white);
-            text-decoration: none;
-            border-radius: var(--radius-md);
-            border: var(--border-medium);
-            border-color: var(--navy-blue);
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            font-family: var(--font-primary);
-            min-height: 44px;
+        .split-inner {
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            transition: all 0.2s ease;
+            align-items: center;
+            text-align: center;
             width: 100%;
+            min-height: 300px;
+            padding: 48px 24px;
         }
+        @media (min-width: 1024px) { .split-inner { padding: 56px 40px; } }
 
-        .btn:hover {
-            background: var(--navy-blue-dark);
-            border-color: var(--navy-blue-dark);
+        /* Scale from .intro-title, weight and tracking from
+           .fundraising-hero h1. The marketing intro sets 600 because that
+           headline runs to three words on two lines; this one is two words on
+           one line and carries the whole page, so it takes the heavier of the
+           two canon settings. */
+        .split-title {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            margin-bottom: 20px;
         }
+        @media (min-width: 768px)  { .split-title { font-size: 38px; } }
+        @media (min-width: 1280px) { .split-title { font-size: 44px; } }
+        @media (min-width: 1536px) { .split-title { font-size: 48px; } }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* .hero-lede from /fundraising rather than .intro-desc from the home
+           split. Both are canon; the difference is the ink. --gray-light reads
+           as a promise, the dimmer --gray-text reads as a caption, and this
+           line is the promise. The measure is capped in characters rather than
+           pixels so the copy stays near 70 characters a line at every width. */
+        .split-lede {
+            font-family: var(--font-body);
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            max-width: 46ch;
         }
+        @media (min-width: 768px) { .split-lede { font-size: 20px; } }
 
-        .login-status {
-            padding: var(--space-3);
-            margin: var(--space-4) 0;
-            border-radius: var(--radius-md);
-            font-weight: 500;
-            display: none;
+        /* ---- Band 3: how it works -----------------------------------------
+           Blue field. Cards ported from .affiliation-card on the marketing
+           home: Near Black on the blue, a single hairline border, square
+           corners, no lift on hover. */
+
+        .band-heading { color: var(--white); }
+        .band-heading .hr-accent { background: var(--blue-light); }
+
+        .how-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        @media (min-width: 900px) { .how-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .how-card {
+            background: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 40px 32px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        .how-card:hover { border-color: rgba(255, 255, 255, 0.18); }
+
+        .how-card h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+        @media (min-width: 768px) { .how-card h3 { font-size: 24px; } }
+
+        /* rgb(198, 198, 214) is the canon body tone on a dark card, ported
+           from .affiliation-tag. It is a shade cooler than --gray-text and
+           holds up against the Royal Blue surrounding the card. */
+        .how-card p {
+            font-family: var(--font-body);
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgb(198, 198, 214);
+        }
+        @media (min-width: 768px) { .how-card p { font-size: 16px; } }
+
+        /* ---- Band 4: what you need ----------------------------------------
+           The split band again, mirrored, so the page closes on a photograph
+           rather than on a list. */
+
+        .need-heading {
+            color: var(--white);
+            font-size: 28px;
+            margin-bottom: 32px;
+        }
+        @media (min-width: 768px)  { .need-heading { font-size: 32px; } }
+        @media (min-width: 1280px) { .need-heading { font-size: 38px; } }
+        .need-heading .hr-accent { background: var(--blue-light); }
+
+        /* A requirement list, not a bulleted paragraph. Each row is marked by
+           a 2px Lions Blue border on its left edge rather than by a glyph,
+           which keeps the text left edges aligned, needs no list marker, and
+           puts a third instance of the brand blue on a Near Black band. */
+        .need-list {
+            list-style: none;
             text-align: left;
-            line-height: 1.4;
-            font-size: 0.875rem;
+            max-width: 46ch;
+            margin: 0;
         }
 
-        .login-status.success {
-            background: #d1fae5;
-            color: var(--success);
-            border: 1px solid var(--success);
+        .need-list li {
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-light);
+            padding: 14px 0 14px 20px;
+            border-left: 2px solid var(--blue-primary);
+        }
+        .need-list li + li { margin-top: 12px; }
+
+        /* Mirror of band 2: on wide screens the panel leads and the
+           photograph closes the page on the right. */
+        .split-need .split-media { order: 2; }
+
+        /* The sideline photograph is a 320px wide original, the only game shot
+           on the marketing server small enough to belong on a landing page.
+           At 1024 and up it fills a half column and the upscale is modest. In
+           the stacked layout it would otherwise be asked to fill the whole
+           viewport, so it is capped and centered on the band instead of run
+           full bleed. Sharpness beats width here. */
+        @media (max-width: 1023px) {
+            .split-need .split-media img {
+                max-width: 560px;
+                margin: 0 auto;
+            }
+        }
+
+        /* ---- Numbered steps ------------------------------------------------
+           The three how-cards carried nouns (the season, the shift, what you
+           earn), which described the program but never told a visitor what
+           to do. They are steps now, and the number is the device: Lions Blue
+           on the Near Black card, the same third instance of the brand blue
+           the need-list borders already establish. */
+
+        .step-num {
             display: block;
+            font-family: var(--font-heading);
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--blue-light);
+            margin-bottom: 16px;
         }
 
-        .login-status.error {
-            background: #fef2f2;
-            color: var(--error);
-            border: 1px solid var(--error);
-            display: block;
+        /* ---- Signup strip --------------------------------------------------
+           A thin Lions Blue band directly under the hero. It exists for the
+           people already on the roster: the hero call to action is Register
+           and must stay Register, but a registered volunteer who has not
+           picked dates is the single largest source of unstaffed shifts, and
+           until now this page offered them nothing at all. */
+
+        .strip {
+            background: var(--blue-primary);
+            padding: 28px 0;
         }
 
-        .login-options {
-            margin-top: var(--space-6);
+        .strip-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 12px 24px;
             text-align: center;
         }
 
-        .login-options a {
-            color: var(--navy-blue);
+        .strip-text {
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.5;
+            color: var(--white);
+            margin: 0;
+        }
+        @media (min-width: 768px) { .strip-text { font-size: 18px; } }
+
+        .strip-link {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.071em;
+            text-transform: uppercase;
             text-decoration: none;
-            font-weight: 500;
-            margin: 0 var(--space-3);
-            transition: color 0.2s ease;
+            color: var(--white);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            padding-bottom: 2px;
+            white-space: nowrap;
+            transition: border-color 0.2s;
+        }
+        .strip-link:hover { border-bottom-color: var(--white); }
+        .strip-link:focus-visible {
+            outline: var(--lions-focus-ring-on-dark);
+            outline-offset: var(--lions-focus-offset);
         }
 
-        .login-options a:hover {
-            color: var(--navy-blue-dark);
-            text-decoration: underline;
-        }
+        /* ---- Earnings band -------------------------------------------------
+           Near Black, one figure carrying the band. The copy this replaces
+           said "a flat rate for the event or a percentage of sales, whichever
+           is higher", which is not the formula the club actually pays. See
+           ADR-005: one hourly rate for everyone on the shift, and a floor. */
 
-        /* FOOTER - EXACT MATCH TO DASHBOARD */
-        .footer {
-            background: transparent;
-            border: none;
-            padding: var(--space-8);
+        .earn-band { background: var(--dark); }
+        .earn-heading { color: var(--white); }
+        .earn-heading .hr-accent { background: var(--blue-light); }
+
+        .earn-figure {
+            font-family: var(--font-heading);
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            color: var(--gold);
             text-align: center;
-            margin-top: var(--space-12);
-            position: relative;
-            z-index: 1;
+            margin-bottom: 12px;
+        }
+        @media (min-width: 768px) { .earn-figure { font-size: 72px; } }
+
+        .earn-figure-label {
+            font-family: var(--font-body);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.071em;
+            text-transform: uppercase;
+            color: var(--gray-light);
+            text-align: center;
+            margin-bottom: 32px;
         }
 
-        .footer-nav {
+        .earn-copy {
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--gray-light);
+            max-width: 62ch;
+            margin: 0 auto 18px;
+            text-align: center;
+        }
+        @media (min-width: 768px) { .earn-copy { font-size: 17px; } }
+        .earn-copy:last-child { margin-bottom: 0; }
+
+        /* ---- Secondary centered action -------------------------------------
+           Get your permit sat beside Register in a two button row, which split
+           the page's one decision in half. Register is the decision; the
+           permit is a task for the subset who will serve alcohol, so it drops
+           to its own centered line beneath. */
+
+        .cta-sub {
             display: flex;
             justify-content: center;
-            gap: var(--space-6);
-            margin-bottom: var(--space-4);
-            flex-wrap: wrap;
+            margin-top: 20px;
         }
 
-        .footer a {
-            color: var(--white) !important;
+        .cta-sub a {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.071em;
+            text-transform: uppercase;
             text-decoration: none;
-            font-size: 0.925rem;
-            font-weight: 400;
-            transition: color 0.2s ease;
-            font-family: var(--font-primary);
+            color: var(--gray-light);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 2px;
+            transition: color 0.2s, border-color 0.2s;
         }
-
-        .footer a:hover {
-            color: var(--warning) !important;
-            text-decoration: underline;
-        }
-
-        .footer-brand {
-            margin-top: var(--space-4);
+        .cta-sub a:hover {
             color: var(--white);
-            font-size: 0.9rem;
+            border-bottom-color: var(--white);
+        }
+        .cta-sub a:focus-visible {
+            outline: var(--lions-focus-ring-on-dark);
+            outline-offset: var(--lions-focus-offset);
         }
 
-        /* RESPONSIVE DESIGN - UPDATED for modal */
-        @media (max-width: 768px) {
-            body {
-                padding: var(--space-4);
-            }
+        /* ---- Closing band --------------------------------------------------
+           The page used to end on a requirements list. It ends on the ask. */
 
-            .main-container {
-                padding: var(--space-6);
-            }
-
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1.125rem;
-            }
-
-            .hero-actions {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
-
-            .hero-btn {
-                width: 100%;
-                max-width: 300px;
-            }
-
-            .features-title,
-            .upcoming-title {
-                font-size: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .process-steps {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-nav {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
-
-            .upcoming-section {
-                padding: var(--space-8);
-            }
-
-            .modal-container {
-                padding: var(--space-6);
-                margin: var(--space-2);
-            }
-
-            .login-title {
-                font-size: 2rem;
-            }
+        .close-band {
+            background: var(--blue-primary);
+            padding: 64px 0;
+            text-align: center;
         }
+        @media (max-width: 767px) { .close-band { padding: 48px 0; } }
 
-        @media (max-width: 480px) {
-            .hero-title {
-                font-size: 2rem;
-            }
+        .close-title {
+            font-family: var(--font-heading);
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+        @media (min-width: 768px) { .close-title { font-size: 38px; } }
 
-            .hero-subtitle {
-                font-size: 1rem;
-            }
+        .close-lede {
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--white);
+            max-width: 52ch;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) { .close-lede { font-size: 19px; } }
 
-            .hero-btn {
-                padding: var(--space-4) var(--space-6);
-                font-size: 1rem;
-            }
-
-            .features-title,
-            .upcoming-title {
-                font-size: 1.75rem;
-            }
-
-            .step {
-                flex-direction: column;
-                text-align: center;
-                align-items: center;
-            }
-
-            .step-content {
-                text-align: center;
-            }
+        /* On the blue closing band the solid blue button would vanish, so the
+           control inverts: Ghost White fill, Lions Blue label. */
+        .btn-invert {
+            background: var(--white);
+            border-color: var(--white);
+            color: var(--blue-primary);
+        }
+        .btn-invert:hover {
+            background: transparent;
+            border-color: var(--white);
+            color: var(--white);
         }
     </style>
 </head>
 
 <body>
-    <!-- Universal Header Container -->
-    <div id="headerContainer"></div>
+<div class="page-bg">
 
-    <div class="main-container">
-        <main>
-            <section class="hero-section">
-                <h1 class="hero-title">Lions Fundraising</h1>
-                <p class="hero-subtitle">Earn money to support your family while helping Lions Sports Club through
-                    fundraising events</p>
-                <div class="hero-actions">
-                    <a href="/register" class="hero-btn hero-btn-register">
-                        📋 Register
-                    </a>
-                    <button class="hero-btn hero-btn-signin" onclick="openLoginModal(event)">
-                        🔐 Sign In
-                    </button>
-                </div>
-            </section>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
+         the single definition on this property, mirroring $nav_items in
+         /includes/header.php on lionssports.club. -->
+    <header id="site-header" data-nav="home-erp"></header>
 
-            <section class="features-section">
-                <h2 class="features-title">Why Work With Us?</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">💰</div>
-                        <h3 class="feature-title">Support Your Family</h3>
-                        <p class="feature-description">Earnings go directly toward program fees, equipment, school
-                            expenses, and Florida championship travel.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⏰</div>
-                        <h3 class="feature-title">Flexible Schedule</h3>
-                        <p class="feature-description">Choose events and time slots that work with your availability.
-                        </p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
-                        <h3 class="feature-title">Meaningful Work</h3>
-                        <p class="feature-description">Help Lions Sports Club give God the glory through sports while
-                            supporting your family.</p>
-                    </div>
-                </div>
-            </section>
+    <main>
 
-            <section class="upcoming-section">
-                <h2 class="upcoming-title">How It Works</h2>
-                <div class="process-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Register</h3>
-                            <p>Complete your profile with availability and any required certifications</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Work Events</h3>
-                            <p>Get assigned to fundraising events that match your schedule</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Get Reimbursed</h3>
-                            <p>Use earnings for family expenses and Lions-related costs</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+        <!-- =================================================================
+             CROSS-PROPERTY IMAGERY
 
-    <!-- LOGIN MODAL -->
-    <div id="loginModal" class="modal-overlay" onclick="closeLoginModal(event)">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+             Every photograph below is served from lionssports.club/media/.
+             This page is lionsfundraising.com. The two domains are the same
+             owner on the same hosting account, so the reference is stable
+             today, but it is still a dependency on a second origin: if the
+             marketing media folder is ever reorganized or moved behind a CDN,
+             these become local copies under /media/ on this property.
 
-            <div class="login-header">
-                <h1 class="login-title">Welcome Back</h1>
-                <p class="login-subtitle">Sign in to access your Lions account</p>
+             Nothing here is stock photography. Banner.png and IMG_5465.JPG are
+             Lions games.
+
+             The standalone brand panel that used to open this page is gone.
+             It filled the first screen with the club lockup and pushed the
+             headline and the call to action below the fold, on the one page
+             whose entire job is that call to action. The header already
+             carries the mark.
+             ============================================================= -->
+
+        <!-- ===== BAND 1: HERO ============================================ -->
+        <section class="split">
+            <div class="split-media">
+                <img src="https://lionssports.club/media/Banner.png"
+                     width="1428" height="687" fetchpriority="high"
+                     alt="A Lions receiver reaching for a pass under the lights">
             </div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" autocomplete="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="password-container">
-                        <input type="password" id="password" autocomplete="current-password" required>
-                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
-                            Show
-                        </button>
+            <div class="split-panel">
+                <div class="split-inner">
+                    <h1 class="split-title">Your athlete plays.<br><span class="accent">You work the stand.</span></h1>
+                    <p class="split-lede">
+                        Lions families staff concessions at Lucas Oil Stadium and the
+                        money earned goes straight toward the season. No check to write,
+                        no product to sell to your neighbors.
+                    </p>
+                    <div class="cta-row">
+                        <a href="/register" class="btn-primary btn-blue">Register</a>
                     </div>
                 </div>
-                <div class="form-group">
-                    <button type="submit" class="btn">
-                        Sign In
-                    </button>
+            </div>
+        </section>
+
+        <!-- ===== BAND 2: SIGNUP STRIP ====================================
+             For people already on the roster. See .strip in the style block
+             for why this is not a second hero call to action. -->
+        <section class="strip">
+            <div class="container">
+                <div class="strip-inner">
+                    <p class="strip-text">
+                        Already registered? Picking your dates is what puts you on the schedule.
+                    </p>
+                    <a href="/signup" class="strip-link">Pick your shifts</a>
                 </div>
-            </form>
+            </div>
+        </section>
 
-            <div id="loginStatus" class="login-status"></div>
+        <!-- ===== BAND 3: HOW IT WORKS ==================================== -->
+        <section class="band">
+            <div class="container">
+                <h2 class="section-heading band-heading">
+                    How it works
+                    <hr class="hr-accent">
+                </h2>
 
-            <div class="login-options">
-                <a href="/register">Create Account</a>
-                <a href="/forgot-password">Forgot Password?</a>
+                <div class="how-grid">
+                    <div class="how-card">
+                        <span class="step-num">1</span>
+                        <h3>Get on the <span class="accent">roster</span></h3>
+                        <p>One form, once a season. Register everyone in your family who
+                           might work, including your athlete if they are sixteen or older.</p>
+                    </div>
+                    <div class="how-card">
+                        <span class="step-num">2</span>
+                        <h3>Pick your <span class="accent">dates</span></h3>
+                        <p>The Lucas Oil calendar runs August through April. Colts games,
+                           concerts, band championships, the Combine. You choose the dates
+                           that fit your family and nothing else.</p>
+                    </div>
+                    <div class="how-card">
+                        <span class="step-num">3</span>
+                        <h3>Work and get <span class="accent">paid</span></h3>
+                        <p>You run a stand alongside other Lions families. Most crews arrive
+                           about three hours before gates and finish once the crowd clears.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== BAND 4: WHAT YOU EARN ===================================
+             Figures here are the canonical payout formula in ADR-005. The
+             copy this replaces described a flat rate or a percentage of sales
+             whichever is higher, which is not what the club pays and never
+             was. Do not reword this band without reading that ADR. -->
+        <section class="band earn-band">
+            <div class="container">
+                <h2 class="section-heading earn-heading">
+                    What you earn
+                    <hr class="hr-accent">
+                </h2>
+
+                <p class="earn-figure">95%</p>
+                <p class="earn-figure-label">Of the stand payment goes to the crew</p>
+
+                <p class="earn-copy">
+                    Everyone working a shift is paid the same hourly rate. It comes from
+                    what the stand is paid for that event, divided by the hours the crew
+                    actually worked, so a busy night pays better for everybody on it.
+                </p>
+                <p class="earn-copy">
+                    Lions keeps five percent to run the program, and gives it up when the
+                    event is quiet. If the hourly rate would come in under twenty dollars,
+                    the club takes nothing and the crew is paid the whole amount.
+                </p>
+                <p class="earn-copy">
+                    Earnings are credited toward your athlete's season. You can follow the
+                    running total from your account at any time.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===== BAND 5: WHAT YOU NEED =================================== -->
+        <section class="split split-need">
+            <div class="split-panel">
+                <div class="split-inner">
+                    <h2 class="section-heading need-heading">
+                        What you <span class="accent">need</span>
+                        <hr class="hr-accent">
+                    </h2>
+
+                    <ul class="need-list">
+                        <li>To be sixteen or older on the day you work</li>
+                        <li>Registration with Lions Sports Club, which is the form below</li>
+                        <li>A state permit and Sodexo alcohol training, but only if you
+                            want to serve alcohol. Most positions do not.</li>
+                    </ul>
+
+                    <div class="cta-row">
+                        <a href="/register" class="btn-primary btn-blue">Register</a>
+                    </div>
+                    <div class="cta-sub">
+                        <a href="/sodexo-atc">Get your permit</a>
+                    </div>
+                </div>
+            </div>
+            <div class="split-media">
+                <img src="https://lionssports.club/media/IMG_5465.JPG"
+                     width="320" height="213" loading="lazy"
+                     alt="A Lions coach talking with his players on the sideline before kickoff">
+            </div>
+        </section>
+
+        <!-- ===== BAND 6: CLOSING ASK ===================================== -->
+        <section class="close-band">
+            <div class="container">
+                <h2 class="close-title">Register once. Work when you can.</h2>
+                <p class="close-lede">
+                    It takes a couple of minutes and it covers your whole family for the
+                    season. You pick your dates afterward.
+                </p>
+                <div class="cta-row">
+                    <a href="/register" class="btn-primary btn-invert">Register</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== SOCIAL (ported from /includes/footer.php) ===================== -->
+    <section class="social-section">
+        <div class="container">
+            <h2 class="section-heading" style="color: var(--white); margin-bottom: 0;">
+                Social
+                <hr class="hr-accent" style="background: var(--blue-hover);" />
+            </h2>
+
+            <div class="social-links">
+                <a href="https://www.facebook.com/LionsHomeschoolFootball" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#facebook" /></svg>
+                </a>
+                <a href="https://www.instagram.com/lionssports.club" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#instagram" /></svg>
+                </a>
+                <a href="https://www.youtube.com/@LionsSportsClub2024" target="_blank" rel="noopener" aria-label="YouTube">
+                    <svg aria-hidden="true"><use href="/icons/social.svg#youtube" /></svg>
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- FOOTER - OUTSIDE MAIN CONTAINER -->
-    <footer class="footer">
-        <nav class="footer-nav">
-            <a href="/">Home</a>
-            <a href="/events">Events</a>
-            <a href="/reimbursement">Reimbursement</a>
-            <a href="https://lionsfootballclub.com" target="_blank" rel="noopener">Lions Sports Club</a>
-        </nav>
-        <div class="footer-brand">
-            © 2025 Lions Sports Club. All rights reserved.<br>
-            Giving God The Glory Through Sports
+    <!-- ===== FOOTER ========================================================
+         The page this replaces carried a footer with Home, Events and
+         Reimbursement. /events is not a route on this property, Home pointed
+         at the page it was already on, and Reimbursement is now reachable from
+         the account area. The canon footer is copyright only, as on
+         lionssports.club. ================================================= -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="footer-copyright">
+                Copyright &copy; 2026 Lions Sports Club. All Rights Reserved. &nbsp;
+                <a href="https://lionssports.club">lionssports.club</a>
+            </p>
         </div>
     </footer>
 
-    <!-- Load Universal Systems -->
-    <script src="https://lionsfundraising.com/universal-auth.js"></script>
-    <script src="https://lionsfundraising.com/universal-header.js"></script>
-    <script src="https://lionsfundraising.com/relationship-config.js"></script>
+</div><!-- /page-bg -->
 
-    <script>
-        let isProcessingLogin = false;
-
-        // MODAL FUNCTIONS
-        function openLoginModal(event) {
-            if (event) event.preventDefault();
-            
-            const modal = document.getElementById('loginModal');
-            modal.classList.add('active');
-            
-            // Focus on email field after modal opens
-            setTimeout(() => {
-                const emailInput = document.getElementById('email');
-                if (emailInput) emailInput.focus();
-            }, 100);
-            
-            // Store current page for redirect after login
-            if (window.LIONS_AUTH) {
-                window.LIONS_AUTH.storeRedirectUrl(window.location.href);
-            } else {
-                sessionStorage.setItem('lionsAuthRedirect', window.location.href);
-            }
-        }
-
-        function closeLoginModal(event) {
-            if (event && event.target !== event.currentTarget && !event.target.classList.contains('modal-close')) {
-                return;
-            }
-            
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) {
-                loginModal.classList.remove('active');
-            }
-            
-            // Clear any modal-related states
-            hideLoginStatus();
-            
-            // Clear any form data
-            const form = document.getElementById('loginForm');
-            if (form) form.reset();
-        }
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeLoginModal();
-            }
-        });
-
-        // LOGIN FUNCTIONALITY (preserved from original)
-        async function handleEmailLogin(event) {
-            event.preventDefault();
-            
-            if (isProcessingLogin) return;
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const submitBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            if (!email || !password) {
-                showLoginStatus('error', 'Please enter both email and password.');
-                return;
-            }
-
-            isProcessingLogin = true;
-            
-            try {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Signing in...';
-                
-                // Clear any existing status
-                hideLoginStatus();
-
-                // Wait for auth system (with reasonable timeout)
-                await waitForAuth(5000);
-
-                if (!window.LIONS_AUTH || !window.LIONS_AUTH.isInitialized) {
-                    throw new Error('Authentication system not available. Please refresh the page.');
-                }
-
-                // Attempt login
-                const result = await window.LIONS_AUTH.signInWithEmailAndPassword(email, password);
-                
-                if (result.success) {
-                    // Success - close modal and let universal auth handle redirect
-                    showLoginStatus('success', 'Login successful! Redirecting...');
-                    setTimeout(() => {
-                        closeLoginModal();
-                    }, 1000);
-                    console.log('Login successful');
-                } else {
-                    // Handle error
-                    throw new Error(result.error || 'Login failed');
-                }
-
-            } catch (error) {
-                console.error('Login error:', error);
-                
-                const errorMessages = {
-                    'auth/user-not-found': 'No account found with this email address.',
-                    'auth/wrong-password': 'Incorrect password. Please try again.',
-                    'auth/invalid-email': 'Invalid email address format.',
-                    'auth/too-many-requests': 'Too many failed attempts. Please wait and try again.',
-                    'auth/user-disabled': 'This account has been disabled.',
-                    'auth/invalid-credential': 'Invalid email or password.',
-                    'auth/network-request-failed': 'Network error. Please check your connection.',
-                };
-
-                const displayError = errorMessages[error.code] || error.message || 'Login failed. Please try again.';
-                showLoginStatus('error', displayError);
-
-                // Re-enable form
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-                isProcessingLogin = false;
-            }
-        }
-
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const toggleBtn = document.querySelector('.password-toggle');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleBtn.textContent = 'Hide';
-            } else {
-                passwordInput.type = 'password';
-                toggleBtn.textContent = 'Show';
-            }
-        }
-
-        function showLoginStatus(type, message) {
-            const statusElement = document.getElementById('loginStatus');
-            statusElement.className = `login-status ${type}`;
-            statusElement.textContent = message;
-            statusElement.style.display = 'block';
-
-            // Auto-hide success messages
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 4000);
-            }
-        }
-
-        function hideLoginStatus() {
-            const statusElement = document.getElementById('loginStatus');
-            statusElement.style.display = 'none';
-        }
-
-        async function waitForAuth(timeoutMs = 3000) {
-            const startTime = Date.now();
-            
-            while (Date.now() - startTime < timeoutMs) {
-                if (window.LIONS_AUTH && window.LIONS_AUTH.isInitialized) {
-                    return true;
-                }
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            throw new Error('Auth system timeout');
-        }
-
-        // INITIALIZATION (preserved from original)
-        async function checkExistingAuth() {
-            try {
-                // Wait for universal auth to be ready (with timeout)
-                await waitForAuth(3000);
-
-                if (window.LIONS_AUTH && window.LIONS_AUTH.isAuthenticated()) {
-                    console.log('User already authenticated, redirecting...');
-                    
-                    // Get redirect URL
-                    const redirectUrl = sessionStorage.getItem('lionsAuthRedirect') || '/dashboard';
-                    sessionStorage.removeItem('lionsAuthRedirect');
-                    
-                    setTimeout(() => {
-                        window.location.replace(redirectUrl);
-                    }, 800);
-                }
-            } catch (error) {
-                console.warn('Auth check failed:', error);
-                // Continue - page still works
-            }
-        }
-
-        function setupLoginForm() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleEmailLogin);
-            }
-        }
-
-        async function initializeBackgroundSystems() {
-            try {
-                // Initialize header in background
-                if (window.LIONS_HEADER && window.LIONS_HEADER.setupPage) {
-                    await window.LIONS_HEADER.setupPage('headerContainer');
-                    console.log('Header initialized');
-                }
-
-                // Check if already authenticated
-                await checkExistingAuth();
-                
-            } catch (error) {
-                console.warn('Background system initialization failed:', error);
-                // Continue - page still works
-            }
-        }
-
-        // Initialize page when DOM is ready
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Set up universal header system
-            await window.LIONS_HEADER.setupPage('headerContainer');
-            
-            // Set up login form
-            setupLoginForm();
-            
-            // Initialize background systems
-            initializeBackgroundSystems();
-            
-            // Force header update after short delay to ensure auth state is loaded
-            setTimeout(() => {
-                if (window.LIONS_HEADER && window.LIONS_HEADER.forceUpdate) {
-                    window.LIONS_HEADER.forceUpdate();
-                }
-            }, 300);
-            
-            console.log('Landing page initialized');
-        });
-
-        // Global functions for external access (e.g., from header)
-        window.openLoginModal = openLoginModal;
-        window.closeLoginModal = closeLoginModal;
-        window.togglePasswordVisibility = togglePasswordVisibility;
-    </script>
 </body>
 
 </html>

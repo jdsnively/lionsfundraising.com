@@ -219,6 +219,46 @@
     border-color: var(--gray-text);
 }
 
+/* .btn-secondary draws itself in Lions Blue on a transparent field, which is
+   correct inside a .card and invisible anywhere else: the page surface IS
+   Lions Blue, so a blue label inside a blue border on a blue background is a
+   contrast ratio of 1 to 1.
+
+   That shipped. The "Assignment view" control that signup/admin.js injects
+   into .page-head rendered at 205 by 44 pixels, clickable and reachable by
+   keyboard, and could not be seen at all. The administrator concluded the
+   assignment screen had not been built and asked for it to be written a second
+   time. Nothing was wrong except the color of a button.
+
+   .page-head sits directly on .page-bg, never inside a card, so a secondary
+   button there is scoped to the inverted treatment rather than left to whoever
+   adds the next one to notice. The scope is deliberately narrow: a bare
+   .btn-invert modifier would collide with the solid Ghost White hero button the
+   landing page already defines under that name, and win on specificity. */
+.page-head .btn-secondary {
+    color: var(--white);
+    background: transparent;
+    border-color: var(--white);
+}
+
+.page-head .btn-secondary:hover,
+.page-head .btn-secondary:focus-visible {
+    color: var(--blue-primary);
+    background: var(--white);
+    border-color: var(--white);
+}
+
+.page-head .btn-secondary:focus-visible {
+    outline: var(--lions-focus-ring-on-dark);
+    outline-offset: var(--lions-focus-offset);
+}
+
+.page-head .btn-secondary:disabled {
+    color: var(--gray-mid);
+    background: transparent;
+    border-color: var(--gray-mid);
+}
+
 /* -- Banners and chips ---------------------------------------------------- */
 
 .banner {
@@ -312,6 +352,48 @@
         border-bottom-color: var(--white);
     }
 }
+
+/* -- Administrator group in the Fundraising menu --------------------------- */
+
+/* These two live here rather than in lions-chrome.css on purpose. That file is
+   a port of /css/site.css on the marketing site and has to stay a mirror of it;
+   the administrator routes exist only on this property, so a class the
+   marketing site will never carry does not belong in the mirror.
+
+   They style elements lions-nav.js appends to the Fundraising dropdown once
+   auth has resolved. Both are labels, not controls: the routes below them are
+   ordinary dropdown links and pick up .dropdown-link and .mobile-submenu a. */
+
+.site-header .dropdown-menu .dropdown-heading {
+    margin-top: 6px;
+    padding: 10px 22px 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+.mobile-submenu .mobile-submenu-heading {
+    display: block;
+    margin-top: 4px;
+    padding: 12px 24px 4px 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+/* The drawer submenu is a fixed max-height so it can transition. Fundraising
+   carries six rows for a volunteer and up to ten for an administrator, which
+   overflows the shared 320px and silently clips the last routes. Raised only
+   for the menu that grows. */
+.mobile-submenu#m-fundraising.is-open { max-height: 640px; }
 
 /* -- Narrow viewports ----------------------------------------------------- */
 
