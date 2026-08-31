@@ -1682,13 +1682,17 @@
                         <div class="stat-label">Avg Hourly Rate</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="pendingShifts">-</div>
-                        <div class="stat-label">Draft Shifts</div>
+                        <div class="stat-number" id="avgNetPerEvent">-</div>
+                        <div class="stat-label">Avg Net / Event</div>
                     </div>
                 </div>
             </div>
 
             <div class="controls">
+                <div class="form-group">
+                    <label for="filterSeason">Season</label>
+                    <select id="filterSeason"></select>
+                </div>
                 <div class="form-group">
                     <label for="filterStatus">Status</label>
                     <select id="filterStatus">
@@ -1696,14 +1700,6 @@
                         <option value="draft">Draft</option>
                         <option value="finalized">Finalized</option>
                         <option value="locked">Locked</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="filterPeriod">Period</label>
-                    <select id="filterPeriod">
-                        <option value="">All Periods</option>
-                        <option value="current">Current Period</option>
-                        <option value="previous">Previous Period</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -2493,6 +2489,63 @@
         // =======================
         let allShifts = [];
         let filteredShifts = [];
+
+        /* ------------------------------------------------------------------
+           Sodexo seasons.
+
+           A season runs from its start date until the next one begins. The
+           2026-2027 boundary is the first of the three DCI days at Lucas Oil,
+           2026-08-06, so everything up to and including the Herbalife days
+           belongs to 2025-2026.
+
+           Adding next season is one line at the top. The last entry carries
+           start: null and collects everything older, so no shift is ever
+           unclassified and no shift silently disappears from every view.
+
+           eventDate is written by an <input type="date">, so it is always
+           YYYY-MM-DD and string comparison is date comparison.
+           ------------------------------------------------------------------ */
+        const SEASONS = [
+            { key: '2026-2027', start: '2026-08-06' },
+            { key: '2025-2026', start: null },
+        ];
+
+        function seasonOf(eventDate) {
+            const oldest = SEASONS[SEASONS.length - 1].key;
+            if (!eventDate) return oldest;
+            for (const s of SEASONS) {
+                if (s.start === null) return s.key;
+                if (eventDate >= s.start) return s.key;
+            }
+            return oldest;
+        }
+
+        function currentSeasonKey() {
+            const d = new Date();
+            const today = d.getFullYear() + '-'
+                + String(d.getMonth() + 1).padStart(2, '0') + '-'
+                + String(d.getDate()).padStart(2, '0');
+            return seasonOf(today);
+        }
+
+        /* Labels are positional rather than hardcoded: whichever season we are
+           in reads "Current", the one directly before it reads "Previous", and
+           anything older is named by its years alone. Next August this is
+           correct without an edit. */
+        function populateSeasonFilter() {
+            const sel = document.getElementById('filterSeason');
+            if (!sel) return;
+            const cur = currentSeasonKey();
+            const curIdx = SEASONS.findIndex((s) => s.key === cur);
+            const opts = SEASONS.map((s, i) => {
+                const label = i === curIdx ? 'Current Season (' + s.key + ')'
+                    : i === curIdx + 1 ? 'Previous Season (' + s.key + ')'
+                    : s.key;
+                return '<option value="' + s.key + '"' + (i === curIdx ? ' selected' : '') + '>' + label + '</option>';
+            });
+            opts.push('<option value="">All Seasons</option>');
+            sel.innerHTML = opts.join('');
+        }
         let currentUser = null;
         let isAdmin = false;
         let db = null;
@@ -2793,9 +2846,8 @@
                 dashboardUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 const shiftsSnapshot = await getDocs(query(collection(db, 'Work-Shifts'), orderBy('eventDate', 'desc')));
                 allShifts = shiftsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                filteredShifts = [...allShifts];
-                displayShifts();
-                updateStats();
+                populateSeasonFilter();
+                applyFilters();
             } catch (error) {
                 if (error.code === 'permission-denied') {
                     showError('Firebase permission denied. Please check security rules.');
@@ -2870,12 +2922,18 @@
             return '<div class="' + cardClasses + '"><div class="shift-card-content"><div class="shift-header"><div><div class="shift-title">' + (shift.eventName || 'Unnamed Event') + '</div><div class="shift-date">' + formatDate(shift.eventDate) + ', Primary Stand ' + primaryStand + '</div></div><div class="shift-status ' + statusClass + '">' + shiftStatus + '</div></div><div class="shift-details"><div class="detail-item"><div class="detail-label">Total Sodexo Payment</div><div class="detail-value">' + formatCurrency(totalPayout) + '</div></div><div class="detail-item"><div class="detail-label">Total Hours</div><div class="detail-value">' + calculations.totalHoursFormatted + '</div></div><div class="detail-item"><div class="detail-label">Hourly Rate</div><div class="detail-value">' + calculations.hourlyRateFormatted + '</div></div><div class="detail-item"><div class="detail-label">Workers</div><div class="detail-value">' + (shift.workers || []).length + '</div></div></div>' + workersHtml + '</div><div class="shift-actions">' + actionButtons + '</div></div>';
         }
 
+        /* Reads filteredShifts, not allShifts. Before the season filter existed
+           these cards were always all time, which was harmless when the only
+           filter was a rolling window nobody used. With a season selected the
+           headline numbers have to describe that season or they contradict the
+           cards underneath them. */
         function updateStats() {
+            const scope = filteredShifts;
             let totalHours = 0;
             let totalNetPayouts = 0;
             let weightedRateSum = 0;
 
-            allShifts.forEach(shift => {
+            scope.forEach(shift => {
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
@@ -2886,11 +2944,15 @@
             });
 
             const stats = {
-                totalShifts: allShifts.length,
+                totalShifts: scope.length,
                 totalNetPayouts: totalNetPayouts,
                 totalHours: totalHours,
                 avgHourlyRate: totalHours > 0 ? weightedRateSum / totalHours : 0,
-                pendingShifts: allShifts.filter(shift => shift.status !== 'finalized' && !shift.isLocked).length
+                /* What a shift is worth to the people who worked it, averaged
+                   across the shifts in view. Divides by shift count, not by
+                   worker count: the question this answers is what an event
+                   yields, not what a person takes home. */
+                avgNetPerEvent: scope.length > 0 ? totalNetPayouts / scope.length : 0
             };
 
             const elements = {
@@ -2898,14 +2960,14 @@
                 totalPayout: document.getElementById('totalPayout'),
                 totalHours: document.getElementById('totalHours'),
                 avgHourlyRate: document.getElementById('avgHourlyRate'),
-                pendingShifts: document.getElementById('pendingShifts')
+                avgNetPerEvent: document.getElementById('avgNetPerEvent')
             };
 
             if (elements.totalShifts) elements.totalShifts.textContent = stats.totalShifts;
             if (elements.totalPayout) elements.totalPayout.textContent = formatCurrency(stats.totalNetPayouts);
             if (elements.totalHours) elements.totalHours.textContent = formatHours(stats.totalHours);
             if (elements.avgHourlyRate) elements.avgHourlyRate.textContent = formatCurrency(stats.avgHourlyRate);
-            if (elements.pendingShifts) elements.pendingShifts.textContent = stats.pendingShifts;
+            if (elements.avgNetPerEvent) elements.avgNetPerEvent.textContent = formatCurrency(stats.avgNetPerEvent);
         }
 
         window.viewShiftDetails = function(shiftId) {
@@ -3771,7 +3833,7 @@
 
         function applyFilters() {
             const statusFilter = document.getElementById('filterStatus')?.value || '';
-            const periodFilter = document.getElementById('filterPeriod')?.value || '';
+            const seasonFilter = document.getElementById('filterSeason')?.value || '';
             const searchTerm = document.getElementById('searchShifts')?.value?.toLowerCase().trim() || '';
             
             filteredShifts = allShifts.filter(shift => {
@@ -3780,14 +3842,7 @@
                     if (statusFilter === 'finalized' && (shift.status !== 'finalized' || shift.isLocked)) return false;
                     if (statusFilter === 'draft' && (shift.status !== 'draft' || shift.isLocked)) return false;
                 }
-                if (periodFilter) {
-                    const shiftDate = new Date(shift.eventDate);
-                    const now = new Date();
-                    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-                    if (periodFilter === 'current' && shiftDate < thirtyDaysAgo) return false;
-                    if (periodFilter === 'previous' && (shiftDate >= thirtyDaysAgo || shiftDate < sixtyDaysAgo)) return false;
-                }
+                if (seasonFilter && seasonOf(shift.eventDate) !== seasonFilter) return false;
                 if (searchTerm) {
                     const searchFields = [shift.eventName, shift.primaryStand || shift.standNumber, shift.secondaryStand, ...(shift.workers || []).map(w => w.name)].filter(Boolean).join(' ').toLowerCase();
                     if (!searchFields.includes(searchTerm)) return false;
@@ -3795,17 +3850,17 @@
                 return true;
             });
             displayShifts();
+            updateStats();
         }
 
         function clearFilters() {
             const filterStatus = document.getElementById('filterStatus');
-            const filterPeriod = document.getElementById('filterPeriod');
+            const filterSeason = document.getElementById('filterSeason');
             const searchShifts = document.getElementById('searchShifts');
             if (filterStatus) filterStatus.value = '';
-            if (filterPeriod) filterPeriod.value = '';
+            if (filterSeason) filterSeason.value = currentSeasonKey();
             if (searchShifts) searchShifts.value = '';
-            filteredShifts = [...allShifts];
-            displayShifts();
+            applyFilters();
         }
 
         function updateWorkerStandDropdowns() {
@@ -3846,7 +3901,7 @@
             document.getElementById('finalizeAllBtn')?.addEventListener('click', finalizeAllDrafts);
             document.getElementById('workerTotalsBtn')?.addEventListener('click', showWorkerTotals);
             document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
-            document.getElementById('filterPeriod')?.addEventListener('change', applyFilters);
+            document.getElementById('filterSeason')?.addEventListener('change', applyFilters);
             document.getElementById('searchShifts')?.addEventListener('input', applyFilters);
             document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
             document.getElementById('primarySodexoPayout')?.addEventListener('input', () => { updateCombinedSodexoTotal(); scheduleCalculationUpdate(); });
