@@ -546,6 +546,9 @@
             border-color: #0284c7;
         }
 
+        /* Shelved, not deleted. See the button carrying [hidden] below. */
+        .btn[hidden] { display: none; }
+
         .btn-neutral {
             background: var(--action-neutral);
             border-color: var(--action-neutral);
@@ -662,6 +665,12 @@
             background: #d1fae5;
             color: #065f46;
             border: 1px solid #10b981;
+        }
+
+        .status-awaiting {
+            background: rgba(245, 158, 11, 0.12);
+            color: #b45309;
+            border: 1px solid #f59e0b;
         }
 
         .status-locked {
@@ -1717,9 +1726,9 @@
 
             <div class="action-section">
                 <button class="btn btn-neutral" id="refreshBtn">Refresh</button>
-                <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payouts</button>
-                <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
                 <button class="btn btn-info" id="workerTotalsBtn">Worker Summary</button>
+                <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
+                <button class="btn btn-secondary" id="exportPayoutsBtn" hidden>Export Payouts</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -2891,6 +2900,13 @@
                 statusClass = 'status-draft';
                 shiftStatus = 'draft';
                 actionButtons = '<button class="btn btn-edit" onclick="editShift(\'' + shift.id + '\')">Edit</button><button class="btn btn-details" onclick="viewShiftDetails(\'' + shift.id + '\')">Details</button><button class="btn btn-delete" onclick="deleteShift(\'' + shift.id + '\', \'' + shift.eventName + '\')">Delete</button>';
+                const hasPrimaryCr = String(shift.primaryCrNumber || shift.crNumber || '').trim() !== '';
+                const needsSecondaryCr = (shift.secondarySodexoPayout || 0) > 0
+                    && String(shift.secondaryCrNumber || '').trim() === '';
+                if (totalPayout <= 0 || !hasPrimaryCr || needsSecondaryCr) {
+                    statusClass = 'status-awaiting';
+                    shiftStatus = totalPayout <= 0 ? 'awaiting Sodexo' : 'awaiting CR#';
+                }
             }
             
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
@@ -3590,9 +3606,23 @@
             const primaryStand = document.getElementById('primaryStand')?.value?.trim();
             const primarySodexoPayout = parseFloat(document.getElementById('primarySodexoPayout')?.value) || 0;
             
-            if (!eventDate || !eventName || !primaryStand || primarySodexoPayout <= 0) {
-                showError('Please fill in all required fields: Event Date, Event Name, Primary Stand, and Primary Sodexo Payment');
+            if (!eventDate || !eventName || !primaryStand) {
+                showError('Please fill in Event Date, Event Name and Primary Stand.');
                 return;
+            }
+            const primaryCrNumber = document.getElementById('primaryCrNumber')?.value?.trim() || '';
+            const secondaryCrNumber = document.getElementById('secondaryCrNumber')?.value?.trim() || '';
+            const secondaryPayoutForGate = parseFloat(document.getElementById('secondarySodexoPayout')?.value) || 0;
+
+            if (andFinalize) {
+                const missing = [];
+                if (primarySodexoPayout <= 0) missing.push('Primary Sodexo Payment');
+                if (!primaryCrNumber) missing.push('Primary CR#');
+                if (secondaryPayoutForGate > 0 && !secondaryCrNumber) missing.push('Secondary CR#');
+                if (missing.length) {
+                    showError('Cannot finalize without: ' + missing.join(', ') + '. Save as a draft and finalize once Sodexo pays.');
+                    return;
+                }
             }
             
             const workers = collectWorkersFromForm();
@@ -3718,9 +3748,28 @@
         }
 
         async function finalizeAllDrafts() {
-            const draftShifts = allShifts.filter(s => s.status !== 'finalized' && !s.isLocked);
-            if (draftShifts.length === 0) { alert('No draft shifts to finalize.'); return; }
-            if (!confirm('Are you sure you want to finalize ' + draftShifts.length + ' draft shift(s)? This will make them visible to the treasurer.')) return;
+            const allDrafts = allShifts.filter(s => s.status !== 'finalized' && !s.isLocked);
+            /* A draft with no Sodexo payment is not incomplete by accident, it
+               is waiting on Sodexo. Finalizing it would send a zero payout to
+               the treasurer marked ready for processing. */
+            const draftShifts = allDrafts.filter(s => {
+                const paid = (s.primarySodexoPayout || s.sodexoPayout || 0) + (s.secondarySodexoPayout || 0);
+                if (paid <= 0) return false;
+                if (!String(s.primaryCrNumber || s.crNumber || '').trim()) return false;
+                if ((s.secondarySodexoPayout || 0) > 0 && !String(s.secondaryCrNumber || '').trim()) return false;
+                return true;
+            });
+            const waiting = allDrafts.length - draftShifts.length;
+            if (draftShifts.length === 0) {
+                alert(waiting > 0
+                    ? 'No draft shifts are ready to finalize. ' + waiting + ' are still awaiting a Sodexo payment or a CR number.'
+                    : 'No draft shifts to finalize.');
+                return;
+            }
+            const note = waiting > 0
+                ? '\n\n' + waiting + ' other draft(s) will be skipped: still awaiting a Sodexo payment or a CR number.'
+                : '';
+            if (!confirm('Finalize ' + draftShifts.length + ' draft shift(s)? This will make them visible to the treasurer.' + note)) return;
             
             try {
                 const batch = writeBatch(db);
