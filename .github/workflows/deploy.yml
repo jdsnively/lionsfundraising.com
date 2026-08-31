@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DRY_RUN: "true"
+  DRY_RUN: "false"
 
 jobs:
   checks:
@@ -53,8 +53,15 @@ jobs:
           # site runs on "lionsfundraising-1f854" through lions-auth.js. Two
           # projects means two databases and two sets of security rules, and
           # only one of them is the one in firebase/firestore.rules.
+          # DOCUMENTED EXCEPTION: claims/ is shelved as of 2026-08-31 and still
+          # carries the old "lions-fundraising" project. It is excluded here so
+          # the guard keeps working for every live page instead of being
+          # deleted outright. Remove this exclusion when /claims is retired,
+          # and do not add a second name to it: the whole point is that a NEW
+          # divergence still fails the build.
           ids=$(grep -rhoE 'projectId:[[:space:]]*"[^"]+"' public_html \
-                  --include='*.html' --include='*.js' | sort -u)
+                  --include='*.html' --include='*.js' \
+                  --exclude-dir=claims | sort -u)
           echo "$ids"
           n=$(echo "$ids" | grep -c .)
           if [ "$n" -gt 1 ]; then
