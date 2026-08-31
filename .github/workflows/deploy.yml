@@ -93,6 +93,13 @@ jobs:
           server-dir: ${{ secrets.FTP_REMOTE_DIR }}
           dry-run: ${{ env.DRY_RUN }}
           log-level: standard
+          # "Server sent FIN packet unexpectedly" on 2026-08-31: the host closed
+          # the control connection 49 seconds into a 132 file first publish.
+          # Shared hosting commonly drops a connection that has been open and
+          # busy for a while. Raising the per-operation timeout from the 30s
+          # default gives the client room to wait out a slow response instead of
+          # treating it as dead.
+          timeout: 120000
           exclude: |
             **/.DS_Store
             **/Thumbs.db
