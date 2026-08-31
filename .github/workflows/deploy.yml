@@ -1,0 +1,93 @@
+name: Deploy to lionsfundraising.com
+
+# Pushing to main publishes public_html over FTPS.
+#
+# READ THIS BEFORE THE FIRST REAL RUN
+#
+# This action SYNCS. Anything on the server that is not in this repository and
+# not excluded below WILL BE DELETED. DRY_RUN starts as "true": the first run
+# changes nothing and prints exactly what it would add, change and delete.
+# Read that list before setting it to "false".
+#
+# This property carries live money screens (/payouts, /treasurer) and has no
+# PHP and no conformance checker, so there is less standing between a bad push
+# and production here than on lionssports.club. Take the dry run seriously.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-lionsfundraising
+  cancel-in-progress: false
+
+env:
+  DRY_RUN: "true"
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Static HTML with inline modules. There is no build and no test suite
+      # yet, so this is a shape check, not a proof. The golden-file suite for
+      # the payout formula belongs here once it exists.
+      - name: No private keys or service accounts in client code
+        run: |
+          # A Firebase web apiKey (AIza...) is NOT a secret. It is a public
+          # project identifier, it is meant to ship in client code, and every
+          # page here carries one. Failing on it would block every deploy.
+          # What must never ship is a private key or a service account.
+          if grep -rInE '(-----BEGIN [A-Z ]*PRIVATE KEY|"type"[[:space:]]*:[[:space:]]*"service_account")' \
+               public_html --include='*.html' --include='*.js' --include='*.json' ; then
+            echo "::error::A private key or service account is present in client code."
+            exit 1
+          fi
+          echo "no private keys or service accounts found"
+
+      - name: One Firebase project across the client
+        run: |
+          # /claims carried projectId "lions-fundraising" while the rest of the
+          # site runs on "lionsfundraising-1f854" through lions-auth.js. Two
+          # projects means two databases and two sets of security rules, and
+          # only one of them is the one in firebase/firestore.rules.
+          ids=$(grep -rhoE 'projectId:[[:space:]]*"[^"]+"' public_html \
+                  --include='*.html' --include='*.js' | sort -u)
+          echo "$ids"
+          n=$(echo "$ids" | grep -c .)
+          if [ "$n" -gt 1 ]; then
+            echo "::error::More than one Firebase projectId in client code."
+            exit 1
+          fi
+
+      - name: Firestore rules are present and non-empty
+        run: |
+          test -s firebase/firestore.rules \
+            || { echo "::error::firebase/firestore.rules is missing or empty."; exit 1; }
+          echo "rules present, $(wc -l < firebase/firestore.rules) lines"
+
+  deploy:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./public_html/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          dry-run: ${{ env.DRY_RUN }}
+          log-level: standard
+          exclude: |
+            **/.DS_Store
+            **/Thumbs.db
+            **/desktop.ini
+            **/.ftp-deploy-sync-state.json

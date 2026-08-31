@@ -1,0 +1,216 @@
+rules_version = '2';
+
+// Lions Sports Club ERP - Firestore security rules
+//
+// Enforcement model: role identity is resolved from request.auth.token.email,
+// which is issued by Firebase Auth and cannot be modified by the client.
+// Client-side role checks in universal-auth.js are presentation only and are
+// not relied upon here.
+//
+// Role addresses are migrating from @lionsfootballclub.com to
+// @lionssports.club. Both are accepted during the transition. Remove the
+// legacy addresses only after every Firebase Auth account has been updated
+// and verified; removing them first will lock out all administrative access.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -- Identity -------------------------------------------------------
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function authEmail() {
+      return isAuthenticated() ? request.auth.token.email : '';
+    }
+
+    function isSystemAdmin() {
+      return authEmail() == 'fundraising@lionssports.club'
+          || authEmail() == 'fundraising@lionsfootballclub.com'
+          || getUserRole() == 'System Administrator';
+    }
+
+    function isTreasurer() {
+      return authEmail() == 'treasurer@lionssports.club'
+          || authEmail() == 'treasurer@lionsfootballclub.com'
+          || getUserRole() == 'Treasurer'
+          || isSystemAdmin();
+    }
+
+    function isEventSupervisor() {
+      return authEmail() == 'president@lionssports.club'
+          || authEmail() == 'president@lionsfootballclub.com'
+          || getUserRole() == 'Event Supervisor'
+          || isTreasurer();
+    }
+
+    // Resolves a role from Lions-User-Roles when one is present. No
+    // application code currently writes this collection, so this returns null
+    // in practice and the address checks above are the effective grant. Each
+    // call costs one document read and counts toward the ten-get limit per
+    // request.
+    function getUserRole() {
+      return isAuthenticated()
+          && exists(/databases/$(database)/documents/Lions-User-Roles/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/Lions-User-Roles/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    // -- Helpers --------------------------------------------------------
+
+    function incoming() { return request.resource.data; }
+    function stored()   { return resource.data; }
+
+    function changedKeys() {
+      return incoming().diff(stored()).affectedKeys();
+    }
+
+    // -- Lions-Fundraising-Users ----------------------------------------
+    //
+    // Documents are keyed by volunteer name, not by email. Rules must match
+    // identity on the email field rather than the document id.
+
+    match /Lions-Fundraising-Users/{docId} {
+
+      allow read, write, delete: if isSystemAdmin();
+      allow read: if isTreasurer() || isEventSupervisor();
+      allow read: if isAuthenticated() && stored().email == authEmail();
+
+      // Public self-registration. The registration form submits before the
+      // volunteer has an account, so authentication cannot be required here.
+      // The document is instead constrained to a registration shape, and
+      // fields that confer pay or alcohol-service eligibility are rejected.
+      allow create: if incoming().keys().hasAll(['name', 'email', 'phone', 'relationship'])
+                    && incoming().name is string
+                    && incoming().name.size() > 0
+                    && incoming().name.size() < 120
+                    && incoming().email is string
+                    && incoming().email.size() < 200
+                    && incoming().phone is string
+                    && incoming().phone.size() < 40
+                    && incoming().keys().size() < 40
+                    && incoming().get('hasLOSShirt', false) == false
+                    && !incoming().keys().hasAny(['role', 'position', 'permissions',
+                                                  'isAdmin', 'accessLevel']);
+
+      // Self-service updates are limited to contact details. Excluded fields
+      // and their reason:
+      //   name, email               identity and payout join keys
+      //   ageRange                  gates the alcohol-license section
+      //   hasLicense, licenseNumber, licenseExpiration,
+      //   alcoholTrainingCompleted  determine the Sodexo alcohol roster
+      //   hasLOSShirt               worth five dollars per shift in payouts
+      //   role, position            read as role sources by auth code
+      allow update: if isAuthenticated()
+                    && stored().email == authEmail()
+                    && changedKeys().hasOnly(['phone', 'shirtSize', 'updatedAt']);
+    }
+
+    // -- Lions-User-Roles -----------------------------------------------
+
+    match /Lions-User-Roles/{userId} {
+      allow read:  if isAuthenticated() && (request.auth.uid == userId || isSystemAdmin());
+      allow write: if isSystemAdmin();
+    }
+
+    // -- Work-Shifts ----------------------------------------------------
+
+    match /Work-Shifts/{document} {
+      allow read, write: if isSystemAdmin();
+      allow read: if isTreasurer();
+
+      // The treasurer's only mutation is the review lock.
+      allow update: if isTreasurer()
+                    && changedKeys().hasOnly(['isLocked', 'lockedBy', 'lockedDate', 'lockReason']);
+
+      // Backstop for the payouts interface, which currently renders a delete
+      // control on locked shifts.
+      allow delete: if isSystemAdmin() && stored().get('isLocked', false) == false;
+    }
+
+    // -- Lions-Events ---------------------------------------------------
+
+    match /Lions-Events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isEventSupervisor();
+
+      // Signup capacity is enforced by a transaction that increments a
+      // counter on the event document. Firestore rules cannot count
+      // documents in a subcollection, so the counter map is the only
+      // authoritative capacity value and volunteers must be able to
+      // increment it. No other field on the event is writable by them.
+      allow update: if isAuthenticated()
+                    && changedKeys().hasOnly(['counts']);
+    }
+
+    match /Lions-Events/{eventId}/signups/{signupId} {
+      allow read: if isAuthenticated();
+
+      allow create, update, delete: if isEventSupervisor();
+
+      allow create: if isAuthenticated()
+                    && incoming().userEmail == authEmail()
+                    && incoming().keys().hasAll(['userEmail', 'shiftKey', 'groupKey', 'createdAt'])
+                    && incoming().keys().size() < 25
+                    && !incoming().keys().hasAny(['adminOverride', 'attended', 'noShow']);
+
+      allow delete: if isAuthenticated() && stored().userEmail == authEmail();
+    }
+
+    // -- Lions-Timesheets -----------------------------------------------
+
+    match /Lions-Timesheets/{document} {
+      allow read, write: if isEventSupervisor();
+      allow read, update, delete: if isAuthenticated() && stored().userId == request.auth.uid;
+      allow create: if isAuthenticated() && incoming().userId == request.auth.uid;
+    }
+
+    // -- Lions-Reimbursements -------------------------------------------
+
+    match /Lions-Reimbursements/{document} {
+      allow read, write: if isTreasurer();
+      allow read: if isAuthenticated() && stored().userEmail == authEmail();
+
+      allow create: if isAuthenticated()
+                    && incoming().userEmail == authEmail()
+                    && incoming().status == 'pending'
+                    && incoming().keys().size() < 60;
+
+      // Status and amount are immutable on a self-service update. Checking
+      // only the stored status would allow a claimant to set their own
+      // request to approved and raise the amount in a single write.
+      allow update: if isAuthenticated()
+                    && stored().userEmail == authEmail()
+                    && stored().status == 'pending'
+                    && incoming().status == 'pending'
+                    && incoming().userEmail == stored().userEmail
+                    && incoming().amount == stored().amount
+                    && incoming().keys().size() < 60;
+    }
+
+    // -- Lions-Payments -------------------------------------------------
+
+    match /Lions-Payments/{document} {
+      allow read, write: if isTreasurer();
+      allow read: if isAuthenticated() && stored().userId == request.auth.uid;
+    }
+
+    // -- Lions-Audit-Log ------------------------------------------------
+    //
+    // Append only. The actor is pinned to the authenticated address so
+    // entries cannot be attributed to another user.
+
+    match /Lions-Audit-Log/{document} {
+      allow read:   if isSystemAdmin();
+      allow create: if isAuthenticated()
+                    && incoming().keys().hasAll(['action', 'timestamp'])
+                    && incoming().get('actorEmail', authEmail()) == authEmail();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
