@@ -1682,8 +1682,8 @@
                         <div class="stat-label">Avg Hourly Rate</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="avgNetPerEvent">-</div>
-                        <div class="stat-label">Avg Net / Event</div>
+                        <div class="stat-number" id="avgNetPerWorker">-</div>
+                        <div class="stat-label">Avg Take Home</div>
                     </div>
                 </div>
             </div>
@@ -2932,6 +2932,7 @@
             let totalHours = 0;
             let totalNetPayouts = 0;
             let weightedRateSum = 0;
+            let workerShiftCount = 0;
 
             scope.forEach(shift => {
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -2940,6 +2941,7 @@
                 const calc = calculatePayouts(totalPayout, shift.workers || [], shift);
                 totalHours += calc.totalHours;
                 totalNetPayouts += calc.workerPayouts.reduce((sum, w) => sum + w.netAmount, 0);
+                workerShiftCount += calc.workerPayouts.length;
                 weightedRateSum += calc.hourlyRate * calc.totalHours;
             });
 
@@ -2948,11 +2950,16 @@
                 totalNetPayouts: totalNetPayouts,
                 totalHours: totalHours,
                 avgHourlyRate: totalHours > 0 ? weightedRateSum / totalHours : 0,
-                /* What a shift is worth to the people who worked it, averaged
-                   across the shifts in view. Divides by shift count, not by
-                   worker count: the question this answers is what an event
-                   yields, not what a person takes home. */
-                avgNetPerEvent: scope.length > 0 ? totalNetPayouts / scope.length : 0
+                /* What ONE PERSON takes home for working ONE shift, after the
+                   shirt deduction. Divides by worker rows, not by shift count,
+                   because the question this answers is the one a family asks:
+                   if I work an event, what do I earn. Three people each working
+                   one event is three times this number.
+
+                   Honest limit: shifts differ in length, so this mixes a seven
+                   hour Colts game with a three hour concert. It is an average,
+                   not a promise. */
+                avgNetPerWorker: workerShiftCount > 0 ? totalNetPayouts / workerShiftCount : 0
             };
 
             const elements = {
@@ -2960,14 +2967,14 @@
                 totalPayout: document.getElementById('totalPayout'),
                 totalHours: document.getElementById('totalHours'),
                 avgHourlyRate: document.getElementById('avgHourlyRate'),
-                avgNetPerEvent: document.getElementById('avgNetPerEvent')
+                avgNetPerWorker: document.getElementById('avgNetPerWorker')
             };
 
             if (elements.totalShifts) elements.totalShifts.textContent = stats.totalShifts;
             if (elements.totalPayout) elements.totalPayout.textContent = formatCurrency(stats.totalNetPayouts);
             if (elements.totalHours) elements.totalHours.textContent = formatHours(stats.totalHours);
             if (elements.avgHourlyRate) elements.avgHourlyRate.textContent = formatCurrency(stats.avgHourlyRate);
-            if (elements.avgNetPerEvent) elements.avgNetPerEvent.textContent = formatCurrency(stats.avgNetPerEvent);
+            if (elements.avgNetPerWorker) elements.avgNetPerWorker.textContent = formatCurrency(stats.avgNetPerWorker);
         }
 
         window.viewShiftDetails = function(shiftId) {
