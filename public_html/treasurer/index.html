@@ -363,14 +363,23 @@
             border-color: #d97706;
         }
 
+        /* Red, matching the LOCKED banner and border on the card it produces.
+           The button and its consequence are the same idea, so they are the
+           same color. Blue reads as an ordinary action, and locking a shift is
+           not ordinary: it pulls the shift out of the payment run until
+           someone reviews it.
+
+           The disabled state below stays gray on purpose. Once a shift is
+           locked the red border and banner already say so, and a second red
+           element that cannot be clicked is noise. */
         .btn-lock {
-            background: #3b82f6;
-            border-color: #3b82f6;
+            background: #ed4337;
+            border-color: #ed4337;
         }
 
         .btn-lock:hover {
-            background: #2563eb;
-            border-color: #2563eb;
+            background: #c9352b;
+            border-color: #c9352b;
         }
 
         .btn-lock:disabled {
