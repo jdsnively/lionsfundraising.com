@@ -124,7 +124,15 @@
             color: var(--po-gray-700);
             position: relative;
             padding: var(--space-6);
-            transform: var(--transform-gpu);
+            /* NO TRANSFORM HERE. translateZ(0) on body was a GPU compositing
+               hint, and it cost the Details modal. Any transform, even an
+               identity matrix, makes an element a containing block for its
+               position:fixed descendants. With it, .dialog anchored to the
+               4130px document instead of the 720px viewport: the backdrop
+               dimmed the screen, the panel rendered 1854px down the page, and
+               the only way to read a shift was to scroll looking for it.
+               Measured 2026-08-31. treasurer never had this line, which is
+               the whole reason its modal always appeared centered. */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
