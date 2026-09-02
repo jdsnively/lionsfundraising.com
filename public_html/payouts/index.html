@@ -1736,7 +1736,7 @@
                 <button class="btn btn-neutral" id="refreshBtn">Refresh</button>
                 <button class="btn btn-info" id="workerTotalsBtn">Worker Summary</button>
                 <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
-                <button class="btn btn-secondary" id="exportPayoutsBtn" hidden>Export Payouts</button>
+                <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payout Record</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -2157,6 +2157,12 @@
         import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, query, orderBy, where, writeBatch } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         const LOW_RATE_THRESHOLD = 20.00;
+
+        /* Stamped onto every exported payout row. A shift stores inputs only and
+           every amount is recomputed at read time, so an export is only
+           interpretable if it says which version of the formula produced it.
+           Bump this in the same commit as any change to the arithmetic. */
+        const FORMULA_VERSION = '2026-09-02-pre-correction';
 
         // Time parsing with 15-minute increments
         function parseTime(timeStr) {
@@ -3862,38 +3868,97 @@
             return Object.values(workerTotals).map(worker => ({ ...worker, avgPerShift: worker.totalShifts > 0 ? worker.netEarnings / worker.totalShifts : 0, avgPerHour: worker.totalHours > 0 ? worker.netEarnings / worker.totalHours : 0 })).sort(customSort);
         }
 
+        /* The audit record of what a finalized shift actually paid.
+
+           A shift document stores inputs only, so every amount on this screen is
+           recomputed at page load. That means correcting the formula restates
+           history: a volunteer paid $70.00 would display as $75.00 on a shift
+           marked finalized, and the amount actually paid would exist nowhere.
+
+           This export is the record that does not exist otherwise. Run it before
+           any change to the formula. FORMULA_VERSION stamps every row, so two
+           exports taken either side of a correction can be joined on Shift ID
+           and Worker Name to produce an exact difference per person.
+
+           A shift with no worker rows still emits one row. Finding M-1 is that
+           workers can be dropped silently, and an export that omitted those
+           shifts would hide the very thing worth finding. */
         function exportPayouts() {
             const finalizedShifts = allShifts.filter(s => s.status === 'finalized');
             if (finalizedShifts.length === 0) { alert('No finalized shifts to export.'); return; }
-            
+
+            const exportedAt = new Date().toISOString();
             const csvRows = [];
-            csvRows.push(['Event Date', 'Event Name', 'Primary Stand', 'Primary CR#', 'Secondary Stand', 'Secondary CR#', 'Worker Name', 'Stand', 'CR#', 'Hours', 'Hourly Rate', 'Gross Pay', 'Shirt Deduction', 'Net Pay', 'Low Rate Rule']);
-            
+            csvRows.push([
+                'Formula Version', 'Exported At', 'Shift ID', 'Event Date', 'Season', 'Event Name', 'Status',
+                'Primary Stand', 'Primary CR#', 'Primary Sodexo', 'Secondary Stand', 'Secondary CR#', 'Secondary Sodexo',
+                'Total Sodexo', 'Separate Stands Mode', 'Low Rate Rule',
+                'Shift Total Hours', 'Shift Hourly Rate', 'Shift Worker Pool',
+                'Shift Lions Pct', 'Shift Coaches Pct', 'Shift Coordinator Pct', 'Shift Coordinator Adjustment',
+                'Shift Shirts Needed', 'Shift Lions Shirt Costs', 'Shift Rounding', 'Shift Lions Final Total',
+                'Worker Name', 'Worker Stand', 'Worker CR#', 'Start', 'End',
+                'Worker Hours', 'Worker Hourly Rate', 'Gross Pay', 'Shirt Deduction', 'Net Pay',
+                'Shirt From Snapshot'
+            ]);
+
             finalizedShifts.forEach(shift => {
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-                const primaryStand = shift.primaryStand || shift.standNumber || '';
-                const secondaryStand = shift.secondaryStand || '';
-                const lowRateStatus = calculations.lowRateRuleApplied ? 'Yes' : 'No';
-                
-                calculations.workerPayouts.forEach(worker => {
-                    const workerCrNumber = getWorkerCrNumber(worker, shift);
-                    csvRows.push([shift.eventDate, shift.eventName, primaryStand, shift.primaryCrNumber || shift.crNumber || '', secondaryStand, shift.secondaryCrNumber || '', worker.name, worker.stand, workerCrNumber || '', worker.hours.toFixed(2), worker.workerHourlyRate.toFixed(2), worker.grossAmount.toFixed(2), worker.shirtDeduction.toFixed(2), worker.netAmount.toFixed(2), lowRateStatus]);
+                const c = calculatePayouts(totalPayout, shift.workers || [], shift);
+
+                const shiftCells = [
+                    FORMULA_VERSION, exportedAt, shift.id || '', shift.eventDate || '',
+                    seasonOf(shift.eventDate), shift.eventName || '',
+                    shift.isLocked ? 'locked' : (shift.status || ''),
+                    shift.primaryStand || shift.standNumber || '',
+                    shift.primaryCrNumber || shift.crNumber || '', primaryPayout.toFixed(2),
+                    shift.secondaryStand || '', shift.secondaryCrNumber || '', secondaryPayout.toFixed(2),
+                    totalPayout.toFixed(2),
+                    shift.separateStandsMode === true ? 'Yes' : 'No',
+                    c.lowRateRuleApplied ? 'Yes' : 'No',
+                    c.totalHours.toFixed(2), c.hourlyRate.toFixed(4), c.availableForWorkers.toFixed(2),
+                    c.lionsPercent.toFixed(2), c.coachesPercent.toFixed(2), c.coordinatorPercent.toFixed(2),
+                    (c.coordinatorAdjustment || 0).toFixed(2),
+                    String(c.shirtsNeeded || 0), c.lionsShirtCosts.toFixed(2),
+                    c.roundingAmount.toFixed(2), c.lionsFinalTotal.toFixed(2)
+                ];
+
+                const rows = c.workerPayouts || [];
+                if (rows.length === 0) {
+                    csvRows.push(shiftCells.concat(['NO WORKER ROWS', '', '', '', '', '', '', '', '', '', '']));
+                    return;
+                }
+
+                rows.forEach(worker => {
+                    const source = (shift.workers || []).find(w => w.name === worker.name);
+                    csvRows.push(shiftCells.concat([
+                        worker.name, worker.stand || '', getWorkerCrNumber(worker, shift) || '',
+                        source ? (source.startTime || '') : '', source ? (source.endTime || '') : '',
+                        worker.hours.toFixed(2), worker.workerHourlyRate.toFixed(4),
+                        worker.grossAmount.toFixed(2), worker.shirtDeduction.toFixed(2), worker.netAmount.toFixed(2),
+                        (source && source.finalizedShirtDeduction !== undefined) ? 'Yes' : 'No'
+                    ]));
                 });
             });
-            
-            const csvContent = csvRows.map(row => row.map(cell => '"' + cell + '"').join(',')).join('\n');
+
+            /* A double quote inside a field has to be doubled, not passed through.
+               An event name carrying one would otherwise break every column after
+               it, in the one file that has to be trustworthy. */
+            const csvContent = csvRows
+                .map(row => row.map(cell => '"' + String(cell === null || cell === undefined ? '' : cell).replace(/"/g, '""') + '"').join(','))
+                .join('\n');
+
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.setAttribute('href', URL.createObjectURL(blob));
-            link.setAttribute('download', 'lions_payouts_export_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.setAttribute('download', 'lions_payout_record_' + FORMULA_VERSION + '_' + new Date().toISOString().split('T')[0] + '.csv');
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
+
 
         function applyFilters() {
             const statusFilter = document.getElementById('filterStatus')?.value || '';
