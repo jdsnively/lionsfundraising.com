@@ -1525,6 +1525,27 @@
             }
         }
 
+        /* Every exit from a payout calculation goes through here. A result that
+           returns early from a guard used to carry numbers but no formatted
+           strings, and the shift card reads the formatted ones, so a draft
+           awaiting its Sodexo payment rendered "undefined" where its hours and
+           rate belong. Formatting at one exit point makes that unrepresentable
+           rather than merely fixed. */
+        function formatCalcResult(result) {
+            result.totalHoursFormatted = formatHours(result.totalHours);
+            result.hourlyRateFormatted = formatCurrency(result.hourlyRate);
+            result.lionsPercentFormatted = formatCurrency(result.lionsPercent);
+            result.coachesPercentFormatted = formatCurrency(result.coachesPercent);
+            result.coordinatorPercentFormatted = formatCurrency(result.coordinatorPercent);
+            result.availableForWorkersFormatted = formatCurrency(result.availableForWorkers);
+            result.totalWorkerPayoutsFormatted = formatCurrency(result.totalWorkerPayouts);
+            result.lionsShirtCostsFormatted = formatCurrency(result.lionsShirtCosts);
+            result.roundingAmountFormatted = formatCurrency(result.roundingAmount);
+            result.lionsFinalTotalFormatted = formatCurrency(result.lionsFinalTotal);
+            result.coordinatorAdjustmentFormatted = formatCurrency(result.coordinatorAdjustment);
+            return result;
+        }
+
         function calculateCombinedPayouts(sodexoAmount, workers) {
             const result = {
                 totalHours: 0, hourlyRate: 0, lionsPercent: 0, coachesPercent: 0,
@@ -1533,11 +1554,16 @@
                 lionsShirtCosts: 0, roundingAmount: 0, lionsFinalTotal: 0,
                 coordinatorAdjustment: 0, separateMode: false, lowRateRuleApplied: false
             };
-            if (!sodexoAmount || !workers || workers.length === 0) return result;
+            /* Hours are known the night of the shift; the Sodexo payment
+               arrives weeks later. A draft awaiting payment therefore has real
+               hours and no rate, and it has to say so rather than returning an
+               unformatted result, which rendered as the literal word
+               "undefined" on the card. */
+            if (!workers || workers.length === 0) return formatCalcResult(result);
             result.totalHours = workers.reduce((total, worker) => {
                 return total + calculateHours(worker.startTime, worker.endTime);
             }, 0);
-            if (result.totalHours === 0) return result;
+            if (!sodexoAmount || result.totalHours === 0) return formatCalcResult(result);
 
             // Count shirts needed for Lions shirt costs calculation
             let shirtsNeededCount = 0;
@@ -2511,7 +2537,10 @@
             totalNetPayroll: 0
         };
         
-        allShifts.forEach(shift => {
+        /* Followed allShifts, so every headline number was all time no matter
+           what the page was filtered to. Same defect payouts carried until
+           2026-08-31, never propagated here. */
+        filteredShifts.forEach(shift => {
             const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
@@ -2913,7 +2942,7 @@
         }
 
         function displayWorkerTotalsTable() {
-            const rawWorkers = generateWorkerTotals(allShifts);
+            const rawWorkers = generateWorkerTotals(filteredShifts);
             if (!elements.workerTotalsBody) {
                 console.error('Worker totals table body not found');
                 return;
@@ -3063,6 +3092,10 @@
             });
             visibleRange = { start: 0, end: 20 };
             displayShifts();
+            /* The headline numbers are scoped to the filter now, so changing the
+               filter has to recompute them. Rendering the cards alone left five
+               stale totals sitting above a correctly filtered list. */
+            updateStats();
         }
 
         function debouncedFilterShifts() {

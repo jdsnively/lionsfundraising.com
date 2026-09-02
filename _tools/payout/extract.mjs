@@ -19,6 +19,14 @@ const NEEDED = [
     'calculateCombinedPayouts'
 ];
 
+// Helpers the formula may call on one page and not the other. The two copies
+// are not identical and pretending otherwise is what finding M-4 is about, so
+// an absent helper is skipped and a duplicated one still refuses.
+const OPTIONAL = [
+    'formatCalcResult',
+    'matchWorkerRow'
+];
+
 const THRESHOLD_PATTERN = /^[ \t]*const LOW_RATE_THRESHOLD = [0-9.]+;[ \t]*(\/\/.*)?$/gm;
 
 function refuse(what, count, file) {
@@ -77,6 +85,13 @@ function compileOrRefuse(text, name, file) {
     return text;
 }
 
+function countFunction(source, name) {
+    const needle = 'function ' + name + '(';
+    let n = 0, at = source.indexOf(needle);
+    while (at !== -1) { n++; at = source.indexOf(needle, at + 1); }
+    return n;
+}
+
 function sliceThreshold(source, file) {
     const hits = source.match(THRESHOLD_PATTERN);
     if (!hits || hits.length !== 1) refuse('LOW_RATE_THRESHOLD', hits ? hits.length : 0, file);
@@ -89,13 +104,24 @@ function sliceThreshold(source, file) {
 export async function loadFormula(file) {
     const source = await readFile(file, 'utf8');
     const parts = {};
-    for (const name of NEEDED) parts[name] = sliceFunction(source, name, file);
+    const present = [];
+    for (const name of NEEDED) {
+        parts[name] = sliceFunction(source, name, file);
+        present.push(name);
+    }
+    for (const name of OPTIONAL) {
+        const hits = countFunction(source, name);
+        if (hits === 0) continue;
+        if (hits !== 1) refuse('optional function ' + name, hits, file);
+        parts[name] = sliceFunction(source, name, file);
+        present.push(name);
+    }
     const threshold = sliceThreshold(source, file);
 
     const built =
         '"use strict";\n' +
         threshold + '\n' +
-        NEEDED.map((n) => parts[n]).join('\n\n') + '\n\n' +
+        present.map((n) => parts[n]).join('\n\n') + '\n\n' +
         'return calculateCombinedPayouts;\n';
 
     let factory;
