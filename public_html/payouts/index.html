@@ -1956,7 +1956,7 @@
             <div id="workerTotalsSection" class="hidden">
                 <h3
                     style="text-align: center; margin-bottom: var(--space-6); font-family: var(--po-font-heading); color: var(--po-blue);">
-                    Worker Earnings Summary</h3>
+                    <span id="workerTotalsHeading">Worker Earnings Summary</span></h3>
                 <div class="table-container">
                     <table class="table" role="table" aria-label="Worker earnings summary">
                         <thead>
@@ -3970,8 +3970,19 @@
             if (!section.classList.contains('hidden')) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
             
-            const finalizedShifts = allShifts.filter(s => s.status === 'finalized');
-            if (finalizedShifts.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="loading">No finalized shifts available for summary.</td></tr>'; return; }
+            /* Follows the season and status filter, like the stat cards do.
+               Reading allShifts here made every total all time regardless of
+               what the page was filtered to, which is the same defect the stat
+               cards carried until 2026-08-31. */
+            const finalizedShifts = filteredShifts.filter(s => s.status === 'finalized');
+            const heading = document.getElementById('workerTotalsHeading');
+            if (heading) {
+                const seasonSelect = document.getElementById('filterSeason');
+                const label = seasonSelect && seasonSelect.selectedIndex >= 0
+                    ? seasonSelect.options[seasonSelect.selectedIndex].textContent : 'All Seasons';
+                heading.textContent = 'Worker Earnings Summary, ' + label;
+            }
+            if (finalizedShifts.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="loading">No finalized shifts in the current filter.</td></tr>'; return; }
             
             const workerTotals = generateWorkerTotals(finalizedShifts);
             if (workerTotals.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="loading">No worker data available in finalized shifts.</td></tr>'; return; }
@@ -4126,7 +4137,7 @@
             csvRows.push([
                 'Formula Version', 'Exported At', 'Shift ID', 'Event Date', 'Season', 'Event Name', 'Status',
                 'Primary Stand', 'Primary CR#', 'Primary Sodexo', 'Secondary Stand', 'Secondary CR#', 'Secondary Sodexo',
-                'Total Sodexo', 'Separate Stands Mode', 'Low Rate Rule',
+                'Total Sodexo', 'Separate Stands Mode', 'Low Rate Rule', 'Frozen', 'Frozen Version', 'Frozen At',
                 'Shift Total Hours', 'Shift Hourly Rate', 'Shift Worker Pool',
                 'Shift Lions Pct', 'Shift Coaches Pct', 'Shift Coordinator Pct', 'Shift Coordinator Adjustment',
                 'Shift Shirts Needed', 'Shift Lions Shirt Costs', 'Shift Rounding', 'Shift Lions Final Total',
@@ -4151,6 +4162,7 @@
                     totalPayout.toFixed(2),
                     shift.separateStandsMode === true ? 'Yes' : 'No',
                     c.lowRateRuleApplied ? 'Yes' : 'No',
+                    c.isFrozen ? 'Yes' : 'No', c.frozenFormulaVersion || '', c.frozenAt || '',
                     c.totalHours.toFixed(2), c.hourlyRate.toFixed(4), c.availableForWorkers.toFixed(2),
                     c.lionsPercent.toFixed(2), c.coachesPercent.toFixed(2), c.coordinatorPercent.toFixed(2),
                     (c.coordinatorAdjustment || 0).toFixed(2),
