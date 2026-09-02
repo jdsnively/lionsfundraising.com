@@ -4001,15 +4001,22 @@
 
         function showWorkerTotals() {
             const section = document.getElementById('workerTotalsSection');
-            const tbody = document.getElementById('workerTotalsBody');
-            if (!section || !tbody) return;
+            if (!section) return;
             if (!section.classList.contains('hidden')) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
-            
-            /* Follows the season and status filter, like the stat cards do.
-               Reading allShifts here made every total all time regardless of
-               what the page was filtered to, which is the same defect the stat
-               cards carried until 2026-08-31. */
+            renderWorkerTotals();
+        }
+
+        /* Rendering is separate from toggling so a filter change can refresh a
+           panel that is already open. Folded together, changing the season
+           updated the cards and the stat tiles and left this table showing the
+           previous season, which is worse than showing nothing because it looks
+           current. */
+        function renderWorkerTotals() {
+            const section = document.getElementById('workerTotalsSection');
+            const tbody = document.getElementById('workerTotalsBody');
+            if (!section || !tbody || section.classList.contains('hidden')) return;
+
             const finalizedShifts = filteredShifts.filter(s => s.status === 'finalized');
             const heading = document.getElementById('workerTotalsHeading');
             if (heading) {
@@ -4019,12 +4026,13 @@
                 heading.textContent = 'Worker Earnings Summary, ' + label;
             }
             if (finalizedShifts.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="loading">No finalized shifts in the current filter.</td></tr>'; return; }
-            
+
             const workerTotals = generateWorkerTotals(finalizedShifts);
             if (workerTotals.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="loading">No worker data available in finalized shifts.</td></tr>'; return; }
-            
+
             tbody.innerHTML = workerTotals.map(worker => '<tr><td style="text-align: left; font-weight: 600;">' + worker.name + '</td><td>' + worker.totalShifts + '</td><td>' + formatHours(worker.totalHours) + '</td><td>' + formatCurrency(worker.grossEarnings) + '</td><td>' + formatCurrency(worker.shirtDeductions) + '</td><td><strong>' + formatCurrency(worker.netEarnings) + '</strong></td><td>' + formatCurrency(worker.avgPerShift) + '</td><td>' + formatCurrency(worker.avgPerHour) + '</td></tr>').join('');
         }
+
 
         function generateWorkerTotals(finalizedShifts) {
             const workerTotals = {};
@@ -4262,6 +4270,7 @@
             });
             displayShifts();
             updateStats();
+            renderWorkerTotals();
         }
 
         function clearFilters() {

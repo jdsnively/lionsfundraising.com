@@ -1289,7 +1289,7 @@
             <div id="workerTotalsSection" class="hidden">
                 <h3
                     style="text-align: center; margin-bottom: var(--space-6); font-family: var(--tr-font-heading); color: var(--tr-blue);">
-                    Worker Payroll Summary
+                    <span id="workerTotalsHeading">Worker Payroll Summary</span>
                 </h3>
                 <div class="table-container">
                     <table class="table">
@@ -2942,6 +2942,13 @@
         }
 
         function displayWorkerTotalsTable() {
+            const heading = document.getElementById("workerTotalsHeading");
+            if (heading) {
+                const seasonSelect = document.getElementById("filterSeason");
+                const label = seasonSelect && seasonSelect.selectedIndex >= 0
+                    ? seasonSelect.options[seasonSelect.selectedIndex].textContent : "All Seasons";
+                heading.textContent = "Worker Payroll Summary, " + label;
+            }
             const rawWorkers = generateWorkerTotals(filteredShifts);
             if (!elements.workerTotalsBody) {
                 console.error('Worker totals table body not found');
@@ -3094,8 +3101,12 @@
             displayShifts();
             /* The headline numbers are scoped to the filter now, so changing the
                filter has to recompute them. Rendering the cards alone left five
-               stale totals sitting above a correctly filtered list. */
+               stale totals sitting above a correctly filtered list, and an open
+               worker summary showing the previous season. */
             updateStats();
+            if (elements.workerTotalsSection && !elements.workerTotalsSection.classList.contains("hidden")) {
+                displayWorkerTotalsTable();
+            }
         }
 
         function debouncedFilterShifts() {
