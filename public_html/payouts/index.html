@@ -1737,6 +1737,7 @@
                 <button class="btn btn-info" id="workerTotalsBtn">Worker Summary</button>
                 <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
                 <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payout Record</button>
+                <button class="btn btn-warning" id="backfillFreezeBtn" hidden>Freeze Historical Shifts</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -2270,6 +2271,150 @@
                 }
                 return calculateSeparatePayouts(workers, primaryStand, secondaryStand, primarySodexo, secondarySodexo);
             }
+        }
+
+        /* ------------------------------------------------------------------
+           Frozen calculations.
+
+           A shift document stores inputs only, so every amount on this page is
+           recomputed at read time. That makes a settled shift restate itself
+           whenever the arithmetic changes: a volunteer paid $70.00 would begin
+           displaying as $75.00 on a shift marked finalized, and the amount
+           actually paid would exist nowhere.
+
+           Finalizing now writes the computed result onto the shift, and every
+           read of a finalized shift returns that frozen result instead of
+           recomputing. Editing a finalized shift refreezes it, because the
+           inputs changed and the settlement changed with them.
+
+           finalizedShirtDeduction was the first attempt at this and froze one
+           field. This freezes the whole calculation and supersedes it, without
+           removing it: the per worker snapshot is still what the formula reads
+           when a roster shirt status changes after the fact.
+           ------------------------------------------------------------------ */
+
+        /* Pairs a worker with its payout row, or a payout row with its worker.
+           workerPayouts is built by mapping over workers, so index i lines up
+           with worker i. Matching by name alone breaks when the same person
+           appears twice on one shift, which happens: Jocelyn Garver worked two
+           blocks of DCI Day 3 on 2025-08-09, and a name lookup returned the
+           first block for both rows.
+
+           The index is authoritative. The name check guards the separate stand
+           path, where rows are grouped by stand rather than mapped in order, and
+           the fallback preserves that path's existing behavior. */
+        function matchWorkerRow(list, name, index) {
+            const byIndex = list[index];
+            if (byIndex && byIndex.name === name) return byIndex;
+            return list.find(w => w.name === name) || null;
+        }
+
+        /* Numbers and names only. No locale formatted strings go to Firestore;
+           formatting is a display concern and is rebuilt on thaw. */
+        function freezeCalculations(calc) {
+            const num = (v) => (typeof v === 'number' && isFinite(v) ? v : 0);
+            return {
+                formulaVersion: FORMULA_VERSION,
+                frozenAt: new Date().toISOString(),
+                totalHours: num(calc.totalHours),
+                hourlyRate: num(calc.hourlyRate),
+                availableForWorkers: num(calc.availableForWorkers),
+                lionsPercent: num(calc.lionsPercent),
+                coachesPercent: num(calc.coachesPercent),
+                coordinatorPercent: num(calc.coordinatorPercent),
+                coordinatorAdjustment: num(calc.coordinatorAdjustment),
+                shirtsNeeded: num(calc.shirtsNeeded),
+                lionsShirtCosts: num(calc.lionsShirtCosts),
+                workerShirtContributions: num(calc.workerShirtContributions),
+                totalWorkerPayouts: num(calc.totalWorkerPayouts),
+                roundingAmount: num(calc.roundingAmount),
+                lionsFinalTotal: num(calc.lionsFinalTotal),
+                lowRateRuleApplied: calc.lowRateRuleApplied === true,
+                separateMode: calc.separateMode === true,
+                workers: (calc.workerPayouts || []).map(w => ({
+                    name: w.name || '',
+                    stand: w.stand || '',
+                    hours: num(w.hours),
+                    hourlyRate: num(w.workerHourlyRate),
+                    theoreticalAmount: num(w.theoreticalAmount),
+                    grossAmount: num(w.grossAmount),
+                    shirtDeduction: num(w.shirtDeduction),
+                    netAmount: num(w.netAmount),
+                    hasLOSShirt: w.hasLOSShirt === true
+                }))
+            };
+        }
+
+        /* Rebuilds the exact shape calculatePayouts returns, so every consumer
+           is indifferent to whether it received a frozen or a live result. */
+        function thawCalculations(frozen) {
+            const result = {
+                totalHours: frozen.totalHours,
+                hourlyRate: frozen.hourlyRate,
+                availableForWorkers: frozen.availableForWorkers,
+                lionsPercent: frozen.lionsPercent,
+                coachesPercent: frozen.coachesPercent,
+                coordinatorPercent: frozen.coordinatorPercent,
+                coordinatorAdjustment: frozen.coordinatorAdjustment,
+                shirtsNeeded: frozen.shirtsNeeded,
+                lionsShirtCosts: frozen.lionsShirtCosts,
+                workerShirtContributions: frozen.workerShirtContributions,
+                totalWorkerPayouts: frozen.totalWorkerPayouts,
+                roundingAmount: frozen.roundingAmount,
+                lionsFinalTotal: frozen.lionsFinalTotal,
+                lowRateRuleApplied: frozen.lowRateRuleApplied === true,
+                separateMode: frozen.separateMode === true,
+                isFrozen: true,
+                frozenFormulaVersion: frozen.formulaVersion || '',
+                frozenAt: frozen.frozenAt || '',
+                workerPayouts: (frozen.workers || []).map(w => ({
+                    name: w.name,
+                    stand: w.stand || 'N/A',
+                    hours: w.hours,
+                    grossAmount: w.grossAmount,
+                    shirtDeduction: w.shirtDeduction,
+                    netAmount: w.netAmount,
+                    hasLOSShirt: w.hasLOSShirt === true,
+                    theoreticalAmount: w.theoreticalAmount,
+                    hoursFormatted: formatHours(w.hours),
+                    grossAmountFormatted: formatCurrency(w.grossAmount),
+                    shirtDeductionFormatted: formatCurrency(w.shirtDeduction),
+                    netAmountFormatted: formatCurrency(w.netAmount),
+                    workerHourlyRate: w.hourlyRate,
+                    workerHourlyRateFormatted: formatCurrency(w.hourlyRate)
+                }))
+            };
+            result.totalHoursFormatted = formatHours(result.totalHours);
+            result.hourlyRateFormatted = formatCurrency(result.hourlyRate);
+            result.lionsPercentFormatted = formatCurrency(result.lionsPercent);
+            result.coachesPercentFormatted = formatCurrency(result.coachesPercent);
+            result.coordinatorPercentFormatted = formatCurrency(result.coordinatorPercent);
+            result.availableForWorkersFormatted = formatCurrency(result.availableForWorkers);
+            result.totalWorkerPayoutsFormatted = formatCurrency(result.totalWorkerPayouts);
+            result.lionsShirtCostsFormatted = formatCurrency(result.lionsShirtCosts);
+            result.roundingAmountFormatted = formatCurrency(result.roundingAmount);
+            result.lionsFinalTotalFormatted = formatCurrency(result.lionsFinalTotal);
+            result.coordinatorAdjustmentFormatted = formatCurrency(result.coordinatorAdjustment);
+            return result;
+        }
+
+        /* The single read path for a stored shift. Every display, summary and
+           export goes through here. The three places that WRITE a settlement,
+           saveShift, finalizeAllDrafts and the backfill, call calculatePayouts
+           directly, because their job is to produce the frozen value rather
+           than to read it. */
+        function payoutsFor(shift) {
+            /* Only a finalized shift is settled. Unlocking returns a shift to
+               draft, and a draft has to recompute as it is edited, so the
+               status is part of the test and not just the presence of the
+               frozen object. unlockShift also clears it; either guard alone
+               would do, and a settlement is worth two. */
+            if (shift && shift.status === 'finalized' && shift.finalizedCalc) {
+                return thawCalculations(shift.finalizedCalc);
+            }
+            const primaryPayout = (shift && (shift.primarySodexoPayout || shift.sodexoPayout)) || 0;
+            const secondaryPayout = (shift && shift.secondarySodexoPayout) || 0;
+            return calculatePayouts(primaryPayout + secondaryPayout, (shift && shift.workers) || [], shift);
         }
 
         function calculateCombinedPayouts(sodexoAmount, workers) {
@@ -2896,7 +3041,7 @@
             const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
-            const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
+            const calculations = payoutsFor(shift);
             
             let statusClass, actionButtons, shiftStatus;
             const isLocked = shift.isLocked === true;
@@ -2968,7 +3113,7 @@
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const calc = calculatePayouts(totalPayout, shift.workers || [], shift);
+                const calc = payoutsFor(shift);
                 totalHours += calc.totalHours;
                 totalNetPayouts += calc.workerPayouts.reduce((sum, w) => sum + w.netAmount, 0);
                 workerShiftCount += calc.workerPayouts.length;
@@ -3005,6 +3150,8 @@
             if (elements.totalHours) elements.totalHours.textContent = formatHours(stats.totalHours);
             if (elements.avgHourlyRate) elements.avgHourlyRate.textContent = formatCurrency(stats.avgHourlyRate);
             if (elements.avgNetPerWorker) elements.avgNetPerWorker.textContent = formatCurrency(stats.avgNetPerWorker);
+
+            updateBackfillVisibility();
         }
 
         window.viewShiftDetails = function(shiftId) {
@@ -3014,7 +3161,7 @@
             const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
-            const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
+            const calculations = payoutsFor(shift);
             
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
             const secondaryStand = shift.secondaryStand || '';
@@ -3649,8 +3796,8 @@
             const totalPayout = primarySodexoPayout + secondarySodexoPayout;
             const calculations = calculatePayouts(totalPayout, workers);
             
-            const workersWithSnapshot = workers.map(worker => {
-                const workerCalc = calculations.workerPayouts.find(w => w.name === worker.name);
+            const workersWithSnapshot = workers.map((worker, i) => {
+                const workerCalc = matchWorkerRow(calculations.workerPayouts, worker.name, i);
                 const shirtDeduction = workerCalc ? workerCalc.shirtDeduction : 0;
                 const workerData = { name: worker.name, stand: worker.stand, startTime: worker.startTime, endTime: worker.endTime };
                 if (andFinalize) workerData.finalizedShirtDeduction = shirtDeduction;
@@ -3677,7 +3824,15 @@
             };
             
             if (!editingShiftId) { shiftData.createdAt = new Date().toISOString(); shiftData.createdBy = currentUser.email; }
-            if (andFinalize) { shiftData.finalizedAt = new Date().toISOString(); shiftData.finalizedBy = currentUser.email; }
+            /* Finalizing settles the shift, so the computed result is stored
+               with it. setDoc replaces the document, so a finalized shift saved
+               back to draft correctly loses its frozen settlement, and a
+               finalized shift edited and refinalized gets a fresh one. */
+            if (andFinalize) {
+                shiftData.finalizedAt = new Date().toISOString();
+                shiftData.finalizedBy = currentUser.email;
+                shiftData.finalizedCalc = freezeCalculations(calculations);
+            }
             
             try {
                 const shiftId = editingShiftId || 'shift_' + Date.now();
@@ -3747,7 +3902,10 @@
         async function confirmUnlock() {
             if (!unlockTarget || !db) return;
             try {
-                await updateDoc(doc(db, 'Work-Shifts', unlockTarget.id), { isLocked: false, status: 'draft', unlockedAt: new Date().toISOString(), unlockedBy: currentUser.email });
+                /* Back to draft means no longer settled. updateDoc merges, so
+                   the frozen settlement has to be cleared explicitly or it would
+                   outlive the finalization that produced it. */
+                await updateDoc(doc(db, 'Work-Shifts', unlockTarget.id), { isLocked: false, status: 'draft', finalizedCalc: null, unlockedAt: new Date().toISOString(), unlockedBy: currentUser.email });
                 document.getElementById('unlockDialog')?.classList.add('hidden');
                 unlockTarget = null;
                 await loadData();
@@ -3794,11 +3952,11 @@
                     const secondaryPayout = shift.secondarySodexoPayout || 0;
                     const totalPayout = primaryPayout + secondaryPayout;
                     const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-                    const workersWithSnapshot = (shift.workers || []).map(worker => {
-                        const workerCalc = calculations.workerPayouts.find(w => w.name === worker.name);
+                    const workersWithSnapshot = (shift.workers || []).map((worker, i) => {
+                        const workerCalc = matchWorkerRow(calculations.workerPayouts, worker.name, i);
                         return { ...worker, finalizedShirtDeduction: workerCalc ? workerCalc.shirtDeduction : 0 };
                     });
-                    batch.update(docRef, { status: 'finalized', workers: workersWithSnapshot, lowRateRuleApplied: calculations.lowRateRuleApplied, finalizedAt: now, finalizedBy: currentUser.email });
+                    batch.update(docRef, { status: 'finalized', workers: workersWithSnapshot, lowRateRuleApplied: calculations.lowRateRuleApplied, finalizedAt: now, finalizedBy: currentUser.email, finalizedCalc: freezeCalculations(calculations) });
                 });
                 await batch.commit();
                 await loadData();
@@ -3827,7 +3985,7 @@
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
+                const calculations = payoutsFor(shift);
                 calculations.workerPayouts.forEach(worker => {
                     if (!workerTotals[worker.name]) workerTotals[worker.name] = { name: worker.name, totalShifts: 0, totalHours: 0, grossEarnings: 0, shirtDeductions: 0, netEarnings: 0 };
                     const total = workerTotals[worker.name];
@@ -3868,6 +4026,82 @@
             return Object.values(workerTotals).map(worker => ({ ...worker, avgPerShift: worker.totalShifts > 0 ? worker.netEarnings / worker.totalShifts : 0, avgPerHour: worker.totalHours > 0 ? worker.netEarnings / worker.totalHours : 0 })).sort(customSort);
         }
 
+        /* ------------------------------------------------------------------
+           One time backfill of frozen settlements onto shifts finalized before
+           freezing existed.
+
+           Those shifts store inputs only, so they recompute on every load. The
+           moment the arithmetic changes they would restate themselves, which is
+           not a display bug: it would assert that volunteers were paid amounts
+           they were never paid.
+
+           This writes what the CURRENT formula computes, because the current
+           formula is what actually paid them. It is therefore only correct
+           while the arithmetic is unchanged, which is what the version
+           interlock below enforces. Once FORMULA_VERSION is bumped for the
+           correction, this refuses to run and can be deleted.
+           ------------------------------------------------------------------ */
+        const BACKFILL_REQUIRES_VERSION = '2026-09-02-pre-correction';
+
+        function shiftsNeedingFreeze() {
+            return allShifts.filter(s => s.status === 'finalized' && !s.finalizedCalc);
+        }
+
+        function updateBackfillVisibility() {
+            const btn = document.getElementById('backfillFreezeBtn');
+            if (!btn) return;
+            const pending = shiftsNeedingFreeze().length;
+            btn.hidden = pending === 0;
+            btn.textContent = 'Freeze ' + pending + ' Historical Shift' + (pending === 1 ? '' : 's');
+        }
+
+        async function backfillFrozenCalculations() {
+            if (!db) { showError('Database connection not available'); return; }
+
+            if (FORMULA_VERSION !== BACKFILL_REQUIRES_VERSION) {
+                showError('Backfill refused. It records what the formula paid, and the formula '
+                    + 'has changed since (' + FORMULA_VERSION + '). Running it now would freeze '
+                    + 'amounts nobody was paid.');
+                return;
+            }
+
+            const pending = shiftsNeedingFreeze();
+            if (pending.length === 0) { alert('Every finalized shift already carries a frozen settlement.'); return; }
+
+            if (!confirm('Freeze ' + pending.length + ' finalized shift(s) at their current amounts?\n\n'
+                + 'This records what each shift paid, so later corrections to the formula cannot '
+                + 'restate them. It changes no amount and no volunteer is affected.\n\n'
+                + 'Formula version: ' + FORMULA_VERSION)) return;
+
+            try {
+                let written = 0;
+                /* Firestore caps a batch at 500 writes. Chunking keeps this
+                   correct if the shift count ever grows past that. */
+                for (let i = 0; i < pending.length; i += 400) {
+                    const chunk = pending.slice(i, i + 400);
+                    const batch = writeBatch(db);
+                    chunk.forEach(shift => {
+                        const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
+                        const secondaryPayout = shift.secondarySodexoPayout || 0;
+                        const calculations = calculatePayouts(
+                            primaryPayout + secondaryPayout, shift.workers || [], shift);
+                        batch.update(doc(db, 'Work-Shifts', shift.id),
+                            { finalizedCalc: freezeCalculations(calculations) });
+                    });
+                    await batch.commit();
+                    written += chunk.length;
+                }
+                await loadData();
+                alert('Froze ' + written + ' shift(s).\n\n'
+                    + 'Now export the payout record again and compare it to the one taken before '
+                    + 'this ran. The two files must match. That is the proof the frozen amounts '
+                    + 'are the amounts that were paid.');
+            } catch (error) {
+                showError('Backfill failed. Nothing partial was left behind for shifts that did not '
+                    + 'commit; run it again. (' + error.message + ')');
+            }
+        }
+
         /* The audit record of what a finalized shift actually paid.
 
            A shift document stores inputs only, so every amount on this screen is
@@ -3905,7 +4139,7 @@
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const c = calculatePayouts(totalPayout, shift.workers || [], shift);
+                const c = payoutsFor(shift);
 
                 const shiftCells = [
                     FORMULA_VERSION, exportedAt, shift.id || '', shift.eventDate || '',
@@ -3930,8 +4164,8 @@
                     return;
                 }
 
-                rows.forEach(worker => {
-                    const source = (shift.workers || []).find(w => w.name === worker.name);
+                rows.forEach((worker, i) => {
+                    const source = matchWorkerRow(shift.workers || [], worker.name, i);
                     csvRows.push(shiftCells.concat([
                         worker.name, worker.stand || '', getWorkerCrNumber(worker, shift) || '',
                         source ? (source.startTime || '') : '', source ? (source.endTime || '') : '',
@@ -4027,6 +4261,7 @@
             document.getElementById('cancelUnlockBtn')?.addEventListener('click', () => { document.getElementById('unlockDialog')?.classList.add('hidden'); unlockTarget = null; });
             document.getElementById('refreshBtn')?.addEventListener('click', loadData);
             document.getElementById('exportPayoutsBtn')?.addEventListener('click', exportPayouts);
+            document.getElementById('backfillFreezeBtn')?.addEventListener('click', backfillFrozenCalculations);
             document.getElementById('finalizeAllBtn')?.addEventListener('click', finalizeAllDrafts);
             document.getElementById('workerTotalsBtn')?.addEventListener('click', showWorkerTotals);
             document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
