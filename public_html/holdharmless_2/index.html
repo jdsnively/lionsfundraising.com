@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hold Harmless Agreement - Homeschool Football Classic</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="/js/lions-date.js?v=1"></script>
     <style>
         * {
             margin: 0;
@@ -985,7 +986,8 @@
         function formatDateForPdf(isoDateString) {
             if (!isoDateString) return '';
             
-            const date = new Date(isoDateString);
+            const date = toLocalDate(isoDateString);
+            if (!date) return '';
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const year = date.getFullYear();

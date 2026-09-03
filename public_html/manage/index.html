@@ -953,6 +953,7 @@
     </footer>
 
     <!-- Firebase SDK -->
+    <script src="/js/lions-date.js?v=1"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
         import { getFirestore, collection, query, orderBy, getDocs, doc, deleteDoc, updateDoc, setDoc, addDoc, getDoc, where } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
@@ -1598,7 +1599,7 @@
         }
 
         function calculateStats() {
-            const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
+            const upcomingEvents = events.filter(e => toLocalDate(e.date) >= toLocalDate(new Date())).length;
             const totalHours = timesheets.reduce((sum, ts) => {
                 if (ts.actualStart && ts.actualEnd) {
                     const start = new Date(ts.actualStart);
@@ -1635,8 +1636,8 @@
         }
 
         function createEventCard(event) {
-            const eventDate = new Date(event.date);
-            const isUpcoming = eventDate >= new Date();
+            const eventDate = toLocalDate(event.date) || new Date(NaN);
+            const isUpcoming = eventDate >= toLocalDate(new Date());
             const statusClass = isUpcoming ? 'status-upcoming' : 'status-completed';
             const statusText = isUpcoming ? 'Upcoming' : 'Completed';
 
@@ -1743,7 +1744,7 @@
             return `
                 <div class="grid-2 mb-3">
                     <div>
-                        <strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}<br>
+                        <strong>Date:</strong> ${formatLocalDate(event.date)}<br>
                         <strong>Location:</strong> ${event.location}<br>
                         <strong>Status:</strong> ${event.status}
                     </div>
@@ -1793,7 +1794,7 @@
             events.forEach(event => {
                 const option = document.createElement('option');
                 option.value = event.id;
-                option.textContent = `${event.name} - ${new Date(event.date).toLocaleDateString()}`;
+                option.textContent = `${event.name} - ${formatLocalDate(event.date)}`;
                 eventSelect.appendChild(option);
             });
         }
@@ -2060,7 +2061,7 @@
                                     volunteer.email,
                                     event.name,
                                     slot.slotTime,
-                                    new Date(event.date).toLocaleDateString(),
+                                    formatLocalDate(event.date),
                                     volunteer.hours.toFixed(1),
                                     `${slot.hourlyRate.toFixed(2)}`,
                                     `${volunteer.payment.toFixed(2)}`
@@ -2097,7 +2098,7 @@
 
                 rows.push([
                     event.name,
-                    new Date(event.date).toLocaleDateString(),
+                    formatLocalDate(event.date),
                     event.location,
                     `${event.venuePayment.toFixed(2)}`,
                     eventTimesheets.length,
@@ -2178,7 +2179,7 @@
                     
                     <div class="grid-3 mb-2">
                         <div>
-                            <strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}<br>
+                            <strong>Date:</strong> ${formatLocalDate(event.date)}<br>
                             <strong>Venue Payment:</strong> $${event.venuePayment.toLocaleString()}
                         </div>
                         <div>
@@ -2312,7 +2313,7 @@
                     
                     <div class="grid-3">
                         <div>
-                            <strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}<br>
+                            <strong>Date:</strong> ${formatLocalDate(event.date)}<br>
                             <strong>Location:</strong> ${event.location}
                         </div>
                         <div>
@@ -2368,7 +2369,7 @@
                             user.name,
                             user.email,
                             event.name,
-                            new Date(event.date).toLocaleDateString(),
+                            formatLocalDate(event.date),
                             hours.toFixed(1),
                             `$${rate.toFixed(2)}`,
                             `$${amount.toFixed(2)}`
@@ -2402,7 +2403,7 @@
 
                 rows.push([
                     event.name,
-                    new Date(event.date).toLocaleDateString(),
+                    formatLocalDate(event.date),
                     `$${event.venuePayment.toFixed(2)}`,
                     eventTimesheets.filter(ts => ts.attended).length,
                     totalHours.toFixed(1),

@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="/css/lions-chrome.css?v=1">
 
     <script src="/js/lions-log.js?v=1"></script>
+    <script src="/js/lions-date.js?v=1"></script>
     <script src="/js/lions-nav.js?v=2" defer></script>
 
     <style>
@@ -2777,7 +2778,7 @@
                 normalizedAge === '16 to 17' ? '16-17' :
                     normalizedAge === '18 to 20' ? '18-20' : person.ageRange;
 
-            const licenseExp = person.licenseExpiration ? new Date(person.licenseExpiration).toLocaleDateString() : '';
+            const licenseExp = person.licenseExpiration ? formatLocalDate(person.licenseExpiration) : '';
 
             let editButton = '';
             let deleteButton = '';
@@ -3513,7 +3514,7 @@
                     person.ageRange || '',
                     person.shirtSize || '',
                     person.licenseNumber || '',
-                    person.licenseExpiration ? new Date(person.licenseExpiration).toLocaleDateString() : '',
+                    person.licenseExpiration ? formatLocalDate(person.licenseExpiration) : '',
                     person.alcoholTrainingCompleted === 'yes' ? 'Yes' : person.alcoholTrainingCompleted === 'no' ? 'No' : '',
                     person.hasLicense === 'yes' || person.licenseNumber ? 'Yes' : 'No',
                     person.willingToObtainLicense === 'yes' ? 'Yes' : person.willingToObtainLicense === 'no' ? 'No' : '',

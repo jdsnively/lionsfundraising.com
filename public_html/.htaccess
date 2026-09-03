@@ -58,6 +58,7 @@ RedirectMatch 403 ^/d2(/.*)?$
 RedirectMatch 403 ^/main(/.*)?$
 RedirectMatch 403 ^/events(/.*)?$
 RedirectMatch 403 ^/lionsfundraising_BAK(/.*)?$
+RedirectMatch 403 ^/manage(/.*)?$
 
 
 # -----------------------------------------------------------------------------
