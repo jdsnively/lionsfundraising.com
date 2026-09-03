@@ -87,6 +87,11 @@
         { key: 'fundraising', label: 'Fundraising', children: [
             { key: 'home-erp',    label: 'Fundraising Home', href: '/' },
             { key: 'register',    label: 'Register',         href: '/register' },
+            // Jason, 2026-09-03. The in-house event signup at /signup is tabled, so
+            // this points at the same Evite the marketing site uses. It is the one
+            // row in this file whose href must be kept in step with another
+            // property: /includes/header.php on lionssports.club, key 'signup'.
+            { key: 'signup',      label: 'Event Signup',     href: 'https://evite.me/UDcPG9FasP', external: true },
             { key: 'los',         label: 'Lucas Oil Guide',  href: '/LOS' },
             { key: 'sodexo-atc',  label: 'Alcohol Permit',   href: '/sodexo-atc' }
         ]}
