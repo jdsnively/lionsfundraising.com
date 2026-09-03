@@ -1546,6 +1546,81 @@
             return result;
         }
 
+        /* Rebuilds the exact shape calculatePayouts returns, so every consumer
+           is indifferent to whether it received a frozen or a live result.
+           Ported from payouts, which is the page that writes the settlement.
+           If these two ever drift, the freeze is worth nothing. */
+        function thawCalculations(frozen) {
+            const result = {
+                totalHours: frozen.totalHours,
+                hourlyRate: frozen.hourlyRate,
+                availableForWorkers: frozen.availableForWorkers,
+                lionsPercent: frozen.lionsPercent,
+                coachesPercent: frozen.coachesPercent,
+                coordinatorPercent: frozen.coordinatorPercent,
+                coordinatorAdjustment: frozen.coordinatorAdjustment,
+                shirtsNeeded: frozen.shirtsNeeded,
+                lionsShirtCosts: frozen.lionsShirtCosts,
+                workerShirtContributions: frozen.workerShirtContributions,
+                totalWorkerPayouts: frozen.totalWorkerPayouts,
+                roundingAmount: frozen.roundingAmount,
+                lionsFinalTotal: frozen.lionsFinalTotal,
+                lowRateRuleApplied: frozen.lowRateRuleApplied === true,
+                separateMode: frozen.separateMode === true,
+                isFrozen: true,
+                frozenFormulaVersion: frozen.formulaVersion || '',
+                frozenAt: frozen.frozenAt || '',
+                workerPayouts: (frozen.workers || []).map(w => ({
+                    name: w.name,
+                    stand: w.stand || 'N/A',
+                    hours: w.hours,
+                    grossAmount: w.grossAmount,
+                    shirtDeduction: w.shirtDeduction,
+                    netAmount: w.netAmount,
+                    hasLOSShirt: w.hasLOSShirt === true,
+                    theoreticalAmount: w.theoreticalAmount,
+                    hoursFormatted: formatHours(w.hours),
+                    grossAmountFormatted: formatCurrency(w.grossAmount),
+                    shirtDeductionFormatted: formatCurrency(w.shirtDeduction),
+                    netAmountFormatted: formatCurrency(w.netAmount),
+                    workerHourlyRate: w.hourlyRate,
+                    workerHourlyRateFormatted: formatCurrency(w.hourlyRate)
+                }))
+            };
+            return formatCalcResult(result);
+        }
+
+        /* The single read path for a stored shift. Treasurer displays what
+           payouts settled; it does not re-derive it. Every recomputation here
+           was a chance for the two pages to report different numbers for the
+           same shift, which is finding M-10, and it is why both CSV exports
+           disagreed with the payout record by an amount that changed every
+           time a roster shirt flag changed.
+
+           The fallback runs only for a finalized shift with no settlement.
+           There are none: all 40 finalized shifts are frozen and both write
+           paths in payouts store a settlement. It stays because a shift
+           restored from an older backup would otherwise render nothing, and
+           it warns rather than passing quietly, because a silent
+           recomputation is the exact failure this function exists to end. */
+        function payoutsFor(shift) {
+            if (shift && shift.status === 'finalized' && shift.finalizedCalc) {
+                return thawCalculations(shift.finalizedCalc);
+            }
+            const primaryPayout = (shift && (shift.primarySodexoPayout || shift.sodexoPayout)) || 0;
+            const secondaryPayout = (shift && shift.secondarySodexoPayout) || 0;
+            const totalPayout = primaryPayout + secondaryPayout;
+            const workers = (shift && shift.workers) || [];
+            if (shift && shift.status === 'finalized' && workers.length > 0) {
+                console.warn('Treasurer recomputed shift ' + (shift.id || '(no id)')
+                    + ': no frozen settlement. Its totals may not match the payouts page.');
+                if (workers.some(w => w.hasOwnProperty('finalizedShirtDeduction'))) {
+                    return buildCalculationsFromFinalizedData(shift, totalPayout);
+                }
+            }
+            return calculatePayouts(totalPayout, workers, shift);
+        }
+
         function calculateCombinedPayouts(sodexoAmount, workers) {
             const result = {
                 totalHours: 0, hourlyRate: 0, lionsPercent: 0, coachesPercent: 0,
@@ -1983,20 +2058,7 @@
         function generateWorkerTotals(finalizedShifts) {
             const workerTotals = {};
             finalizedShifts.forEach(shift => {
-                const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
-                const secondaryPayout = shift.secondarySodexoPayout || 0;
-                const totalPayout = primaryPayout + secondaryPayout;
-                let calculations;
-                if (shift.status === 'finalized' && shift.workers && shift.workers.length > 0) {
-                    const hasStoredData = shift.workers.some(w => w.hasOwnProperty('finalizedShirtDeduction'));
-                    if (hasStoredData) {
-                        calculations = buildCalculationsFromFinalizedData(shift, totalPayout);
-                    } else {
-                        calculations = calculatePayouts(totalPayout, shift.workers, shift);
-                    }
-                } else {
-                    calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-                }
+                const calculations = payoutsFor(shift);
                 calculations.workerPayouts.forEach(worker => {
                     if (!workerTotals[worker.name]) {
                         workerTotals[worker.name] = {
@@ -2432,18 +2494,7 @@
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
             
-            // Use stored finalized data if available
-            let calculations;
-            if (shift.status === 'finalized' && shift.workers && shift.workers.length > 0) {
-                const hasStoredData = shift.workers.some(w => w.hasOwnProperty('finalizedShirtDeduction'));
-                if (hasStoredData) {
-                    calculations = buildCalculationsFromFinalizedData(shift, totalPayout);
-                } else {
-                    calculations = calculatePayouts(totalPayout, shift.workers, shift);
-                }
-            } else {
-                calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-            }
+            const calculations = payoutsFor(shift);
             
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
             const paymentStatus = shift.paymentStatus || 'finalized';
@@ -2534,17 +2585,7 @@
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
 
-            let calculations;
-            if (shift.status === 'finalized' && shift.workers && shift.workers.length > 0) {
-                const hasStoredData = shift.workers.some(w => w.hasOwnProperty('finalizedShirtDeduction'));
-                if (hasStoredData) {
-                    calculations = buildCalculationsFromFinalizedData(shift, totalPayout);
-                } else {
-                    calculations = calculatePayouts(totalPayout, shift.workers, shift);
-                }
-            } else {
-                calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-            }
+            const calculations = payoutsFor(shift);
         
             stats.totalLionsRevenue += calculations.lionsFinalTotal;
             stats.totalCoachesRevenue += calculations.coachesPercent;
@@ -2692,19 +2733,7 @@
             const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
             const secondaryPayout = shift.secondarySodexoPayout || 0;
             const totalPayout = primaryPayout + secondaryPayout;
-            let calculations;
-            if (shift.status === 'finalized' && shift.workers && shift.workers.length > 0) {
-                const hasStoredData = shift.workers.some(w => w.hasOwnProperty('finalizedShirtDeduction'));
-                if (hasStoredData) {
-                    calculations = buildCalculationsFromFinalizedData(shift, totalPayout);
-                    console.log('Using stored finalized data for shift details');
-                } else {
-                    calculations = calculatePayouts(totalPayout, shift.workers, shift);
-                    console.warn('Finalized shift missing stored data, recalculating (legacy shift?)');
-                }
-            } else {
-                calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
-            }
+            const calculations = payoutsFor(shift);
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
             const secondaryStand = shift.secondaryStand || '';
             if (elements.modalTitle) elements.modalTitle.textContent = 'Shift Details';
@@ -2852,7 +2881,7 @@
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
+                const calculations = payoutsFor(shift);
                 return { shift, totalPayout, calculations };
             });
             shiftsData.forEach(({ shift, totalPayout, calculations }, index) => {
@@ -2915,7 +2944,7 @@
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
                 const secondaryPayout = shift.secondarySodexoPayout || 0;
                 const totalPayout = primaryPayout + secondaryPayout;
-                const calculations = calculatePayouts(totalPayout, shift.workers || [], shift);
+                const calculations = payoutsFor(shift);
                 const row = [
                     `"${shift.eventName || 'Unnamed Event'}"`, `"${formatDate(shift.eventDate)}"`,
                     `"${shift.primaryStand || shift.standNumber || 'N/A'}"`,
