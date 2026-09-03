@@ -1633,12 +1633,40 @@
                arrives weeks later. A draft awaiting payment therefore has real
                hours and no rate, and it has to say so rather than returning an
                unformatted result, which rendered as the literal word
-               "undefined" on the card. */
+               "undefined" on the card.
+
+               It builds its worker rows here too, so that this copy and the
+               payouts copy answer the same input the same way. Treasurer loads
+               only finalized shifts, and a shift cannot be finalized without a
+               Sodexo payment, so nothing on this page reaches this branch. It
+               matches because the golden suite compares the two copies case by
+               case, and a divergence here would be reported as drift in the
+               formula rather than as the deliberate parity it is.
+
+               Every amount is zero because nothing has been paid yet, and a
+               shirt is not owed until there is a payout to deduct it from. */
             if (!workers || workers.length === 0) return formatCalcResult(result);
             result.totalHours = workers.reduce((total, worker) => {
                 return total + calculateHours(worker.startTime, worker.endTime);
             }, 0);
-            if (!sodexoAmount || result.totalHours === 0) return formatCalcResult(result);
+            if (!sodexoAmount || result.totalHours === 0) {
+                result.workerPayouts = workers.map(worker => {
+                    const hours = calculateHours(worker.startTime, worker.endTime);
+                    return {
+                        name: worker.name, stand: worker.stand || 'N/A', hours: hours,
+                        grossAmount: 0, shirtDeduction: 0, netAmount: 0,
+                        hasLOSShirt: lookupWorker(worker.name).hasLOSShirt,
+                        theoreticalAmount: 0,
+                        hoursFormatted: formatHours(hours),
+                        grossAmountFormatted: formatCurrency(0),
+                        shirtDeductionFormatted: formatCurrency(0),
+                        netAmountFormatted: formatCurrency(0),
+                        workerHourlyRate: 0,
+                        workerHourlyRateFormatted: formatCurrency(0)
+                    };
+                });
+                return formatCalcResult(result);
+            }
 
             // Count shirts needed for Lions shirt costs calculation
             let shirtsNeededCount = 0;

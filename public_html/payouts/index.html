@@ -2465,10 +2465,40 @@
                arrives weeks later. A draft awaiting payment therefore has real
                hours and no rate, and it has to say so rather than returning an
                unformatted result, which rendered as the literal word
-               "undefined" on the card. */
+               "undefined" on the card.
+
+               It builds its worker rows here too. Returning an empty
+               workerPayouts fixed the card and left Shift Details showing the
+               stand, the hours and a table header with nobody under it, because
+               that modal decides to render from shift.workers and then iterates
+               workerPayouts. The names, the stands and the hours are real and
+               are the perishable half of the record. Every amount is zero
+               because nothing has been paid yet, and a shirt is not owed until
+               there is a payout to deduct it from.
+
+               No write path can reach these rows. Both finalize gates refuse a
+               shift with no Sodexo payment, and these amounts are the same
+               zeros the snapshot already stored when the array was empty. */
             if (!workers || workers.length === 0) return formatCalcResult(result);
             result.totalHours = workers.reduce((total, worker) => total + calculateHours(worker.startTime, worker.endTime), 0);
-            if (!sodexoAmount || result.totalHours === 0) return formatCalcResult(result);
+            if (!sodexoAmount || result.totalHours === 0) {
+                result.workerPayouts = workers.map(worker => {
+                    const hours = calculateHours(worker.startTime, worker.endTime);
+                    return {
+                        name: worker.name, stand: worker.stand || 'N/A', hours: hours,
+                        grossAmount: 0, shirtDeduction: 0, netAmount: 0,
+                        hasLOSShirt: lookupWorker(worker.name).hasLOSShirt,
+                        theoreticalAmount: 0,
+                        hoursFormatted: formatHours(hours),
+                        grossAmountFormatted: formatCurrency(0),
+                        shirtDeductionFormatted: formatCurrency(0),
+                        netAmountFormatted: formatCurrency(0),
+                        workerHourlyRate: 0,
+                        workerHourlyRateFormatted: formatCurrency(0)
+                    };
+                });
+                return formatCalcResult(result);
+            }
 
             let shirtsNeededCount = 0;
             workers.forEach(worker => {
@@ -3144,15 +3174,21 @@
                 const calc = payoutsFor(shift);
                 totalHours += calc.totalHours;
                 totalNetPayouts += calc.workerPayouts.reduce((sum, w) => sum + w.netAmount, 0);
-                workerShiftCount += calc.workerPayouts.length;
                 /* A shift awaiting its Sodexo payment now reports its real
                    hours, because they were worked and they are the perishable
                    record. Weighting the average rate by those hours would
                    spread paid money across unpaid time and drag the rate toward
-                   zero, so the average is weighted by paid hours only. */
+                   zero, so the average is weighted by paid hours only.
+
+                   Its worker rows are excluded from the count for the same
+                   reason. They carry $0.00 until Sodexo pays, so counting them
+                   would divide the same money among more people and quietly
+                   lower the average take home on a screen nobody would think
+                   to distrust. */
                 if (totalPayout > 0) {
                     paidHours += calc.totalHours;
                     weightedRateSum += calc.hourlyRate * calc.totalHours;
+                    workerShiftCount += calc.workerPayouts.length;
                 }
             });
 
