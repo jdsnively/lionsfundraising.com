@@ -1655,18 +1655,7 @@
                     result.coordinatorAdjustment = 0;
                 }
             }
-            result.totalHoursFormatted = formatHours(result.totalHours);
-            result.hourlyRateFormatted = formatCurrency(result.hourlyRate);
-            result.lionsPercentFormatted = formatCurrency(result.lionsPercent);
-            result.coachesPercentFormatted = formatCurrency(result.coachesPercent);
-            result.coordinatorPercentFormatted = formatCurrency(result.coordinatorPercent);
-            result.availableForWorkersFormatted = formatCurrency(result.availableForWorkers);
-            result.totalWorkerPayoutsFormatted = formatCurrency(result.totalWorkerPayouts);
-            result.lionsShirtCostsFormatted = formatCurrency(result.lionsShirtCosts);
-            result.roundingAmountFormatted = formatCurrency(result.roundingAmount);
-            result.lionsFinalTotalFormatted = formatCurrency(result.lionsFinalTotal);
-            result.coordinatorAdjustmentFormatted = formatCurrency(result.coordinatorAdjustment);
-            return result;
+            return formatCalcResult(result);
         }
 
         function calculateSeparatePayouts(workers, primaryStand, secondaryStand, primarySodexo, secondarySodexo) {
