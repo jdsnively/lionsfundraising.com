@@ -19,20 +19,31 @@
  * matters. When the include lands, delete this file and the shell element on
  * each page.
  *
- * WHY THE MARKETING NAV IS CARRIED HERE
+ * WHY THE MARKETING NAV IS NO LONGER CARRIED HERE
  *
- * A volunteer moving from lionssports.club to this application should not feel
- * that they have left. The marketing items point back at absolute URLs; the
- * Fundraising dropdown holds Register and Event Signup, which live here. The
- * same dropdown exists on the marketing site pointing the other way, so the
- * two properties read as one site with one navigation.
+ * It used to be, and the reasoning was that a volunteer moving from
+ * lionssports.club to this application should not feel that they have left, so
+ * NAV_ITEMS mirrored $nav_items in /includes/header.php row for row.
  *
- * The Shop CTA is the single gold pill, matching the marketing site. There is
- * deliberately no second CTA: one at a time, or the hierarchy collapses.
- * Identity controls are never rows in NAV_ITEMS, so this list stays a mirror of
- * $nav_items rather than a variant of it. They are rendered into their own two
- * slots, one in the header row and one at the foot of the drawer, and the
- * stylesheet shows exactly one of them at any width. See setAuth.
+ * Jason ended that on 2026-09-03. This property is the application, not a
+ * second front door to the marketing site, and a volunteer who is here came
+ * here to do something. The only outbound row left is LSC Home. Everything
+ * else in the bar belongs to this property.
+ *
+ * DO NOT RESTORE THE MARKETING ROWS. The absence is the decision. If the two
+ * navigations ever need to agree again, that is a new ruling and it needs a
+ * new comment here saying so.
+ *
+ * THE SINGLE CTA SLOT
+ *
+ * Exactly one gold pill, or the hierarchy collapses. That slot used to be
+ * Shop, pointing at the team store. It is now Admin, which is not a row in
+ * NAV_ITEMS at all: it is injected by setAuth, gated per route by canAccess,
+ * and it does not exist for a signed out visitor or for a volunteer who holds
+ * none of the three systems. Identity controls are likewise never rows in
+ * NAV_ITEMS. They are rendered into their own two slots, one in the header row
+ * and one at the foot of the drawer, and the stylesheet shows exactly one of
+ * them at any width. See setAuth.
  *
  * Load with defer, before the page module:
  *   <script src="/js/lions-log.js"></script>
@@ -55,50 +66,30 @@
      * relative paths so they stay correct on staging or a renamed host. The
      * marketing rows are absolute because they leave.
      */
+    /**
+     * Order is the visual order on desktop, left to right, and in the drawer,
+     * top to bottom.
+     *
+     * Rows carrying `children` render as a dropdown. Rows carrying `external`
+     * open in a new tab. No row carries `cta`: that slot is Admin, injected by
+     * setAuth, and a second pill would collapse the hierarchy.
+     *
+     * Every row that points at this property uses a root relative path so it
+     * stays correct on staging or a renamed host. LSC Home is absolute because
+     * it leaves, and it is the only row that does.
+     *
+     * Fundraising carries no `href` of its own. It used to point at
+     * lionssports.club/fundraising, which is exactly the outbound link the
+     * 2026-09-03 ruling removes, so it is a pure dropdown now.
+     */
     var NAV_ITEMS = [
-        { key: 'home',        label: 'Home',        href: MAIN + '/' },
-        { key: 'about',       label: 'About', children: [
-            { key: 'about',       label: 'Our Mission', href: MAIN + '/about' },
-            { key: 'who-we-are',  label: 'Who We Are',  href: MAIN + '/who-we-are' }
-        ]},
-        { key: 'join',        label: 'Join',        href: MAIN + '/join' },
-        // A row carrying BOTH href and children renders as a link on desktop, so
-        // hovering opens the menu and clicking goes to the page. On a phone it
-        // stays a button, because a control that navigates and opens a panel at
-        // the same time cannot be used with a thumb, and its destination is
-        // injected as the first item of the drawer submenu instead.
-        { key: 'fundraising', label: 'Fundraising', href: MAIN + '/fundraising', children: [
-        // These five are the volunteer's actual destinations. Porting the
-        // marketing navigation onto the application removed every route the old
-        // header carried, which left /LOS and /sodexo-atc as dead ends with no
-        // way out but the back button. They live here rather than in a second
-        // application-only menu so that the chrome stays one definition on both
-        // properties, which is what ADR-006 requires. A visitor on the marketing
-        // site can reach the Lucas Oil guide too, which is no loss.
-            // Order set by Jason 2026-08-05. Event Signup was the second row
-            // and has been removed: the public path is Register, and picking
-            // dates is what a volunteer does after they are on the roster, not
-            // something a first-time visitor should be offered alongside it.
-            //
-            // Note that this leaves /signup with no navigation entry at all.
-            // It is reached from the landing page strip, from the registration
-            // success screen, and from the link in the sign-in email. If a
-            // signed-in volunteer should have a menu route back to it, the row
-            // belongs in ADMIN_ITEMS' sibling position rather than here, so it
-            // appears only once auth has resolved.
+        { key: 'home',        label: 'LSC Home',    href: MAIN + '/' },
+        { key: 'fundraising', label: 'Fundraising', children: [
             { key: 'home-erp',    label: 'Fundraising Home', href: '/' },
             { key: 'register',    label: 'Register',         href: '/register' },
             { key: 'los',         label: 'Lucas Oil Guide',  href: '/LOS' },
             { key: 'sodexo-atc',  label: 'Alcohol Permit',   href: '/sodexo-atc' }
-        ]},
-        { key: 'resources',   label: 'Resources', children: [
-            { key: 'eventlink',     label: 'EventLink Guide',     href: MAIN + '/eventlink' },
-            { key: 'physical-form', label: 'IHSAA Physical Form', href: MAIN + '/physical-form' }
-        ]},
-        { key: 'contact',     label: 'Contact',     href: MAIN + '/contact' },
-        { key: 'shop',        label: 'Shop',
-          href: 'https://teamstore.frecklesgraphics.com/shop/lionssportsclub/',
-          external: true, cta: true }
+        ]}
     ];
 
     /**
@@ -109,10 +100,13 @@
      * counterpart over there. Putting them in it would make the two definitions
      * disagree, which is the whole problem the mirror exists to prevent.
      *
-     * They are appended to the Fundraising dropdown by setAuth once auth has
-     * resolved, rather than added as an eighth top-level item. The header rail
-     * already needs 1285px for the seven items it has; an eighth would push the
-     * bar into the identity controls at exactly the widths a laptop uses.
+     * They are rendered by setAuth, once auth has resolved, as a standalone
+     * top level dropdown in the single CTA slot. They were inside the
+     * Fundraising dropdown until 2026-09-03, because the header rail then
+     * carried seven marketing items and needed 1285px; an eighth pushed the bar
+     * into the identity controls at exactly the widths a laptop uses. NAV_ITEMS
+     * now carries two rows, so the room exists and Admin is where an
+     * administrator will look for it.
      *
      * `system` names the entry in SYSTEM_ACCESS that governs the route. This
      * file does not carry a copy of those allow lists. The page hands setAuth a
@@ -293,6 +287,49 @@
      * three systems, so a volunteer's menu is unchanged and a treasurer sees
      * Payouts and Treasurer without a Dashboard link they cannot open.
      */
+    function closeAllDropdowns() {
+        document.querySelectorAll('.nav-dropdown-toggle[aria-expanded="true"]')
+            .forEach(function (b) {
+                b.setAttribute('aria-expanded', 'false');
+                var menu = document.getElementById(b.getAttribute('aria-controls'));
+                if (menu) { menu.classList.remove('is-open'); }
+            });
+    }
+
+    /* Wiring is per button rather than one sweep at boot, because the Admin
+       dropdown is injected by setAuth after auth resolves, long after wire()
+       has run. A toggle added later and never wired still opens on hover on a
+       desktop, because that part is pure CSS, and does nothing at all on a
+       phone. That is trap T17 in a new place: the second call site is easy to
+       miss precisely because the first one works. The guard attribute makes a
+       second call on the same button a no-op, since setAuth can run more than
+       once on a page that resolves auth twice. */
+    function wireDropdown(button) {
+        if (!button || button.getAttribute('data-nav-wired') === 'true') { return; }
+        button.setAttribute('data-nav-wired', 'true');
+        button.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var menu = document.getElementById(button.getAttribute('aria-controls'));
+            var open = button.getAttribute('aria-expanded') !== 'true';
+            closeAllDropdowns();
+            if (open && menu) {
+                button.setAttribute('aria-expanded', 'true');
+                menu.classList.add('is-open');
+            }
+        });
+    }
+
+    function wireMobileDropdown(button) {
+        if (!button || button.getAttribute('data-nav-wired') === 'true') { return; }
+        button.setAttribute('data-nav-wired', 'true');
+        button.addEventListener('click', function () {
+            var panel = document.getElementById(button.getAttribute('aria-controls'));
+            var open = button.getAttribute('aria-expanded') !== 'true';
+            button.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (panel) { panel.classList.toggle('is-open', open); }
+        });
+    }
+
     function renderAdminItems(state) {
         document.querySelectorAll('[' + ADMIN_MARK + ']')
             .forEach(function (el) { el.parentNode.removeChild(el); });
@@ -315,41 +352,45 @@
 
         var active = (state && state.active) || '';
 
-        var desktop = document.getElementById('dd-fundraising');
-        if (desktop) {
-            var heading = document.createElement('li');
-            heading.setAttribute(ADMIN_MARK, '');
-            heading.className = 'dropdown-heading';
-            heading.setAttribute('aria-hidden', 'true');
-            heading.textContent = 'Admin';
-            desktop.appendChild(heading);
+        var onAdminPage = allowed.some(function (i) { return i.key === active; });
 
-            allowed.forEach(function (item) {
-                var li = document.createElement('li');
-                li.setAttribute(ADMIN_MARK, '');
-                li.innerHTML = '<a href="' + esc(item.href) + '" class="dropdown-link"'
-                             + currentAttr(item.key, active) + '>' + esc(item.label) + '</a>';
-                desktop.appendChild(li);
-            });
+        var desktopList = document.querySelector('.primary-nav > ul');
+        if (desktopList) {
+            var li = document.createElement('li');
+            li.setAttribute(ADMIN_MARK, '');
+            li.className = 'has-dropdown';
+            li.innerHTML =
+                '<button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--cta'
+              + (onAdminPage ? ' is-active-trail' : '') + '"'
+              + ' aria-haspopup="true" aria-expanded="false" aria-controls="dd-admin">'
+              + 'Admin' + CARET + '</button>'
+              + '<ul class="dropdown-menu" id="dd-admin">'
+              + allowed.map(function (item) {
+                    return '<li><a href="' + esc(item.href) + '" class="dropdown-link"'
+                         + currentAttr(item.key, active) + '>' + esc(item.label) + '</a></li>';
+                }).join('')
+              + '</ul>';
+            desktopList.appendChild(li);
+            wireDropdown(li.querySelector('.nav-dropdown-toggle'));
         }
 
-        var drawer = document.getElementById('m-fundraising');
-        if (drawer) {
-            var drawerHeading = document.createElement('span');
-            drawerHeading.setAttribute(ADMIN_MARK, '');
-            drawerHeading.className = 'mobile-submenu-heading';
-            drawerHeading.setAttribute('aria-hidden', 'true');
-            drawerHeading.textContent = 'Admin';
-            drawer.appendChild(drawerHeading);
-
-            allowed.forEach(function (item) {
-                var link = document.createElement('a');
-                link.setAttribute(ADMIN_MARK, '');
-                link.setAttribute('href', item.href);
-                if (item.key === active) { link.setAttribute('aria-current', 'page'); }
-                link.textContent = item.label;
-                drawer.appendChild(link);
-            });
+        var drawerList = document.querySelector('#mobile-nav > ul');
+        if (drawerList) {
+            var mli = document.createElement('li');
+            mli.setAttribute(ADMIN_MARK, '');
+            mli.innerHTML =
+                '<button type="button" class="mobile-dropdown-toggle mobile-dropdown-toggle--cta'
+              + (onAdminPage ? ' is-active-trail' : '') + '"'
+              + ' aria-expanded="false" aria-controls="m-admin">'
+              + 'Admin' + CARET + '</button>'
+              + '<div class="mobile-submenu" id="m-admin">'
+              + allowed.map(function (item) {
+                    return '<a href="' + esc(item.href) + '"'
+                         + currentAttr(item.key, active) + '>' + esc(item.label) + '</a>';
+                }).join('')
+              + '</div>';
+            drawerList.appendChild(mli);
+            wireMobileDropdown(mli.querySelector('.mobile-dropdown-toggle'));
         }
     }
 
@@ -396,15 +437,6 @@
         var toggle = document.querySelector('.nav-toggle');
         var drawer = document.getElementById('mobile-nav');
 
-        function closeAllDropdowns() {
-            document.querySelectorAll('.nav-dropdown-toggle[aria-expanded="true"]')
-                .forEach(function (b) {
-                    b.setAttribute('aria-expanded', 'false');
-                    var menu = document.getElementById(b.getAttribute('aria-controls'));
-                    if (menu) { menu.classList.remove('is-open'); }
-                });
-        }
-
         if (toggle && drawer) {
             toggle.addEventListener('click', function (e) {
                 e.stopPropagation();
@@ -426,27 +458,8 @@
             });
         }
 
-        document.querySelectorAll('.nav-dropdown-toggle').forEach(function (button) {
-            button.addEventListener('click', function (e) {
-                e.stopPropagation();
-                var menu = document.getElementById(button.getAttribute('aria-controls'));
-                var open = button.getAttribute('aria-expanded') !== 'true';
-                closeAllDropdowns();
-                if (open && menu) {
-                    button.setAttribute('aria-expanded', 'true');
-                    menu.classList.add('is-open');
-                }
-            });
-        });
-
-        document.querySelectorAll('.mobile-dropdown-toggle').forEach(function (button) {
-            button.addEventListener('click', function () {
-                var panel = document.getElementById(button.getAttribute('aria-controls'));
-                var open = button.getAttribute('aria-expanded') !== 'true';
-                button.setAttribute('aria-expanded', open ? 'true' : 'false');
-                if (panel) { panel.classList.toggle('is-open', open); }
-            });
-        });
+        document.querySelectorAll('.nav-dropdown-toggle').forEach(wireDropdown);
+        document.querySelectorAll('.mobile-dropdown-toggle').forEach(wireMobileDropdown);
 
         document.addEventListener('click', closeAllDropdowns);
 

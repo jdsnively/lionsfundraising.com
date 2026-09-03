@@ -375,6 +375,40 @@ button {
     margin-top: 8px;
 }
 
+/* The same gold pill, for a dropdown toggle rather than a plain link. Admin
+   took the CTA slot from Shop on 2026-09-03 and Admin is a dropdown, so it
+   cannot reuse .nav-link--cta, which is scoped to .nav-link. NAV_ITEMS no
+   longer carries a cta row, so this is still exactly one pill. The caret
+   inherits currentColor, which is why color is set rather than left alone. */
+.nav-dropdown-toggle.nav-dropdown-toggle--cta {
+    background: var(--gold);
+    color: var(--black);
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.nav-dropdown-toggle.nav-dropdown-toggle--cta:hover,
+.nav-dropdown-toggle.nav-dropdown-toggle--cta:focus-visible,
+.nav-dropdown-toggle.nav-dropdown-toggle--cta[aria-expanded="true"],
+.has-dropdown:hover .nav-dropdown-toggle.nav-dropdown-toggle--cta {
+    background: #e8c45c;
+    color: var(--black);
+    transform: translateY(-1px);
+    outline: none;
+}
+.mobile-dropdown-toggle.mobile-dropdown-toggle--cta {
+    background: var(--gold);
+    color: var(--black);
+    border-left: 3px solid var(--gold);
+    font-weight: 700;
+    margin-top: 8px;
+}
+.mobile-dropdown-toggle.mobile-dropdown-toggle--cta:hover {
+    background: #e8c45c;
+    color: var(--black);
+}
+
 /* ----------------------------------------------------------------------------
    DOCUMENTED DEVIATION from the ported nav breakpoint.
 
