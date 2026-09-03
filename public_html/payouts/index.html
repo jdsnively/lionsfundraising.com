@@ -162,73 +162,6 @@
             -moz-appearance: textfield;
         }
 
-        .calculation-mode-toggle {
-            background: var(--po-gray-50);
-            border: 1px solid var(--po-gray-300);
-            border-radius: var(--radius-md);
-            padding: var(--space-4);
-            margin-bottom: var(--space-4);
-            max-width: 500px;
-        }
-
-        .calculation-mode-toggle .radio-group {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            margin-bottom: var(--space-2);
-        }
-
-        .radio-wrapper {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            cursor: pointer;
-        }
-
-        .radio-custom {
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--po-gray-300);
-            border-radius: 50%;
-            position: relative;
-            background: var(--po-surface);
-            transition: all var(--transition-fast);
-        }
-
-        .radio-custom.checked {
-            border-color: var(--po-blue);
-            background: var(--po-blue);
-        }
-
-        .radio-custom.checked::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            background: var(--po-surface);
-            border-radius: 50%;
-        }
-
-        .radio-label {
-            font-weight: 500;
-            color: var(--po-gray-700);
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .calculation-explanation {
-            font-size: 0.8rem;
-            color: var(--gray-600);
-            line-height: 1.4;
-        }
-
-        .calculation-mode-toggle input[type="radio"] {
-            display: none;
-        }
-
         .primary-stand-section {
             background: rgba(26, 54, 93, 0.08);
             border: 2px solid rgba(26, 54, 93, 0.2);
@@ -1829,28 +1762,6 @@
                     </div>
 
                     <div class="form-group form-grid-full">
-                        <div class="calculation-mode-toggle">
-                            <div class="radio-group">
-                                <div class="radio-wrapper" onclick="toggleCalculationMode('combined')">
-                                    <div class="radio-custom" id="radioComined"></div>
-                                    <span class="radio-label">Combined Mode</span>
-                                </div>
-                                <div class="radio-wrapper" onclick="toggleCalculationMode('separate')">
-                                    <div class="radio-custom" id="radioSeparate"></div>
-                                    <span class="radio-label">Calculate Separately</span>
-                                </div>
-                                <input type="radio" id="separateStandsMode" name="calculationMode" value="separate">
-                            </div>
-                            <div class="calculation-explanation">
-                                <div id="calculationExplanation">
-                                    <strong>Combined Mode (Default):</strong> All workers share the total Sodexo amount
-                                    based on their hours worked.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group form-grid-full">
                         <label for="eventNotes">Notes (Optional)</label>
                         <textarea id="eventNotes" placeholder="Special instructions or notes about this shift..."></textarea>
                     </div>
@@ -2260,31 +2171,24 @@
 
         function formatHours(hours) { return hours.toFixed(2); }
 
+        /* Separate stand mode was retired on 2026-09-03. It split one shift's
+           workers by stand and paid each group only its own stand's Sodexo
+           payment. That dropped anyone whose stand had not been paid (M-1) and
+           judged the low rate waiver per stand rather than per shift (M-13).
+           Every shift is combined now: the stands are summed and one rate is
+           applied, which is decision 3 of 2026-09-02.
+
+           Three shifts from the 2025-2026 season were recorded in separate
+           mode, all UPCI, July 2025. They are locked and frozen, so payoutsFor
+           returns their settlement and this function is never called for them.
+           Their separateStandsMode flag stays on the document and in both
+           exports, because it is what happened. unlockShift refuses them, so
+           the flag cannot be turned into a recomputation by accident.
+
+           shiftData is no longer read. It stays in the signature because every
+           caller passes it and the shared module of queue item 9 will want it. */
         function calculatePayouts(sodexoAmount, workers, shiftData = null) {
-            let useSeparateMode = false;
-            if (shiftData && shiftData.hasOwnProperty('separateStandsMode')) {
-                useSeparateMode = shiftData.separateStandsMode === true;
-            } else {
-                useSeparateMode = calculationMode === 'separate';
-            }
-            
-            if (!useSeparateMode) {
-                return calculateCombinedPayouts(sodexoAmount, workers);
-            } else {
-                let primaryStand, secondaryStand, primarySodexo, secondarySodexo;
-                if (shiftData) {
-                    primaryStand = shiftData.primaryStand || shiftData.standNumber || '';
-                    secondaryStand = shiftData.secondaryStand || '';
-                    primarySodexo = shiftData.primarySodexoPayout || shiftData.sodexoPayout || 0;
-                    secondarySodexo = shiftData.secondarySodexoPayout || 0;
-                } else {
-                    primaryStand = document.getElementById('primaryStand')?.value || '';
-                    secondaryStand = document.getElementById('secondaryStand')?.value || '';
-                    primarySodexo = parseFloat(document.getElementById('primarySodexoPayout')?.value) || 0;
-                    secondarySodexo = parseFloat(document.getElementById('secondarySodexoPayout')?.value) || 0;
-                }
-                return calculateSeparatePayouts(workers, primaryStand, secondaryStand, primarySodexo, secondarySodexo);
-            }
+            return calculateCombinedPayouts(sodexoAmount, workers);
         }
 
         /* ------------------------------------------------------------------
@@ -2584,121 +2488,6 @@
             return formatCalcResult(result);
         }
 
-        function calculateSeparatePayouts(workers, primaryStand, secondaryStand, primarySodexo, secondarySodexo) {
-            const result = {
-                totalHours: 0, hourlyRate: 0, lionsPercent: 0, coachesPercent: 0,
-                coordinatorPercent: 0, availableForWorkers: 0, workerPayouts: [],
-                totalWorkerPayouts: 0, workerShirtContributions: 0, shirtsNeeded: 0,
-                lionsShirtCosts: 0, roundingAmount: 0, lionsFinalTotal: 0,
-                coordinatorAdjustment: 0, separateMode: true, standBreakdowns: [],
-                lowRateRuleApplied: false
-            };
-
-            const standGroups = {};
-            workers.forEach(worker => {
-                const standKey = worker.stand || 'unknown';
-                if (!standGroups[standKey]) standGroups[standKey] = [];
-                standGroups[standKey].push(worker);
-            });
-
-            Object.entries(standGroups).forEach(([standKey, standWorkers]) => {
-                let standSodexoAmount = 0;
-                if (standKey === primaryStand && primarySodexo > 0) {
-                    standSodexoAmount = primarySodexo;
-                } else if (standKey === secondaryStand && secondarySodexo > 0) {
-                    standSodexoAmount = secondarySodexo;
-                } else {
-                    return;
-                }
-
-                if (standSodexoAmount <= 0) return;
-
-                const standHours = standWorkers.reduce((total, worker) => total + calculateHours(worker.startTime, worker.endTime), 0);
-                if (standHours === 0) return;
-
-                const standLionsPercent = standSodexoAmount * 0.02;
-                const standCoachesPercent = standSodexoAmount * 0.015;
-                const standCoordinatorPercent = standSodexoAmount * 0.015;
-                const standAvailableForWorkers = standSodexoAmount - standLionsPercent - standCoachesPercent - standCoordinatorPercent;
-                const standHourlyRate = standAvailableForWorkers / standHours;
-
-                result.totalHours += standHours;
-                result.lionsPercent += standLionsPercent;
-                result.coachesPercent += standCoachesPercent;
-                result.coordinatorPercent += standCoordinatorPercent;
-                result.availableForWorkers += standAvailableForWorkers;
-
-                let standTotalTheoretical = 0;
-                let standTotalTruncated = 0;
-
-                standWorkers.forEach(worker => {
-                    const hours = calculateHours(worker.startTime, worker.endTime);
-                    const lookup = lookupWorker(worker.name);
-                    const theoreticalGrossAmount = hours * standHourlyRate;
-                    const truncatedGrossAmount = Math.floor(theoreticalGrossAmount * 100) / 100;
-                    const shirtDeduction = worker.finalizedShirtDeduction !== undefined
-                    ? worker.finalizedShirtDeduction
-                    : (lookup.hasLOSShirt ? 0 : 5);
-                    const netAmount = Math.max(0, truncatedGrossAmount - shirtDeduction);
-                    
-                    standTotalTheoretical += theoreticalGrossAmount;
-                    standTotalTruncated += truncatedGrossAmount;
-                    result.totalWorkerPayouts += truncatedGrossAmount;
-                    
-                    const needsShirt = worker.finalizedShirtDeduction !== undefined
-                        ? worker.finalizedShirtDeduction > 0
-                        : !lookup.hasLOSShirt;
-                    if (needsShirt) {
-                        result.workerShirtContributions += 5;
-                        result.shirtsNeeded += 1;
-                        result.lionsShirtCosts += 5;
-                    }
-
-                    result.workerPayouts.push({
-                        name: worker.name, stand: worker.stand || standKey, hours: hours,
-                        grossAmount: truncatedGrossAmount, shirtDeduction: shirtDeduction,
-                        netAmount: netAmount, hasLOSShirt: lookup.hasLOSShirt,
-                        theoreticalAmount: theoreticalGrossAmount, standGroup: standKey,
-                        hoursFormatted: formatHours(hours),
-                        grossAmountFormatted: formatCurrency(truncatedGrossAmount),
-                        shirtDeductionFormatted: formatCurrency(shirtDeduction),
-                        netAmountFormatted: formatCurrency(netAmount),
-                        workerHourlyRate: standHourlyRate,
-                        workerHourlyRateFormatted: formatCurrency(standHourlyRate)
-                    });
-                });
-
-                result.roundingAmount += Math.round((standTotalTheoretical - standTotalTruncated) * 100) / 100;
-            });
-
-            result.hourlyRate = result.totalHours > 0 ? result.availableForWorkers / result.totalHours : 0;
-            const preliminaryLionsTotal = result.lionsPercent + result.roundingAmount - result.lionsShirtCosts;
-
-            if (preliminaryLionsTotal < 0) {
-                const deficit = Math.abs(preliminaryLionsTotal);
-                result.coordinatorAdjustment = Math.min(deficit, result.coordinatorPercent);
-                result.coordinatorPercent = Math.max(0, result.coordinatorPercent - result.coordinatorAdjustment);
-                result.lionsFinalTotal = Math.max(0, preliminaryLionsTotal + result.coordinatorAdjustment);
-            } else {
-                result.lionsFinalTotal = preliminaryLionsTotal;
-                result.coordinatorAdjustment = 0;
-            }
-
-            result.totalHoursFormatted = formatHours(result.totalHours);
-            result.hourlyRateFormatted = formatCurrency(result.hourlyRate);
-            result.lionsPercentFormatted = formatCurrency(result.lionsPercent);
-            result.coachesPercentFormatted = formatCurrency(result.coachesPercent);
-            result.coordinatorPercentFormatted = formatCurrency(result.coordinatorPercent);
-            result.availableForWorkersFormatted = formatCurrency(result.availableForWorkers);
-            result.totalWorkerPayoutsFormatted = formatCurrency(result.totalWorkerPayouts);
-            result.lionsShirtCostsFormatted = formatCurrency(result.lionsShirtCosts);
-            result.roundingAmountFormatted = formatCurrency(result.roundingAmount);
-            result.lionsFinalTotalFormatted = formatCurrency(result.lionsFinalTotal);
-            result.coordinatorAdjustmentFormatted = formatCurrency(result.coordinatorAdjustment);
-
-            return result;
-        }
-
         function getWorkerCrNumber(worker, shiftData) {
             if (!worker || !shiftData) return null;
             const workerStand = worker.stand;
@@ -2781,8 +2570,6 @@
         let dashboardUsers = [];
         let formStateReady = false;
         let calculationsPending = false;
-        let calculationMode = 'combined';
-
         // =======================
         // TIME INHERITANCE SYSTEM
         // =======================
@@ -2883,9 +2670,6 @@
                 const element = document.getElementById(id);
                 if (element) element.value = '';
             });
-            calculationMode = 'combined';
-            updateRadioButtons();
-            updateCalculationModeExplanation();
             const workersList = document.getElementById('workersList');
             if (workersList) workersList.innerHTML = '';
             const combinedTotal = document.getElementById('combinedSodexoTotal');
@@ -2893,32 +2677,6 @@
             formStateReady = false;
             calculationsPending = false;
         }
-
-        function toggleCalculationMode(mode) {
-            calculationMode = mode;
-            updateRadioButtons();
-            updateCalculationModeExplanation();
-            scheduleCalculationUpdate();
-        }
-
-        function updateRadioButtons() {
-            const combinedRadio = document.getElementById('radioComined');
-            const separateRadio = document.getElementById('radioSeparate');
-            const hiddenRadio = document.getElementById('separateStandsMode');
-            if (combinedRadio && separateRadio && hiddenRadio) {
-                if (calculationMode === 'combined') {
-                    combinedRadio.classList.add('checked');
-                    separateRadio.classList.remove('checked');
-                    hiddenRadio.checked = false;
-                } else {
-                    combinedRadio.classList.remove('checked');
-                    separateRadio.classList.add('checked');
-                    hiddenRadio.checked = true;
-                }
-            }
-        }
-
-        window.toggleCalculationMode = toggleCalculationMode;
 
         window.addEventListener('DOMContentLoaded', async () => {
             // lions-nav.js renders the header itself as soon as the shell
@@ -2929,7 +2687,6 @@
             if (await waitForAuthAndFirebase()) {
                 window.LIONS_AUTH.onAuthStateChanged(handleAuthStateChange);
                 setupEventListeners();
-                updateRadioButtons();
             } else {
                 showError('System failed to initialize. Please refresh the page.');
             }
@@ -3332,9 +3089,6 @@
                 if (element) element.value = value;
             });
             
-            calculationMode = shiftData.separateStandsMode ? 'separate' : 'combined';
-            updateRadioButtons();
-            updateCalculationModeExplanation();
             
             const displayStatus = shiftData.isLocked ? 'locked' : (shiftData.status || 'draft');
             updateStatusIndicator(displayStatus);
@@ -3352,9 +3106,6 @@
             clearShiftForm();
             workerCounter = 0;
             updateStatusIndicator('draft');
-            calculationMode = 'combined';
-            updateRadioButtons();
-            updateCalculationModeExplanation();
             await addWorker();
         }
 
@@ -3692,7 +3443,7 @@
             
             const calculations = calculatePayouts(totalSodexoAmount, workers);
             updateCalculationDisplay(calculations);
-            updateIndividualPayoutsTable(calculations.workerPayouts, calculations.separateMode);
+            updateIndividualPayoutsTable(calculations.workerPayouts);
         }
 
         function clearCalculationDisplay() {
@@ -3745,16 +3496,6 @@
                     adjustmentRow.style.display = 'flex';
                     adjustmentAmount.textContent = calculations.coordinatorAdjustmentFormatted;
                 } else { adjustmentRow.style.display = 'none'; }
-            }
-        }
-
-        function updateCalculationModeExplanation() {
-            const explanationEl = document.getElementById('calculationExplanation');
-            if (!explanationEl) return;
-            if (calculationMode === 'separate') {
-                explanationEl.innerHTML = '<strong>Separate Mode:</strong> Workers at each stand split only that stand\'s Sodexo payment based on their hours. Each stand operates independently with its own hourly rate.';
-            } else {
-                explanationEl.innerHTML = '<strong>Combined Mode (Default):</strong> All workers share the total Sodexo amount based on their hours worked.';
             }
         }
 
@@ -3889,7 +3630,7 @@
                 workers: workersWithSnapshot,
                 notes: document.getElementById('eventNotes')?.value?.trim() || '',
                 status: andFinalize ? 'finalized' : 'draft',
-                separateStandsMode: calculationMode === 'separate',
+                separateStandsMode: false,
                 lowRateRuleApplied: calculations.lowRateRuleApplied,
                 updatedAt: new Date().toISOString(),
                 updatedBy: currentUser.email
@@ -3965,6 +3706,19 @@
         }
 
         window.unlockShift = function(shiftId, eventName) {
+            /* A separate stand mode shift cannot be unlocked. Unlocking clears
+               the frozen settlement, and separate mode no longer exists to
+               rebuild it with, so the shift would refinalize as combined and
+               restate money that was already paid. Three shifts carry the flag,
+               all UPCI in July 2025. Refusing here is what keeps last season
+               alone without anyone having to remember to. */
+            const shift = allShifts.find(s => s.id === shiftId);
+            if (shift && shift.separateStandsMode === true) {
+                showError('"' + eventName + '" was calculated in separate stand mode, which was '
+                    + 'retired. Unlocking would clear its settlement and recalculate it as a '
+                    + 'combined shift, changing amounts that were already paid. It stays locked.');
+                return;
+            }
             unlockTarget = { id: shiftId, name: eventName };
             const dialog = document.getElementById('unlockDialog');
             const message = document.getElementById('unlockMessage');
