@@ -1512,16 +1512,15 @@
             return hours.toFixed(2);
         }
 
-        /* Separate stand mode was retired on 2026-09-03; see the same comment
-           in payouts. Treasurer loads finalized shifts only, and every one of
-           them is frozen, so payoutsFor returns the settlement and this is
-           never reached. It matches the payouts copy so the two pages cannot
-           disagree about what a shift is.
+        /* Combined, matching the payouts copy so the two pages cannot disagree
+           about what a shift is. Treasurer loads finalized shifts only and all
+           of them are frozen, so payoutsFor returns the settlement and this is
+           never reached.
 
-           buildCalculationsFromFinalizedData still carries a separate branch.
-           That is deliberate. It runs only for a finalized shift with no
-           settlement, which today means one restored from an older backup, and
-           such a shift should be rebuilt the way it was actually paid. */
+           buildCalculationsFromFinalizedData keeps its separate branch. It runs
+           only for a finalized shift with no settlement, meaning one restored
+           from an older backup, and such a shift should be rebuilt the way it
+           was paid. */
         function calculatePayouts(sodexoAmount, workers, shift) {
             return calculateCombinedPayouts(sodexoAmount, workers);
         }
@@ -1631,21 +1630,13 @@
                 coordinatorAdjustment: 0, separateMode: false, lowRateRuleApplied: false
             };
             /* Hours are known the night of the shift; the Sodexo payment
-               arrives weeks later. A draft awaiting payment therefore has real
-               hours and no rate, and it has to say so rather than returning an
-               unformatted result, which rendered as the literal word
-               "undefined" on the card.
+               arrives weeks later, so a draft awaiting payment has real hours
+               and no rate.
 
-               It builds its worker rows here too, so that this copy and the
-               payouts copy answer the same input the same way. Treasurer loads
-               only finalized shifts, and a shift cannot be finalized without a
-               Sodexo payment, so nothing on this page reaches this branch. It
-               matches because the golden suite compares the two copies case by
-               case, and a divergence here would be reported as drift in the
-               formula rather than as the deliberate parity it is.
-
-               Every amount is zero because nothing has been paid yet, and a
-               shirt is not owed until there is a payout to deduct it from. */
+               It builds worker rows here too, matching the payouts copy. This
+               page loads finalized shifts only and none of them reach this
+               branch, but the golden suite compares the two copies case by
+               case and would report a divergence as formula drift. */
             if (!workers || workers.length === 0) return formatCalcResult(result);
             result.totalHours = workers.reduce((total, worker) => {
                 return total + calculateHours(worker.startTime, worker.endTime);

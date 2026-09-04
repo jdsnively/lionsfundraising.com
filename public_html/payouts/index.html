@@ -2171,22 +2171,18 @@
 
         function formatHours(hours) { return hours.toFixed(2); }
 
-        /* Separate stand mode was retired on 2026-09-03. It split one shift's
-           workers by stand and paid each group only its own stand's Sodexo
-           payment. That dropped anyone whose stand had not been paid (M-1) and
+        /* Every shift is combined: the stands are summed and one rate applied.
+           Separate stand mode paid each stand's workers only that stand's
+           Sodexo payment, which dropped anyone whose stand was unpaid (M-1) and
            judged the low rate waiver per stand rather than per shift (M-13).
-           Every shift is combined now: the stands are summed and one rate is
-           applied, which is decision 3 of 2026-09-02.
 
-           Three shifts from the 2025-2026 season were recorded in separate
-           mode, all UPCI, July 2025. They are locked and frozen, so payoutsFor
-           returns their settlement and this function is never called for them.
-           Their separateStandsMode flag stays on the document and in both
-           exports, because it is what happened. unlockShift refuses them, so
-           the flag cannot be turned into a recomputation by accident.
+           Three shifts still carry separateStandsMode. They are locked and
+           frozen, so payoutsFor returns their settlement and this is never
+           called for them. The flag stays on the document and in both exports
+           because it is what happened, and unlockShift refuses them.
 
-           shiftData is no longer read. It stays in the signature because every
-           caller passes it and the shared module of queue item 9 will want it. */
+           shiftData is unread. It stays in the signature because every caller
+           passes it and the shared module will want it. */
         function calculatePayouts(sodexoAmount, workers, shiftData = null) {
             return calculateCombinedPayouts(sodexoAmount, workers);
         }
@@ -2366,23 +2362,19 @@
             };
 
             /* Hours are known the night of the shift; the Sodexo payment
-               arrives weeks later. A draft awaiting payment therefore has real
-               hours and no rate, and it has to say so rather than returning an
-               unformatted result, which rendered as the literal word
-               "undefined" on the card.
+               arrives weeks later, so a draft awaiting payment has real hours
+               and no rate. It returns a formatted result rather than a bare
+               one, because the card reads the formatted fields.
 
-               It builds its worker rows here too. Returning an empty
-               workerPayouts fixed the card and left Shift Details showing the
-               stand, the hours and a table header with nobody under it, because
-               that modal decides to render from shift.workers and then iterates
-               workerPayouts. The names, the stands and the hours are real and
-               are the perishable half of the record. Every amount is zero
-               because nothing has been paid yet, and a shirt is not owed until
-               there is a payout to deduct it from.
+               It builds worker rows here too. The Shift Details modal decides
+               to render from shift.workers and then iterates workerPayouts, so
+               an empty array leaves a table header with nobody under it. Names,
+               stands and hours are real; every amount is zero because nothing
+               has been paid, and no shirt is owed until there is a payout to
+               deduct it from.
 
-               No write path can reach these rows. Both finalize gates refuse a
-               shift with no Sodexo payment, and these amounts are the same
-               zeros the snapshot already stored when the array was empty. */
+               No write path reaches these rows. Both finalize gates refuse a
+               shift with no Sodexo payment. */
             if (!workers || workers.length === 0) return formatCalcResult(result);
             result.totalHours = workers.reduce((total, worker) => total + calculateHours(worker.startTime, worker.endTime), 0);
             if (!sodexoAmount || result.totalHours === 0) {
@@ -2931,17 +2923,10 @@
                 const calc = payoutsFor(shift);
                 totalHours += calc.totalHours;
                 totalNetPayouts += calc.workerPayouts.reduce((sum, w) => sum + w.netAmount, 0);
-                /* A shift awaiting its Sodexo payment now reports its real
-                   hours, because they were worked and they are the perishable
-                   record. Weighting the average rate by those hours would
-                   spread paid money across unpaid time and drag the rate toward
-                   zero, so the average is weighted by paid hours only.
-
-                   Its worker rows are excluded from the count for the same
-                   reason. They carry $0.00 until Sodexo pays, so counting them
-                   would divide the same money among more people and quietly
-                   lower the average take home on a screen nobody would think
-                   to distrust. */
+                /* A shift awaiting its Sodexo payment reports real hours, so
+                   both averages exclude it. Weighting the rate by unpaid hours
+                   drags it toward zero, and counting its worker rows divides
+                   the same money among more people. */
                 if (totalPayout > 0) {
                     paidHours += calc.totalHours;
                     weightedRateSum += calc.hourlyRate * calc.totalHours;
@@ -3706,12 +3691,9 @@
         }
 
         window.unlockShift = function(shiftId, eventName) {
-            /* A separate stand mode shift cannot be unlocked. Unlocking clears
-               the frozen settlement, and separate mode no longer exists to
-               rebuild it with, so the shift would refinalize as combined and
-               restate money that was already paid. Three shifts carry the flag,
-               all UPCI in July 2025. Refusing here is what keeps last season
-               alone without anyone having to remember to. */
+            /* Unlocking clears the frozen settlement, and separate stand mode
+               no longer exists to rebuild one with, so a separate-mode shift
+               would refinalize as combined and restate money already paid. */
             const shift = allShifts.find(s => s.id === shiftId);
             if (shift && shift.separateStandsMode === true) {
                 showError('"' + eventName + '" was calculated in separate stand mode, which was '

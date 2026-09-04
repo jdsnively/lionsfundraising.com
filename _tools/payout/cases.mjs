@@ -134,11 +134,10 @@ export const CASES = [
     },
     {
         id: 'stands-mixed-and-missing-paid',
-        why: 'The stand travels from the worker into every payout row and into the ' +
-             'Shift Details table. Every other case puts all its workers on Main, so ' +
-             'a deliberate mutation that hard coded the stand passed the whole suite ' +
-             'unnoticed on 2026-09-03. Two named stands and one worker with no stand ' +
-             'at all, paid, so the standard branch carries them.',
+        why: 'The stand travels from the worker into every payout row. Every other ' +
+             'case puts all its workers on Main, so nothing exercised the stand until ' +
+             'this. Two named stands and one worker with none, paid, so the standard ' +
+             'branch carries them.',
         sodexoAmount: 1200,
         workers: [
             { name: FIVE[0], startTime: '17:00', endTime: '21:00', stand: 'Main' },
@@ -149,9 +148,9 @@ export const CASES = [
     },
     {
         id: 'stands-mixed-and-missing-awaiting-payment',
-        why: 'The same three workers before Sodexo pays. This is the branch M-23 left ' +
-             'empty, and it builds its own rows, so it needs its own proof that the ' +
-             'stand and the N/A fallback survive the trip.',
+        why: 'The same three workers before Sodexo pays, where the awaiting-payment ' +
+             'branch builds its own rows and has to carry the stand and the N/A ' +
+             'fallback itself.',
         sodexoAmount: 0,
         workers: [
             { name: FIVE[0], startTime: '17:00', endTime: '21:00', stand: 'Main' },

@@ -482,9 +482,91 @@ function renderPicker() {
                  + '</span></button>';
         });
 
-    document.getElementById('admin-picker').innerHTML = rows.length
-        ? rows.join('')
-        : '<p class="admin-empty">No upcoming events in this season.</p>';
+    document.getElementById('admin-picker').innerHTML =
+        (rows.length
+            ? rows.join('')
+            : '<p class="admin-empty">No upcoming events in this season.</p>')
+      + '<div class="btn-row"><button type="button" class="btn btn-secondary"'
+      + ' id="admin-export">Download every signup (CSV)</button></div>';
+}
+
+/**
+ * One signup per row, every event in the season.
+ *
+ * Reads what loadAllSignups already holds rather than re-querying. That map
+ * covers all of ctx.events, while the picker above lists only events still to
+ * come, so a past event's respondents are in this file even though there is no
+ * way to select that event on screen.
+ */
+function exportSignups() {
+    const rows = [[
+        'Event Date', 'Event Name', 'Day', 'Venue', 'Shift', 'Stand',
+        'Volunteer', 'Email', 'Phone', 'Relationship', 'Outcome', 'Stand Lead',
+        'Priority Tier', 'Group', 'Licensed At Signup', 'License Expires', 'Signed Up'
+    ]];
+
+    ctx.events
+        .slice()
+        .sort((a, b) => String(a.eventDate || '').localeCompare(String(b.eventDate || '')))
+        .forEach((event) => {
+            (signupsByEvent.get(event.id) || []).slice().sort(compareEntries).forEach((entry) => {
+                const data = entry.data;
+                const person = personFor(entry) || {};
+                rows.push([
+                    event.eventDate || '',
+                    event.name || '',
+                    event.seriesOf > 1 ? 'Day ' + event.seriesDay + ' of ' + event.seriesOf : '',
+                    event.venue || CFG.VENUE_DEFAULT,
+                    data.shiftKey || '',
+                    data.standKey || '',
+                    data.name || person.name || '',
+                    data.userEmail || person.email || '',
+                    person.phone || '',
+                    person.relationship || '',
+                    data.state || 'available',
+                    data.isStandLead === true ? 'Yes' : 'No',
+                    data.priorityTier || '',
+                    data.groupKey || '',
+                    data.hasLicenseAtSignup === true ? 'Yes'
+                        : data.hasLicenseAtSignup === false ? 'No' : '',
+                    data.licenseExpiresAt || '',
+                    stampOf(data.createdAt)
+                ]);
+            });
+        });
+
+    downloadCsv(rows, 'lions_event_signups_' + new Date().toISOString().slice(0, 10) + '.csv');
+}
+
+/** A readable local timestamp from a Firestore Timestamp, a Date or a string. */
+function stampOf(value) {
+    if (!value) { return ''; }
+    const d = typeof value.toDate === 'function' ? value.toDate()
+            : value instanceof Date ? value
+            : new Date(value);
+    return isNaN(d.getTime()) ? '' : d.toLocaleString();
+}
+
+/**
+ * A quoted CSV, downloaded. A double quote inside a field has to be doubled or
+ * every column after it shifts, which matters most in a file carrying names.
+ */
+function downloadCsv(rows, filename) {
+    const csv = rows
+        .map(row => row
+            .map(cell => '"' + String(cell === null || cell === undefined ? '' : cell)
+                .replace(/"/g, '""') + '"')
+            .join(','))
+        .join('\n');
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    link.download = filename;
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 /**
@@ -1326,6 +1408,8 @@ async function saveEvent(event) {
 
 function wire() {
     document.getElementById('admin-picker').addEventListener('click', (event) => {
+        if (event.target.closest('#admin-export')) { exportSignups(); return; }
+
         const button = event.target.closest('[data-event]');
         if (!button) { return; }
         selectedEventId = button.dataset.event;
