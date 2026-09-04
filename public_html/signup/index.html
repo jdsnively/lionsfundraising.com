@@ -1259,7 +1259,7 @@ async function start() {
     // volunteer's page free of markup they have no business seeing.
     if (lionsAuth.canAccess('dashboard')) {
         try {
-            const { mountAdmin } = await import('/signup/admin.js?v=1');
+            const { mountAdmin } = await import('/signup/admin.js?v=2');
             await mountAdmin({ db: db, events: events, season: season, admin: me });
         } catch (error) {
             log.error('Administrator surface failed to load.', error);
