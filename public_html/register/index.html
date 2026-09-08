@@ -1521,19 +1521,23 @@
             const successMessage = `Registration complete.<br><br>You registered ${namesList}.`;
 
             /*
-             * Registering does not create a signed-in session: the roster record
-             * and the Firebase Auth account are separate things, and shifts are
-             * only pickable once signed in. So the next step is stated plainly
-             * and the address is carried across, which turns three steps into
-             * one click plus one email.
-             *
              * This is the highest-intent moment on the property. Until
              * 2026-08-05 the only thing offered here was "Register More People",
-             * and a volunteer who wanted a shift had to find /signup unaided.
+             * and a volunteer who wanted a shift had to find the signup unaided.
+             *
+             * This button used to be a sign-in link carrying next=%2Fsignup,
+             * because shifts were only pickable once signed in. /signup is
+             * denied at the root .htaccess as of 2026-09-07 and shifts are
+             * picked on the Evite, which needs no account, so the sign-in
+             * detour buys nothing and the button goes straight there. The copy
+             * moved with it: it used to promise an email that is no longer
+             * sent, and firstEmail existed only to prefill that sign-in form.
+             *
+             * This href is one of three that must stay in step, the other two
+             * being the nav row key 'signup' in /js/lions-nav.js and the same
+             * key in /includes/header.php on lionssports.club.
              */
-            const firstEmail = (this.registeredPeople[0] && this.registeredPeople[0].email) || '';
-            const shiftHref = '/auth/signin.html?next=%2Fsignup'
-                            + (firstEmail ? '&email=' + encodeURIComponent(firstEmail) : '');
+            const shiftHref = 'https://evite.me/UDcPG9FasP';
 
             const nextStepHTML = `
                 <div class="next-step">
@@ -1541,9 +1545,11 @@
                     <p class="next-step-text">
                         Registering puts you on the roster. Choosing the dates you can work
                         is a separate step, and it is the one that gets you on the schedule.
-                        We will email you a sign-in link to get there.
+                        The shift list opens in a new tab.
                     </p>
-                    <a href="${shiftHref}" class="next-step-btn">Pick your shifts</a>
+                    <a href="${shiftHref}" class="next-step-btn"
+                       target="_blank" rel="noopener"
+                       aria-label="Pick your shifts, opens in a new tab">Pick your shifts</a>
                 </div>
             `;
 

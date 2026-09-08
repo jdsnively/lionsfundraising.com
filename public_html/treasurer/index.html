@@ -1419,40 +1419,88 @@
         // LOCAL CALCULATION FUNCTIONS (Copied from /payouts)
         // =======================
 
+        /* Accepts 24 hour ("19:30"), 12 hour with a meridiem ("7:30 PM"),
+           four digit ("1930"), three digit ("930") and decimal hours
+           ("19.5"). Returns null on anything it cannot read, and the caller
+           turns null into zero hours, so a rejected value is visible as an
+           unpaid worker rather than as a wrong number.
+
+           WHY THE MERIDIEM IS READ FIRST. This function used to strip every
+           character that was not a digit, a dot or a colon, which removed the
+           AM and the PM before anything looked at them. "11:00" to "7:00 PM"
+           then became 660 to 420, calculateHours added 24 hours because the
+           end looked earlier than the start, and the shift measured TWENTY
+           hours instead of eight. That cuts the hourly rate for every worker
+           on the shift. Measured 2026-09-07 against the 312 row payout
+           record: zero stored times carry a meridiem, so this never fired,
+           and the inputs are free text with a 24 hour placeholder, so
+           nothing but that placeholder was preventing it.
+
+           WHY THREE DIGITS ARE ACCEPTED. "930" matched no branch and returned
+           null, so calculateHours returned 0 and that worker was paid
+           nothing. Also never fired in the record, and also nothing stopped
+           it.
+
+           THE DECIMAL BRANCH HAD A REAL DEFECT, M-28. It read the text after
+           the dot as an integer and divided by 100, so "19.5" became 5, then
+           three minutes, instead of half an hour. "19.30" and "19.50" happen
+           to survive that because they are two digits. Parsing the fraction
+           as a fraction fixes the one digit case and leaves the two digit
+           cases identical. Every shift in the record is frozen, so no stored
+           settlement moves.
+
+           KEEP THIS BYTE IDENTICAL TO THE COPY IN THE OTHER MONEY PAGE. The
+           golden suite extracts calculateCombinedPayouts only and cannot see
+           this function, so nothing will tell you if the two drift. */
         function parseTime(timeStr) {
             if (!timeStr) return null;
-            const cleanTime = timeStr.replace(/[^\d.:]/g, '');
+
+            const raw = String(timeStr).trim();
+            const meridiem = /([ap])\.?\s*m\.?\s*$/i.exec(raw);
+            const isPm = !!meridiem && meridiem[1].toLowerCase() === 'p';
+            const isAm = !!meridiem && meridiem[1].toLowerCase() === 'a';
+
+            const cleanTime = raw.replace(/[^\d.:]/g, '');
+
+            let hours = null;
+            let minutes = null;
+
             if (cleanTime.includes(':')) {
                 const parts = cleanTime.split(':');
-                const hours = parseInt(parts[0]) || 0;
-                const minutes = parseInt(parts[1]) || 0;
-                if (hours > 23 || minutes >= 60) return null;
-                const roundedMinutes = Math.round(minutes / 15) * 15;
-                const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
-                const finalHours = roundedMinutes === 60 ? hours + 1 : hours;
-                return { hours: finalHours, minutes: finalMinutes };
-            }
-            if (cleanTime.includes('.')) {
+                hours = parseInt(parts[0]) || 0;
+                minutes = parseInt(parts[1]) || 0;
+            } else if (cleanTime.includes('.')) {
                 const parts = cleanTime.split('.');
-                const hours = parseInt(parts[0]) || 0;
-                const decimal = parseInt(parts[1]) || 0;
-                const minutes = Math.round((decimal / 100) * 60);
-                if (hours > 23 || minutes >= 60) return null;
-                const roundedMinutes = Math.round(minutes / 15) * 15;
-                const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
-                const finalHours = roundedMinutes === 60 ? hours + 1 : hours;
-                return { hours: finalHours, minutes: finalMinutes };
+                hours = parseInt(parts[0]) || 0;
+                minutes = Math.round((parseFloat('0.' + parts[1]) || 0) * 60);
+            } else if (cleanTime.length === 4) {
+                hours = parseInt(cleanTime.substring(0, 2));
+                minutes = parseInt(cleanTime.substring(2, 4));
+            } else if (cleanTime.length === 3) {
+                hours = parseInt(cleanTime.substring(0, 1));
+                minutes = parseInt(cleanTime.substring(1, 3));
+            } else {
+                return null;
             }
-            if (cleanTime.length === 4) {
-                const hours = parseInt(cleanTime.substring(0, 2));
-                const minutes = parseInt(cleanTime.substring(2, 4));
-                if (hours > 23 || minutes >= 60) return null;
-                const roundedMinutes = Math.round(minutes / 15) * 15;
-                const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
-                const finalHours = roundedMinutes === 60 ? hours + 1 : hours;
-                return { hours: finalHours, minutes: finalMinutes };
+
+            if (!isFinite(hours) || !isFinite(minutes)) return null;
+            if (minutes >= 60) return null;
+
+            /* A meridiem on an hour that is already in 24 hour form is
+               redundant, not a reason to pay nothing. "19:00 PM" stays
+               19:00, exactly as it read before this change. NOTHING HERE MAY
+               TURN A PREVIOUSLY READABLE ENTRY INTO ZERO HOURS. */
+            if (meridiem && hours >= 1 && hours <= 12) {
+                if (isPm && hours < 12) hours += 12;
+                if (isAm && hours === 12) hours = 0;
             }
-            return null;
+
+            if (hours > 23) return null;
+
+            const roundedMinutes = Math.round(minutes / 15) * 15;
+            const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+            const finalHours = roundedMinutes === 60 ? hours + 1 : hours;
+            return { hours: finalHours, minutes: finalMinutes };
         }
 
         function calculateHours(startTime, endTime) {

@@ -116,20 +116,29 @@ const DEFAULT_ROLE = 'Volunteer';
 /**
  * Where each role lands after signing in.
  *
- * Every path here must exist and must not be blocked by the root .htaccess.
- * The previous map sent volunteers and event supervisors to /events, which
- * returns 403, so every volunteer who completed a sign-in landed on an error.
+ * EVERY PATH HERE MUST EXIST AND MUST NOT BE BLOCKED BY THE ROOT .htaccess.
+ * This map has broken that rule twice. It sent volunteers and event
+ * supervisors to /events, which returns 403, so every volunteer who completed
+ * a sign-in landed on an error. It was moved to /signup on 2026-08-01, and
+ * /signup was denied on 2026-09-07, which would have reproduced the identical
+ * failure. Fetch a value and read its status code before changing one.
  *
- * Volunteers and event supervisors go to /signup as of 2026-08-01, now that
- * signup/index.html is deployed. This is the default only: destinationFor
- * honours a next parameter and then a stored return path before reading this
- * map, so a link that already names a destination is unaffected.
+ * Volunteers and event supervisors land on /account, verified 200 on
+ * 2026-09-07 and admitted to both roles by SYSTEM_ACCESS below. Shifts are
+ * picked on the Evite, which is deliberately NOT in this map: destinationFor
+ * returns these values straight into window.location.replace and into an href
+ * on auth/verify.html, and an auth module should not send a signed-in user off
+ * site by default.
+ *
+ * This is the default only. destinationFor honors a next parameter and then a
+ * stored return path before reading this map, so a link that already names a
+ * destination is unaffected.
  */
 const POST_SIGN_IN_ROUTES = {
     'System Administrator': '/dashboard',
     'Treasurer': '/treasurer',
-    'Event Supervisor': '/signup',
-    'Volunteer': '/signup'
+    'Event Supervisor': '/account',
+    'Volunteer': '/account'
 };
 
 const DEFAULT_ROUTE = '/';
@@ -141,6 +150,9 @@ const DEFAULT_ROUTE = '/';
 const SYSTEM_ACCESS = {
     register:     ['System Administrator', 'Treasurer', 'Event Supervisor', 'Volunteer'],
     account:      ['System Administrator', 'Treasurer', 'Event Supervisor', 'Volunteer'],
+    // signup is denied at the root .htaccess as of 2026-09-07. The entry stays
+    // because js/lions-access.js mirrors this table and nothing calls
+    // canAccess('signup'), so removing it here would only create drift.
     signup:       ['System Administrator', 'Treasurer', 'Event Supervisor', 'Volunteer'],
     reimbursement:['System Administrator', 'Treasurer', 'Event Supervisor', 'Volunteer'],
     earnings:     ['System Administrator', 'Treasurer', 'Event Supervisor', 'Volunteer'],

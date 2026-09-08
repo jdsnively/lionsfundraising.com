@@ -410,24 +410,43 @@ button {
 }
 
 /* ----------------------------------------------------------------------------
-   DOCUMENTED DEVIATION from the ported nav breakpoint.
+   DOCUMENTED DEVIATION from the ported nav breakpoint. ADR-006.
 
-   site.css switches the primary nav horizontal at 1024px. This property
-   carries the same seven items PLUS the identity controls, which do not fit
-   on one line at that width: the wordmark and the auth controls wrap to a
+   site.css switches the primary nav horizontal at 1024px. This property cannot
+   follow, because it carries identity controls that the marketing site has no
+   counterpart for. At 1024px the wordmark and the auth controls wrap to a
    second line and the header reads as broken.
 
-   The boundary was 1280px, chosen by eye. Measured on 2026-08-02 it is wrong.
-   The row's children are logo 64, wordmark 189, nav 745 and identity controls
-   197, plus four 14px gaps, the 24px margin before the identity controls and
-   48px of padding. That is 1285px of content inside a rail capped at 1160, so
-   the identity controls broke out of the rail at EVERY desktop width, and
-   because the rail is centred the break-out crossed the viewport edge below
-   1410px. A 1280px laptop scrolled sideways by 65px and a 1366 by 25.
+   The boundary was 1280px, chosen by eye. Measured on 2026-08-02 it was wrong:
+   the header then carried seven marketing rows and needed 1285px of content
+   inside a rail capped at 1160, so the identity controls broke out of the rail
+   at EVERY desktop width, and because the rail is centered the break-out
+   crossed the viewport edge below 1410px. A 1280px laptop scrolled sideways by
+   65px and a 1366 by 25.
 
-   Two numbers move as a pair. The drawer now runs to 1299, and above it the
-   header rail widens to 1340 so the row it has to hold actually fits inside
-   it. Only the header rail widens; page content stays on the canon 1160.
+   THAT SEVEN ROW MEASUREMENT IS GONE. The marketing rows were removed on
+   2026-09-03 and the Fundraising dropdown was flattened to five own-property
+   rows on 2026-09-07. Re-measured that day in Chromium, by rendering the real
+   output of js/lions-nav.js and reading the intrinsic width of .header-inner:
+
+     LSC Home + Fundraising dropdown, the 09-03 shape        878px
+     five flat rows, the shape shipped 2026-09-07           1158px
+     five flat rows with both labels left at full length    1278px
+     six flat rows including Fundraising Home               1452px
+
+   Two numbers still move as a pair, and both stay where they are. The drawer
+   runs to 1299, and above it the header rail widens to 1340 so the row it has
+   to hold fits inside it. Only the header rail widens; page content stays on
+   the canon 1160.
+
+   The rail is no longer tight: the shipped row needs 1158 of 1340. It is kept
+   at 1340 rather than lowered because lowering it and flattening the nav are
+   mutually exclusive, and Jason chose the flatten on 2026-09-05. There is
+   room for a longer label. There is NOT room for a sixth row.
+
+   BELOW 1300 THERE IS NO DESKTOP BAR AT ALL, so a header width budget aimed at
+   a 1280 laptop is measuring a bar that width never shows. Any future budget
+   argument starts at 1300.
 
    Rationale is user-facing, not preference, which is what the deviation policy
    in design-system-governance.md requires. If the marketing site ever adopts

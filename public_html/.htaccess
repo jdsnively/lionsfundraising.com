@@ -52,6 +52,15 @@ RedirectMatch 404 /\.hg
 # /claims points at a different Firebase project (lions-fundraising rather
 # than lionsfundraising-1f854) and loads Firebase SDK 9.23.0. Confirm it is
 # genuinely dead before unblocking.
+#
+# /signup is the in-house event signup, tabled by Jason on 2026-09-03 in favor
+# of the Evite, and denied here on 2026-09-07. THREE surfaces routed into it
+# and all three moved in the same commit: the strip link at index.html:671,
+# the post-registration button in /register, and POST_SIGN_IN_ROUTES in
+# /auth/lions-auth.js, which was the default landing for every Volunteer and
+# Event Supervisor. Denying the route without that third one would have put
+# every volunteer who signs in on a 403, which is the same failure /events
+# caused before 2026-08-01. Search for the literal /signup before unblocking.
 # -----------------------------------------------------------------------------
 RedirectMatch 403 ^/claims(/.*)?$
 RedirectMatch 403 ^/d2(/.*)?$
@@ -60,6 +69,7 @@ RedirectMatch 403 ^/events(/.*)?$
 RedirectMatch 403 ^/lionsfundraising_BAK(/.*)?$
 RedirectMatch 403 ^/manage(/.*)?$
 RedirectMatch 403 ^/holdharmless_2(/.*)?$
+RedirectMatch 403 ^/signup(/.*)?$
 
 
 # -----------------------------------------------------------------------------

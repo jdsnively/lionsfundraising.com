@@ -611,9 +611,16 @@
 <div class="page-bg">
 
     <!-- Site header. Markup and navigation come from /js/lions-nav.js,
-         the single definition on this property, mirroring $nav_items in
-         /includes/header.php on lionssports.club. -->
-    <header id="site-header" data-nav="home-erp"></header>
+    <!-- Site header. Markup and navigation come from /js/lions-nav.js, the
+         single definition on this property. It does NOT mirror $nav_items in
+         /includes/header.php on lionssports.club: Jason ruled on 2026-09-05
+         that the two navigations should differ, because that site is the front
+         door and this is the application. See NAV_ITEMS for the ruling.
+
+         data-nav is empty because the landing page has no row of its own. The
+         'home-erp' row was dropped in the 2026-09-07 flatten, since the
+         wordmark already links to /. -->
+    <header id="site-header" data-nav=""></header>
 
     <main>
 
@@ -661,14 +668,22 @@
 
         <!-- ===== BAND 2: SIGNUP STRIP ====================================
              For people already on the roster. See .strip in the style block
-             for why this is not a second hero call to action. -->
+             for why this is not a second hero call to action.
+
+             The link is the Evite, not /signup: the in-house signup is denied
+             at the root .htaccess as of 2026-09-07. This href is one of three
+             that must stay in step, the other two being the nav row key
+             'signup' in /js/lions-nav.js and the same key in
+             /includes/header.php on lionssports.club. -->
         <section class="strip">
             <div class="container">
                 <div class="strip-inner">
                     <p class="strip-text">
                         Already registered? Picking your dates is what puts you on the schedule.
                     </p>
-                    <a href="/signup" class="strip-link">Pick your shifts</a>
+                    <a href="https://evite.me/UDcPG9FasP" class="strip-link"
+                       target="_blank" rel="noopener"
+                       aria-label="Pick your shifts, opens in a new tab">Pick your shifts</a>
                 </div>
             </div>
         </section>

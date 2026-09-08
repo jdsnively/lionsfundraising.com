@@ -56,19 +56,25 @@
     var MAIN = 'https://lionssports.club';
 
     /**
-     * Mirrors $nav_items in /includes/header.php. Order is the visual order on
-     * desktop, left to right, and in the drawer, top to bottom.
+     * The navigation for this property. Order is the visual order on desktop,
+     * left to right, and in the drawer, top to bottom.
      *
-     * Rows carrying `children` render as a dropdown. Rows carrying `external`
-     * open in a new tab. Exactly one row may carry `cta`.
+     * FLATTENED 2026-09-07. These five rows sat inside a single Fundraising
+     * dropdown until today. Jason's ruling: this property is the application,
+     * so its own routes belong in the bar rather than one click down.
      *
-     * The two rows under Fundraising that point at this property use root
-     * relative paths so they stay correct on staging or a renamed host. The
-     * marketing rows are absolute because they leave.
-     */
-    /**
-     * Order is the visual order on desktop, left to right, and in the drawer,
-     * top to bottom.
+     * THIS LIST NO LONGER MIRRORS $nav_items IN /includes/header.php, AND THAT
+     * IS DELIBERATE. An earlier version of this comment said the mirror
+     * existed so the two could not disagree. Jason ruled on 2026-09-05 that
+     * they should disagree: lionssports.club is the front door, this is the
+     * application behind it, and a volunteer who is here came here to do
+     * something. ADR-006 governs the exception and R-20 applies. Do not
+     * restore the mirror, and do not restore the marketing rows: the absence
+     * is the decision.
+     *
+     * The ONE row that must still be kept in step across properties is
+     * 'signup'. It points at the Evite in three places: here, index.html:671
+     * on this property, and the same key in /includes/header.php over there.
      *
      * Rows carrying `children` render as a dropdown. Rows carrying `external`
      * open in a new tab. No row carries `cta`: that slot is Admin, injected by
@@ -78,40 +84,52 @@
      * stays correct on staging or a renamed host. LSC Home is absolute because
      * it leaves, and it is the only row that does.
      *
-     * Fundraising carries no `href` of its own. It used to point at
-     * lionssports.club/fundraising, which is exactly the outbound link the
-     * 2026-09-03 ruling removes, so it is a pure dropdown now.
+     * WIDTH BUDGET, measured in Chromium on 2026-09-07 against the live
+     * stylesheets and the real computed type, by rendering this file's own
+     * output and reading the intrinsic width of .header-inner. These are
+     * rendered numbers, not a nav width plus a constant:
+     *
+     *   LSC Home + Fundraising dropdown, as shipped        878px
+     *   these five rows, Lucas Oil / Permit               1158px
+     *   these five, Lucas Oil / Alcohol Permit            1230px
+     *   these five, Lucas Oil Guide / Permit              1206px
+     *   these five, both labels left at full length       1278px
+     *   six rows with Fundraising Home, full labels       1452px
+     *
+     * The header rail is 1340px above 1300px, so EVERY five row set fits with
+     * no compression at every width from 1300 up, and only the six row set
+     * squeezes, by 112px. "Fundraising Home" is dropped because the wordmark
+     * already links to /. Before lengthening a label here, render it and read
+     * the intrinsic width of .header-inner. Do not add a sixth row.
      */
     var NAV_ITEMS = [
-        { key: 'home',        label: 'LSC Home',    href: MAIN + '/' },
-        { key: 'fundraising', label: 'Fundraising', children: [
-            { key: 'home-erp',    label: 'Fundraising Home', href: '/' },
-            { key: 'register',    label: 'Register',         href: '/register' },
-            // Jason, 2026-09-03. The in-house event signup at /signup is tabled, so
-            // this points at the same Evite the marketing site uses. It is the one
-            // row in this file whose href must be kept in step with another
-            // property: /includes/header.php on lionssports.club, key 'signup'.
-            { key: 'signup',      label: 'Event Signup',     href: 'https://evite.me/UDcPG9FasP', external: true },
-            { key: 'los',         label: 'Lucas Oil Guide',  href: '/LOS' },
-            { key: 'sodexo-atc',  label: 'Alcohol Permit',   href: '/sodexo-atc' }
-        ]}
+        { key: 'home',        label: 'LSC Home',     href: MAIN + '/' },
+        { key: 'register',    label: 'Register',     href: '/register' },
+        // The Evite. Kept in step with two other copies: index.html:671 on this
+        // property, and key 'signup' in /includes/header.php on lionssports.club.
+        // The in-house signup at /signup was tabled on 2026-09-03 and denied at
+        // the root .htaccess on 2026-09-07.
+        { key: 'signup',      label: 'Event Signup', href: 'https://evite.me/UDcPG9FasP', external: true },
+        { key: 'los',         label: 'Lucas Oil',    href: '/LOS' },
+        { key: 'sodexo-atc',  label: 'Permit',       href: '/sodexo-atc' }
     ];
 
     /**
      * Administrator routes.
      *
-     * Deliberately NOT rows in NAV_ITEMS. That list is a mirror of $nav_items in
-     * /includes/header.php on the marketing site, and these three have no
-     * counterpart over there. Putting them in it would make the two definitions
-     * disagree, which is the whole problem the mirror exists to prevent.
+     * Deliberately NOT rows in NAV_ITEMS. Not because of a mirror, which no
+     * longer exists as of 2026-09-05, but because these three are gated per
+     * route by canAccess and NAV_ITEMS is rendered before auth resolves. A row
+     * here would be in the bar for a signed out visitor.
      *
      * They are rendered by setAuth, once auth has resolved, as a standalone
      * top level dropdown in the single CTA slot. They were inside the
      * Fundraising dropdown until 2026-09-03, because the header rail then
      * carried seven marketing items and needed 1285px; an eighth pushed the bar
-     * into the identity controls at exactly the widths a laptop uses. NAV_ITEMS
-     * now carries two rows, so the room exists and Admin is where an
-     * administrator will look for it.
+     * into the identity controls at exactly the widths a laptop uses. Those
+     * marketing rows are gone, and NAV_ITEMS was flattened to five own-property
+     * rows on 2026-09-07 needing 1158px inside a 1340px rail, so the room
+     * exists and Admin is where an administrator will look for it.
      *
      * `system` names the entry in SYSTEM_ACCESS that governs the route. This
      * file does not carry a copy of those allow lists. The page hands setAuth a
@@ -264,34 +282,7 @@
         wire();
     }
 
-    /**
-     * Fills both identity areas. Called by the page once auth has resolved, so
-     * that a signed-out visitor never sees an account link they cannot use.
-     *
-     * The controls are written twice, into the header row and into the drawer,
-     * and the stylesheet displays exactly one pair: the header above 1280px,
-     * the drawer below it. Rendering both and choosing in CSS avoids listening
-     * for resize and avoids re-rendering the header when a phone is rotated,
-     * either of which would drop the sign-out handler at the moment it is
-     * needed. The duplicate is two controls in the DOM, not two on the screen.
-     *
-     * Neither sign-out control carries an id. There were two of them, and two
-     * elements answering to getElementById('sign-out') is a defect waiting for
-     * whoever adds the third caller.
-     */
-    /**
-     * Appends the administrator routes to the Fundraising dropdown.
-     *
-     * Runs on both renderings of that menu, the desktop list and the drawer
-     * panel, because the stylesheet shows one or the other by width and a
-     * volunteer on a laptop and the same person on a phone must not be offered
-     * different routes.
-     *
-     * Every previously injected element is removed first. Nothing is added when
-     * the caller is signed out, supplies no canAccess, or holds none of the
-     * three systems, so a volunteer's menu is unchanged and a treasurer sees
-     * Payouts and Treasurer without a Dashboard link they cannot open.
-     */
+    /** Closes every open dropdown in both the desktop bar and the drawer. */
     function closeAllDropdowns() {
         document.querySelectorAll('.nav-dropdown-toggle[aria-expanded="true"]')
             .forEach(function (b) {
@@ -335,6 +326,24 @@
         });
     }
 
+    /**
+     * Appends the administrator routes to the bar as a standalone Admin
+     * dropdown in the CTA slot, and to the foot of the drawer's list.
+     *
+     * They were appended to the Fundraising dropdown until 2026-09-03. This
+     * comment said so until 2026-09-07, while the code below had already
+     * stopped doing it.
+     *
+     * Runs on both renderings, the desktop list and the drawer panel, because
+     * the stylesheet shows one or the other by width and a volunteer on a
+     * laptop and the same person on a phone must not be offered different
+     * routes.
+     *
+     * Every previously injected element is removed first. Nothing is added when
+     * the caller is signed out, supplies no canAccess, or holds none of the
+     * three systems, so a volunteer's menu is unchanged and a treasurer sees
+     * Payouts and Treasurer without a Dashboard link they cannot open.
+     */
     function renderAdminItems(state) {
         document.querySelectorAll('[' + ADMIN_MARK + ']')
             .forEach(function (el) { el.parentNode.removeChild(el); });
@@ -399,6 +408,23 @@
         }
     }
 
+    /**
+     * Fills both identity areas. Called by the page once auth has resolved, so
+     * that a signed-out visitor never sees an account link they cannot use.
+     *
+     * The controls are written twice, into the header row and into the drawer,
+     * and the stylesheet displays exactly one pair: the header at 1300px and
+     * above, the drawer below it. This comment said 1280px until 2026-09-07;
+     * the stylesheet has used 1300 since the deviation was measured on
+     * 2026-08-02. Rendering both and choosing in CSS avoids listening for
+     * resize and avoids re-rendering the header when a phone is rotated,
+     * either of which would drop the sign-out handler at the moment it is
+     * needed. The duplicate is two controls in the DOM, not two on the screen.
+     *
+     * Neither sign-out control carries an id. There were two of them, and two
+     * elements answering to getElementById('sign-out') is a defect waiting for
+     * whoever adds the third caller.
+     */
     function setAuth(state) {
         var slot = document.getElementById('auth-slot');
         var drawerSlot = document.getElementById('mobile-auth-slot');
