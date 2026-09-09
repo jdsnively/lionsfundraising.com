@@ -344,8 +344,14 @@ button {
 }
 
 /* Gold pill CTA. Exactly one in the nav at a time, or the hierarchy collapses.
-   On the marketing site that slot is Shop. Here it is the link back to
-   lionssports.club, which is the only outbound destination on this property. */
+   On the marketing site that slot is Shop. Here it is Admin.
+
+   These two rules were unused between 2026-09-03, when Admin took the slot and
+   Admin was a dropdown, and 2026-09-08, when the signed out form of that pill
+   became a plain link again and started using them. The comment they carried
+   in the meantime described a link back to lionssports.club, which by then was
+   a NAV_ITEMS row rather than a CTA and is now the wordmark. Rendered proof
+   that they are live: adminItem in js/lions-nav.js emits exactly this pair. */
 .nav-link.nav-link--cta {
     background: var(--gold);
     color: var(--black);
@@ -426,11 +432,17 @@ button {
 
    THAT SEVEN ROW MEASUREMENT IS GONE. The marketing rows were removed on
    2026-09-03 and the Fundraising dropdown was flattened to five own-property
-   rows on 2026-09-07. Re-measured that day in Chromium, by rendering the real
-   output of js/lions-nav.js and reading the intrinsic width of .header-inner:
+   rows on 2026-09-07. Re-measured in Chromium, by rendering the real output of
+   js/lions-nav.js and reading the intrinsic width of .header-inner.
+
+   EVERY NUMBER BELOW IS THE SIGNED IN CASE: the rows, the Admin pill and the
+   identity controls together. The 09-07 table did not say so and it cost a
+   re-measurement on 09-08 to establish. Signed out is about 320px narrower and
+   is not the number to budget against.
 
      LSC Home + Fundraising dropdown, the 09-03 shape        878px
      five flat rows, the shape shipped 2026-09-07           1158px
+     Home / Alcohol Permit, the shape shipped 2026-09-08    1199px
      five flat rows with both labels left at full length    1278px
      six flat rows including Fundraising Home               1452px
 
@@ -439,7 +451,7 @@ button {
    to hold fits inside it. Only the header rail widens; page content stays on
    the canon 1160.
 
-   The rail is no longer tight: the shipped row needs 1158 of 1340. It is kept
+   The rail is no longer tight: the shipped row needs 1199 of 1340. It is kept
    at 1340 rather than lowered because lowering it and flattening the nav are
    mutually exclusive, and Jason chose the flatten on 2026-09-05. There is
    room for a longer label. There is NOT room for a sixth row.

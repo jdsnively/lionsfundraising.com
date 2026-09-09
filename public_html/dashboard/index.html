@@ -1308,8 +1308,10 @@
 
 <body>
     <!-- Site header. Markup and navigation come from /js/lions-nav.js, which is
-         the single definition on this property and mirrors $nav_items in
-         /includes/header.php on lionssports.club. universal-header.js is frozen
+         the single definition on this property. It does NOT mirror $nav_items
+         in /includes/header.php on lionssports.club: Jason ruled on 2026-09-05
+         that the two navigations should differ, because that site is the front
+         door and this is the application. See NAV_ITEMS for the ruling. universal-header.js is frozen
          and is no longer loaded here: read at v1.9 it carries the retired navy
          hex, the wrong typeface, a text-shadow, emoji navigation icons and
          three retired addresses. data-nav is empty because this route has no
@@ -1380,6 +1382,14 @@
                         <div class="stat-number" id="hasLicenseCount">-</div>
                         <div class="stat-label">Licensed</div>
                     </div>
+                    <!-- R-13, ruled by Jason 2026-09-08. Licensed counts a
+                         permit that is valid today. Expired is its own number
+                         so a lapsed permit is chased rather than hidden inside
+                         the Licensed count, which is what it did until now. -->
+                    <div class="stat-card">
+                        <div class="stat-number" id="expiredLicenseCount">-</div>
+                        <div class="stat-label">Permit Expired</div>
+                    </div>
                     <div class="stat-card">
                         <div class="stat-number" id="willingCount">-</div>
                         <div class="stat-label">Willing</div>
@@ -1437,7 +1447,9 @@
                     <label for="filterLicense">License Status</label>
                     <select id="filterLicense">
                         <option value="">All</option>
-                        <option value="has-license">Has License</option>
+                        <option value="has-license">Licensed, valid today</option>
+                        <option value="expired">Permit expired</option>
+                        <option value="undated">Permit, no expiry on file</option>
                         <option value="willing">Willing to Obtain</option>
                         <option value="no-license">No License</option>
                     </select>
@@ -2521,7 +2533,7 @@
             
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="13" class="loading">Please login to view data</td></tr>';
             
-            ['totalPeople', 'over21Count', 'hasLicenseCount', 'willingCount', 'shirtCount'].forEach(id => {
+            ['totalPeople', 'over21Count', 'hasLicenseCount', 'expiredLicenseCount', 'willingCount', 'shirtCount'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) element.textContent = '-';
             });
@@ -2938,14 +2950,61 @@
             return normalizeRelationship(person.relationship) === normalizeRelationship(filter);
         }
 
+        /**
+         * The permit state this dashboard acts on. R-13, ruled by Jason on
+         * 2026-09-08: "Licensed" means a permit that is valid today, not
+         * merely one on file.
+         *
+         * /account has told a volunteer since before this change that an
+         * expired permit means "you cannot be assigned to a stand that serves
+         * alcohol until it is renewed." Counting that person as Licensed here
+         * is how somebody gets staffed onto an alcohol stand that the other
+         * page has already refused them. The two pages disagreed; they no
+         * longer do.
+         *
+         * FOUR STATES, AND THE FOURTH IS THE ONE THAT MATTERS. A record with a
+         * permit and NO expiration date is 'undated', never 'expired'.
+         * Treating a missing date as expired would silently drop real permit
+         * holders out of the staffing pool, which is the same class of error
+         * as a money parser turning a readable entry into zero pay: when the
+         * record is incomplete, keep the person and flag the gap. /account
+         * already takes exactly this position, showing "Date missing" rather
+         * than "Expired", and there is now a filter for it here so those
+         * records can be chased.
+         *
+         * Dates go through toLocalDate from /js/lions-date.js, already loaded
+         * by this page. A bare YYYY-MM-DD is a calendar date, not an instant,
+         * and the Date constructor reads it as UTC, which is the previous day
+         * in Indiana.
+         */
+        function licenseState(person) {
+            const held = person.hasLicense === 'yes' || person.licenseNumber;
+            if (!held) { return 'none'; }
+
+            const expiry = window.toLocalDate ? window.toLocalDate(person.licenseExpiration) : null;
+            if (!expiry) { return 'undated'; }
+
+            const now = new Date();
+            const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            return expiry < midnight ? 'expired' : 'valid';
+        }
+
+        /** What the Licensed count means: valid today, or held with no date. */
+        function isLicensedToday(person) {
+            const state = licenseState(person);
+            return state === 'valid' || state === 'undated';
+        }
+
         function matchesLicense(person, filter) {
-            const hasLicense = person.hasLicense === 'yes' || person.licenseNumber;
-            const isWilling = person.willingToObtainLicense === 'yes' && !hasLicense;
+            const state = licenseState(person);
+            const isWilling = person.willingToObtainLicense === 'yes' && state === 'none';
 
             switch (filter) {
-                case 'has-license': return hasLicense;
-                case 'willing': return isWilling;
-                case 'no-license': return !hasLicense && !isWilling;
+                case 'has-license': return isLicensedToday(person);
+                case 'expired':     return state === 'expired';
+                case 'undated':     return state === 'undated';
+                case 'willing':     return isWilling;
+                case 'no-license':  return state === 'none' && !isWilling;
                 default: return true;
             }
         }
@@ -2981,7 +3040,7 @@
         // PERFORMANCE: Optimized statistics with caching
         function updateStats() {
             if (!currentUser) {
-                ['totalPeople', 'over21Count', 'hasLicenseCount', 'willingCount', 'shirtCount'].forEach(id => {
+                ['totalPeople', 'over21Count', 'hasLicenseCount', 'expiredLicenseCount', 'willingCount', 'shirtCount'].forEach(id => {
                     document.getElementById(id).textContent = '-';
                 });
                 return;
@@ -2999,7 +3058,8 @@
             const stats = {
                 totalPeople: allData.length,
                 over21Count: allData.filter(p => isOver21(p)).length,
-                hasLicenseCount: allData.filter(p => p.hasLicense === 'yes' || p.licenseNumber).length,
+                hasLicenseCount: allData.filter(p => isLicensedToday(p)).length,
+                expiredLicenseCount: allData.filter(p => licenseState(p) === 'expired').length,
                 willingCount: allData.filter(p => p.willingToObtainLicense === 'yes').length,
                 shirtCount: allData.filter(p => p.hasLOSShirt === true).length
             };
@@ -3959,14 +4019,15 @@
             const stats = {
                 total: customFilteredData.length,
                 over21: customFilteredData.filter(p => isOver21(p)).length,
-                licensed: customFilteredData.filter(p => p.hasLicense === 'yes' || p.licenseNumber).length,
+                licensed: customFilteredData.filter(p => isLicensedToday(p)).length,
+                expired: customFilteredData.filter(p => licenseState(p) === 'expired').length,
                 willing: customFilteredData.filter(p => p.willingToObtainLicense === 'yes').length,
                 hasShirt: customFilteredData.filter(p => p.hasLOSShirt).length
             };
 
             previewElement.innerHTML = `
                 <strong>${stats.total}</strong> people selected for export<br>
-                ${stats.over21} over 21, ${stats.licensed} licensed, ${stats.willing} willing, ${stats.hasShirt} have LOS shirts
+                ${stats.over21} over 21, ${stats.licensed} licensed, ${stats.expired} expired, ${stats.willing} willing, ${stats.hasShirt} have LOS shirts
             `;
         }
 

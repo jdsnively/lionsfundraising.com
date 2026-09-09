@@ -404,18 +404,21 @@
            photograph closes the page on the right. */
         .split-need .split-media { order: 2; }
 
-        /* The sideline photograph is a 320px wide original, the only game shot
-           on the marketing server small enough to belong on a landing page.
-           At 1024 and up it fills a half column and the upscale is modest. In
-           the stacked layout it would otherwise be asked to fill the whole
-           viewport, so it is capped and centered on the band instead of run
-           full bleed. Sharpness beats width here. */
-        @media (max-width: 1023px) {
-            .split-need .split-media img {
-                max-width: 560px;
-                margin: 0 auto;
-            }
-        }
+        /* THE 560px CAP THAT USED TO BE HERE IS GONE, 2026-09-08.
+
+           It read "the sideline photograph is a 320px wide original", and it
+           was true: that shot was the only game photograph on the marketing
+           server small enough to put on a landing page, so it was capped and
+           centered rather than run full bleed and blown up. The replacement is
+           a 1600px original on this property's own /media/, so the reason has
+           expired and the cap now does nothing but make this band disagree
+           with band 1.
+
+           The cap never bound on a phone. max-width: 560px on a 390px viewport
+           is not a constraint. It bound between 561px and 1023px, which is
+           iPad portrait at 834, and it is the one place on this page where the
+           mirrored band did not mirror. Both bands now run full bleed when
+           stacked. */
 
         /* ---- Numbered steps ------------------------------------------------
            The three how-cards carried nouns (the season, the shift, what you
@@ -610,32 +613,47 @@
 <body>
 <div class="page-bg">
 
-    <!-- Site header. Markup and navigation come from /js/lions-nav.js,
     <!-- Site header. Markup and navigation come from /js/lions-nav.js, the
          single definition on this property. It does NOT mirror $nav_items in
          /includes/header.php on lionssports.club: Jason ruled on 2026-09-05
          that the two navigations should differ, because that site is the front
          door and this is the application. See NAV_ITEMS for the ruling.
 
-         data-nav is empty because the landing page has no row of its own. The
-         'home-erp' row was dropped in the 2026-09-07 flatten, since the
-         wordmark already links to /. -->
-    <header id="site-header" data-nav=""></header>
+         The opening line of this comment was duplicated, verbatim, from some
+         earlier edit through 2026-09-08. HTML comments do not nest, so the
+         second delimiter was inert text inside the first comment and nothing
+         rendered wrong, which is why it survived a deploy. It still shipped to
+         every visitor twice.
+
+         data-nav is 'home' as of 2026-09-08. The landing page HAS a row of its
+         own again: the wordmark stopped pointing at / that day and now goes
+         back to lionssports.club, so the Home row in NAV_ITEMS is the only way
+         to the top of this property and it should mark itself current. -->
+    <header id="site-header" data-nav="home"></header>
 
     <main>
 
         <!-- =================================================================
-             CROSS-PROPERTY IMAGERY
+             IMAGERY. LOCAL, AND ABOUT THE WORK
 
-             Every photograph below is served from lionssports.club/media/.
-             This page is lionsfundraising.com. The two domains are the same
-             owner on the same hosting account, so the reference is stable
-             today, but it is still a dependency on a second origin: if the
-             marketing media folder is ever reorganized or moved behind a CDN,
-             these become local copies under /media/ on this property.
+             Both photographs are served from /media/ on THIS property. They
+             were hotlinked from lionssports.club/media/ until 2026-09-08, and
+             they were Banner.png and IMG_5465.JPG, the same two game shots the
+             marketing landing page leads with.
 
-             Nothing here is stock photography. Banner.png and IMG_5465.JPG are
-             Lions games.
+             Jason's ruling, 2026-09-08: that is the confusion. A volunteer who
+             clicks through from the club site arrives at a second page with
+             the same football photographs and cannot tell they have gone
+             anywhere. Two photographs of the concession stand say what this
+             page is for before a word is read, and they say it in a way the
+             marketing site has no reason to repeat.
+
+             The cross-origin dependency the previous comment warned about is
+             gone with them. Nothing on this page now loads from the other
+             domain.
+
+             Nothing here is stock photography. Both are Lions families working
+             the stand at Lucas Oil Stadium.
 
              The standalone brand panel that used to open this page is gone.
              It filled the first screen with the club lockup and pushed the
@@ -647,9 +665,10 @@
         <!-- ===== BAND 1: HERO ============================================ -->
         <section class="split">
             <div class="split-media">
-                <img src="https://lionssports.club/media/Banner.png"
-                     width="1428" height="687" fetchpriority="high"
-                     alt="A Lions receiver reaching for a pass under the lights">
+                <img src="/media/los-stand-crew.jpg"
+                     width="1600" height="1200" fetchpriority="high"
+                     alt="Two Lions volunteers behind the concession counter at
+                          Lucas Oil Stadium, baskets of food lined up on the warmer">
             </div>
             <div class="split-panel">
                 <div class="split-inner">
@@ -777,9 +796,11 @@
                 </div>
             </div>
             <div class="split-media">
-                <img src="https://lionssports.club/media/IMG_5465.JPG"
-                     width="320" height="213" loading="lazy"
-                     alt="A Lions coach talking with his players on the sideline before kickoff">
+                <img src="/media/los-serving-counter.jpg"
+                     width="1600" height="1200" loading="lazy"
+                     alt="The Lions concession counter at Lucas Oil Stadium, under a sign
+                          reading Operated by local non-profit, Lions Home School Football
+                          and Cheerleading">
             </div>
         </section>
 
