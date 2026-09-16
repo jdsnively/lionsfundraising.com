@@ -2306,6 +2306,75 @@
                 'fundraising@lionsfootballclub.com'
             ];
 
+        /* ------------------------------------------------------------------
+           The payment lifecycle.
+
+           Ready for Processing -> Processed -> Paid.
+
+           This existed as three CSS classes, a filter and an export column, and
+           NOTHING ANYWHERE WROTE IT. Every shift fell back to the default and
+           displayed "ready", so the page could not answer "has this been paid",
+           which is the one question that decides whether a settlement may be
+           reopened. On 2026-09-16 that question had to be answered from memory
+           before the season could be re-settled. Jason: "I don't want anything
+           decorative it should be functional."
+
+           PAID IS LOAD BEARING. The payouts page refuses to unlock a shift
+           marked paid, because unlocking clears the frozen settlement and a paid
+           settlement is the record of money that has already moved. That refusal
+           is the whole point of this control; without it the status is still
+           just a label.
+
+           Forward is the treasurer or an administrator. BACKWARD IS AN
+           ADMINISTRATOR ONLY, and it exists so that one wrong click is not
+           permanent. A status that could only ever go forward would be a trap.
+           ------------------------------------------------------------------ */
+        const PAYMENT_STATUSES = ['finalized', 'processed', 'paid'];
+        const PAYMENT_LABELS = {
+            finalized: 'Ready for Processing',
+            processed: 'Processed',
+            paid: 'Paid'
+        };
+
+        window.setPaymentStatus = async function(shiftId, to) {
+            if (!TREASURER_WRITE_ADDRESSES.includes(currentAddress())) {
+                showError('Only the treasurer and administrators can change payment status.');
+                return;
+            }
+            const shift = allShifts.find(s => s.id === shiftId);
+            if (!shift) { showError('Shift not found.'); return; }
+
+            const from = shift.paymentStatus || 'finalized';
+            if (!PAYMENT_STATUSES.includes(to)) { showError('Unknown payment status.'); return; }
+
+            const goingBack = PAYMENT_STATUSES.indexOf(to) < PAYMENT_STATUSES.indexOf(from);
+            if (goingBack && !TREASURER_ADMIN_ADDRESSES.includes(currentAddress())) {
+                showError('Only an administrator can move a shift back to ' + PAYMENT_LABELS[to] + '.');
+                return;
+            }
+
+            const name = shift.eventName || 'this shift';
+            const note = to === 'paid'
+                ? '\n\nMarking a shift PAID is what stops its settlement being reopened. '
+                  + 'The payouts page will refuse to unlock it.'
+                : (goingBack && from === 'paid'
+                    ? '\n\nThis makes the shift unlockable again. Only do it if the money did not actually go out.'
+                    : '');
+            if (!confirm('Move "' + name + '"\n\nfrom  ' + PAYMENT_LABELS[from]
+                + '\nto    ' + PAYMENT_LABELS[to] + note)) return;
+
+            try {
+                await updateDoc(doc(db, 'Work-Shifts', shiftId), {
+                    paymentStatus: to,
+                    paymentStatusAt: new Date().toISOString(),
+                    paymentStatusBy: currentUser.email
+                });
+                await loadData();
+            } catch (error) {
+                showError('Failed to change payment status. Please try again.');
+            }
+        };
+
         /** Lower-cased, trimmed address of the signed-in user, or an empty string. */
         function currentAddress() {
             return String((currentUser && currentUser.email) || '').toLowerCase().trim();
@@ -2553,6 +2622,15 @@
                                 ${shift.isLocked ? 'disabled' : ''}>
                             ${shift.isLocked ? 'Locked' : 'Lock Shift'}
                         </button>
+                        ${isTreasurerOrAdmin && paymentStatus !== 'paid' ? `
+                        <button class="btn btn-success" onclick="setPaymentStatus('${shift.id}', '${paymentStatus === 'finalized' ? 'processed' : 'paid'}')">
+                            Mark ${paymentStatus === 'finalized' ? 'Processed' : 'Paid'}
+                        </button>` : ''}
+                        ${isAdmin && paymentStatus !== 'finalized' ? `
+                        <button class="btn btn-secondary" onclick="setPaymentStatus('${shift.id}', '${paymentStatus === 'paid' ? 'processed' : 'finalized'}')"
+                                title="Administrator only. Undoes a wrong click.">
+                            Back to ${paymentStatus === 'paid' ? 'Processed' : 'Ready'}
+                        </button>` : ''}
                         <button class="btn btn-secondary" onclick="viewShiftDetails('${shift.id}')">View Details</button>
                     </div>
                 </div>

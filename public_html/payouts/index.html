@@ -3831,6 +3831,16 @@
                no longer exists to rebuild one with, so a separate-mode shift
                would refinalize as combined and restate money already paid. */
             const shift = allShifts.find(s => s.id === shiftId);
+            /* PAID IS THE LINE. Unlocking clears the frozen settlement, and a
+               paid settlement is the record of money that has already left. The
+               treasurer marks this on their own page; an administrator can move
+               it back there if the money did not in fact go out. */
+            if (shift && shift.paymentStatus === 'paid') {
+                showError('"' + eventName + '" is marked PAID by the treasurer. Unlocking would clear '
+                    + 'the settlement that records what was actually paid. If the money did not go out, '
+                    + 'an administrator can move it back on the treasurer page first.');
+                return;
+            }
             if (shift && shift.separateStandsMode === true) {
                 showError('"' + eventName + '" was calculated in separate stand mode, which was '
                     + 'retired. Unlocking would clear its settlement and recalculate it as a '
