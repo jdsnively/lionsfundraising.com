@@ -53,12 +53,20 @@
  * THE LABEL CHANGES WITH THE STATE, AND THAT IS THE POINT. The pill read
  * "Admin" in every state for most of 2026-09-08, which put the only sign in
  * door on the property behind a word aimed at the three people who are not
- * the audience. Event signup is the Evite and needs no account, but /account
- * is where a volunteer reads their running earnings total and manages their
- * alcohol permit, and index.html promises exactly that: "You can follow the
- * running total from your account at any time." A parent looking for that
- * total does not click Admin. Signed in, the same slot says Admin, because by
- * then the person holding it is an administrator.
+ * the audience. Event signup is the Evite and needs no account, so the one
+ * reason a volunteer signs in at all is /account, where they manage their
+ * alcohol permit. A parent with a permit to renew does not click Admin.
+ * Signed in, the same slot says Admin, because by then the person holding it
+ * is an administrator.
+ *
+ * THE ORIGINAL VERSION OF THIS COMMENT GAVE A SECOND REASON AND IT WAS FALSE.
+ * It said /account is where a volunteer reads their running earnings total,
+ * and quoted index.html promising "You can follow the running total from your
+ * account at any time." /account has never had an earnings section, and
+ * /earnings has always rendered a hardcoded $0.00 placeholder. That sentence
+ * was deleted from index.html on 2026-09-16 as R-57. The pill ruling stands
+ * on the permit alone, which is real. Do not restore the earnings reason here
+ * unless the feature ships; see section P of the open items register.
  *
  * The third state is not an oversight and not a shortcut. /login redirects an
  * already authenticated visitor to sessionStorage.lionsAuthRedirect or, when
