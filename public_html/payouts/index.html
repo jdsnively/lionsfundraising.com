@@ -2090,7 +2090,7 @@
            every amount is recomputed at read time, so an export is only
            interpretable if it says which version of the formula produced it.
            Bump this in the same commit as any change to the arithmetic. */
-        const FORMULA_VERSION = '2026-09-02-pre-correction';
+        const FORMULA_VERSION = '2026-09-16-shirt-split';
 
         /* Accepts 24 hour ("19:30"), 12 hour with a meridiem ("7:30 PM"),
            four digit ("1930"), three digit ("930") and decimal hours
@@ -2461,7 +2461,7 @@
                 result.lionsPercent = 0;
                 result.coachesPercent = 0;
                 result.coordinatorPercent = 0;
-                result.availableForWorkers = sodexoAmount - result.lionsShirtCosts;
+                result.availableForWorkers = sodexoAmount;
                 result.hourlyRate = result.availableForWorkers / result.totalHours;
             } else {
                 result.lowRateRuleApplied = false;
@@ -2507,7 +2507,7 @@
             result.roundingAmount = Math.round((totalTheoreticalAmount - totalTruncatedAmount) * 100) / 100;
             
             if (result.lowRateRuleApplied) {
-                result.lionsFinalTotal = result.roundingAmount;
+                result.lionsFinalTotal = result.roundingAmount - result.lionsShirtCosts;
                 result.coordinatorAdjustment = 0;
             } else {
                 const preliminaryLionsTotal = result.lionsPercent + result.roundingAmount - result.lionsShirtCosts;

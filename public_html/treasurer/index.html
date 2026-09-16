@@ -1738,7 +1738,7 @@
                 result.coordinatorPercent = 0;
                 
                 // Workers get everything minus Lions shirt costs
-                result.availableForWorkers = sodexoAmount - result.lionsShirtCosts;
+                result.availableForWorkers = sodexoAmount;
                 result.hourlyRate = result.availableForWorkers / result.totalHours;
             } else {
                 // STANDARD CALCULATION - Apply org deductions
@@ -1786,7 +1786,7 @@
             // Calculate Lions Final Total
             if (result.lowRateRuleApplied) {
                 // When low rate rule applies: Lions only gets rounding amount
-                result.lionsFinalTotal = result.roundingAmount;
+                result.lionsFinalTotal = result.roundingAmount - result.lionsShirtCosts;
                 result.coordinatorAdjustment = 0;
             } else {
                 const preliminaryLionsTotal = result.lionsPercent + result.roundingAmount - result.lionsShirtCosts;
@@ -1858,7 +1858,7 @@
                     result.lionsPercent = 0;
                     result.coachesPercent = 0;
                     result.coordinatorPercent = 0;
-                    result.availableForWorkers = totalSodexo - result.lionsShirtCosts;
+                    result.availableForWorkers = totalSodexo;
                     result.hourlyRate = result.availableForWorkers / result.totalHours;
                 } else {
                     // Standard calculation
@@ -1995,7 +1995,7 @@
             // Final organizational distribution (same for both modes)
             if (result.lowRateRuleApplied) {
                 // When low rate rule applies: Lions only gets rounding amount
-                result.lionsFinalTotal = result.roundingAmount;
+                result.lionsFinalTotal = result.roundingAmount - result.lionsShirtCosts;
                 result.coordinatorAdjustment = 0;
             } else {
                 const preliminaryLionsTotal = result.lionsPercent + result.roundingAmount - result.lionsShirtCosts;
@@ -2494,7 +2494,7 @@
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Worker Earnings</div>
-                                <div class="detail-value">$${calculations.totalWorkerPayouts.toFixed(2)}</div>
+                                <div class="detail-value">$${calculations.workerPayouts.reduce((s, w) => s + w.netAmount, 0).toFixed(2)}</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Lions Revenue</div>
