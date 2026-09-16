@@ -1687,6 +1687,7 @@
                 <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
                 <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payout Record</button>
                 <button class="btn btn-warning" id="backfillFreezeBtn" hidden>Freeze Historical Shifts</button>
+                <button class="btn btn-warning" id="resettleSeasonBtn">Re-settle This Season</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -4176,6 +4177,117 @@
             });
         }
 
+        /* ------------------------------------------------------------------
+           ONE TIME: re-settle the current season.
+
+           Five shifts of 2026-2027 were finalized under the arithmetic that
+           took the club's half of the shirt out of the workers' pool, and one
+           volunteer, Ethan Esparza, was charged on 2026-08-22 and again on
+           2026-08-29 because nothing recorded the first charge. Jason confirmed
+           on 2026-09-16 that NOTHING HAS BEEN PAID OUT, and ruled: fix this
+           season, from DCI Day 1 on, and leave everything before it alone.
+
+           THIS IS A BUTTON ON PURPOSE. The routine credit reconciles silently on
+           every load, because it only ever records a fact that is already
+           settled. This rewrites settlements, so it is explicit, confirmed, and
+           refuses to run twice by having nothing left to do.
+
+           IT REFUSES IF ANYTHING IS LOCKED. Every prior-season shift is locked
+           and every current-season one is not, so the lock is the line between
+           money that has moved and money that has not. A locked shift is not
+           this function's to touch at any price.
+
+           WHO PAYS IS DERIVED, NOT ASSUMED. A volunteer needed a shirt this
+           season exactly when the existing settlements charged them for one.
+           That determination is kept; only the duplicates are dropped, so the
+           charge lands on their FIRST shift of the season and nowhere else.
+           ------------------------------------------------------------------ */
+        async function resettleCurrentSeason() {
+            if (!db) { showError('Database connection not available'); return; }
+
+            const season = currentSeasonKey();
+            const target = allShifts
+                .filter(s => s.status === 'finalized' && seasonOf(s.eventDate) === season)
+                .sort((a, b) => String(a.eventDate || '').localeCompare(String(b.eventDate || '')));
+
+            if (target.length === 0) { alert('No finalized shifts in ' + season + '.'); return; }
+            const locked = target.filter(s => s.isLocked);
+            if (locked.length) {
+                showError('Refused. ' + locked.length + ' shift(s) in ' + season + ' are locked, which means '
+                    + 'the treasurer has taken them for processing. Unlock is not the answer; ask first.');
+                return;
+            }
+
+            // Anyone the current settlements charged needed a shirt this season.
+            const needed = new Set();
+            target.forEach(s => payoutsFor(s).workerPayouts
+                .filter(w => w.shirtDeduction > 0)
+                .forEach(w => needed.add(String(w.name || '').trim())));
+
+            const seen = new Set();
+            const plan = [];
+            let workerDelta = 0, dropped = 0;
+
+            target.forEach(shift => {
+                const before = payoutsFor(shift);
+                const workers = (shift.workers || []).map(w => {
+                    const name = String(w.name || '').trim();
+                    const charge = needed.has(name) && !seen.has(name);
+                    if (charge) seen.add(name);
+                    return Object.assign({}, w, { finalizedShirtDeduction: charge ? 5 : 0 });
+                });
+                const total = (shift.primarySodexoPayout || shift.sodexoPayout || 0)
+                            + (shift.secondarySodexoPayout || 0);
+                const after = calculatePayouts(total, workers, shift);
+
+                const beforeNet = before.workerPayouts.reduce((s, w) => s + w.netAmount, 0);
+                const afterNet  = after.workerPayouts.reduce((s, w) => s + w.netAmount, 0);
+                workerDelta += afterNet - beforeNet;
+                dropped += (before.shirtsNeeded || 0) - (after.shirtsNeeded || 0);
+
+                plan.push({ shift, workers, after });
+            });
+
+            if (!confirm('Re-settle ' + plan.length + ' finalized shift(s) of ' + season + '?\n\n'
+                + 'Workers gain ' + formatCurrency(workerDelta) + ' between them, because the club\'s half of '
+                + 'the shirt no longer comes out of their pool.\n'
+                + dropped + ' duplicate shirt charge(s) removed; each volunteer pays once, on their first '
+                + 'shift of the season.\n\n'
+                + 'Nothing has been paid out, so this corrects the settlement rather than restating a payment. '
+                + 'Formula version: ' + FORMULA_VERSION)) return;
+
+            try {
+                const now = new Date().toISOString();
+                const batch = writeBatch(db);
+                plan.forEach(({ shift, workers, after }) => {
+                    batch.update(doc(db, 'Work-Shifts', shift.id), {
+                        workers: workers,
+                        lowRateRuleApplied: after.lowRateRuleApplied,
+                        finalizedCalc: freezeCalculations(after),
+                        resettledAt: now,
+                        resettledBy: currentUser.email
+                    });
+                });
+                await batch.commit();
+
+                // The roster must agree with the settlements it just produced.
+                const ids = new Set();
+                [...seen].forEach(name => {
+                    const found = lookupWorker(name);
+                    if (found.id) ids.add(found.id);
+                });
+                await writeShirtFlags([...ids]);
+
+                await loadData();
+                alert('Re-settled ' + plan.length + ' shift(s).\n\n'
+                    + 'Export the payout record again and compare it to the one taken before this ran. '
+                    + 'Every worker should be up, six shirts should be charged rather than seven, and no '
+                    + 'shift outside ' + season + ' should differ by a cent.');
+            } catch (error) {
+                showError('Re-settlement failed. Nothing partial is written: the whole batch either lands or it does not.');
+            }
+        }
+
         const BACKFILL_REQUIRES_VERSION = '2026-09-02-pre-correction';
 
         function shiftsNeedingFreeze() {
@@ -4399,6 +4511,7 @@
             document.getElementById('refreshBtn')?.addEventListener('click', loadData);
             document.getElementById('exportPayoutsBtn')?.addEventListener('click', exportPayouts);
             document.getElementById('backfillFreezeBtn')?.addEventListener('click', backfillFrozenCalculations);
+            document.getElementById('resettleSeasonBtn')?.addEventListener('click', resettleCurrentSeason);
             document.getElementById('finalizeAllBtn')?.addEventListener('click', finalizeAllDrafts);
             document.getElementById('workerTotalsBtn')?.addEventListener('click', showWorkerTotals);
             document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
