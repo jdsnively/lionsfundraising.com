@@ -1980,13 +1980,17 @@
                 
                 // Load from external URL with cache-busting
                 const cacheBuster = new Date().getTime();
-                const response = await fetch(`https://lionsfundraising.com/relationship-config.js?v=${cacheBuster}&_=${Math.random()}`, {
-                    cache: 'no-cache',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
+                /* Same-origin relative path, deliberately. The site answers on both
+                   the apex and the www host and neither redirects to the other, so an
+                   absolute apex URL was cross-origin for every visitor who arrived on
+                   www. The response carries no Access-Control-Allow-Origin, so the
+                   fetch failed and the page fell back to the embedded copy behind the
+                   red configuration banner. The Cache-Control and Pragma request
+                   headers are gone with it: they made this a preflighted request for
+                   no benefit that cache:'no-cache' and the cache buster do not already
+                   give. */
+                const response = await fetch(`/relationship-config.js?v=${cacheBuster}&_=${Math.random()}`, {
+                    cache: 'no-cache'
                 });
                 
                 if (!response.ok) {
