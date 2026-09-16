@@ -1687,6 +1687,7 @@
                 <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
                 <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payout Record</button>
                 <button class="btn btn-warning" id="backfillFreezeBtn" hidden>Freeze Historical Shifts</button>
+                <button class="btn btn-warning" id="shirtFlagBackfillBtn" hidden>Credit Paid Shirts</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -2193,7 +2194,7 @@
                 u.name?.toLowerCase().includes(name.toLowerCase().trim()) ||
                 name.toLowerCase().trim().includes(u.name?.toLowerCase())
             );
-            return { found: !!user, hasLOSShirt: user?.hasLOSShirt === true, email: user?.email || null };
+            return { found: !!user, hasLOSShirt: user?.hasLOSShirt === true, email: user?.email || null, id: user?.id || null };
         }
 
         function formatCurrency(amount) {
@@ -3011,6 +3012,7 @@
             if (elements.avgNetPerWorker) elements.avgNetPerWorker.textContent = formatCurrency(stats.avgNetPerWorker);
 
             updateBackfillVisibility();
+            updateShirtFlagVisibility();
         }
 
         window.viewShiftDetails = function(shiftId) {
@@ -3709,6 +3711,13 @@
             try {
                 const shiftId = editingShiftId || 'shift_' + Date.now();
                 await setDoc(doc(db, 'Work-Shifts', shiftId), shiftData);
+                /* M-12. The shift is settled, so the volunteers it charged now
+                   hold a shirt. After the write, not before: a failed save must
+                   not credit a shirt nobody paid for. */
+                if (andFinalize) {
+                    await markShirtsProvided(
+                        calculations.workerPayouts.filter(w => w.shirtDeduction > 0).map(w => w.name));
+                }
                 await loadData();
                 cancelShiftForm();
             } catch (error) {
@@ -3853,6 +3862,7 @@
             try {
                 const batch = writeBatch(db);
                 const now = new Date().toISOString();
+                const chargedNames = [];
                 draftShifts.forEach(shift => {
                     const docRef = doc(db, 'Work-Shifts', shift.id);
                     const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -3863,9 +3873,13 @@
                         const workerCalc = matchWorkerRow(calculations.workerPayouts, worker.name, i);
                         return { ...worker, finalizedShirtDeduction: workerCalc ? workerCalc.shirtDeduction : 0 };
                     });
+                    calculations.workerPayouts.filter(w => w.shirtDeduction > 0).forEach(w => chargedNames.push(w.name));
                     batch.update(docRef, { status: 'finalized', workers: workersWithSnapshot, lowRateRuleApplied: calculations.lowRateRuleApplied, finalizedAt: now, finalizedBy: currentUser.email, finalizedCalc: freezeCalculations(calculations) });
                 });
                 await batch.commit();
+                /* M-12, the second finalize path. Both have to credit or the
+                   two routes into the same state disagree. */
+                await markShirtsProvided(chargedNames);
                 await loadData();
             } catch (error) { showError('Failed to finalize all drafts. Please try again.'); }
         }
@@ -3967,6 +3981,112 @@
            interlock below enforces. Once FORMULA_VERSION is bumped for the
            correction, this refuses to run and can be deleted.
            ------------------------------------------------------------------ */
+        /* ------------------------------------------------------------------
+           M-12. The volunteer's half of the shirt is charged ONCE, EVER.
+
+           A shirt costs ten dollars: five from the volunteer on their first
+           worked shift, five from the club. Before this existed, finalizing a
+           shift took the volunteer's five and then told nobody. The roster flag
+           that decides whether to charge lives on the volunteer's own record in
+           Lions-Fundraising-Users, and that collection was opened for reading
+           on this page and never once written to. So the same person was
+           charged again on their next shift, and again after that. Josiah
+           Holdcroft was charged on 2026-08-29 and again on the 09-09 draft,
+           which is how it was finally noticed.
+
+           ONE DIRECTION ONLY, and that is the canon. Finalizing sets the flag.
+           Nothing here ever clears it. Unlocking a shift does NOT clear it,
+           because the shirt was ordered when the shift settled and unlocking to
+           correct somebody's hours does not un-order it. Clearing on unlock
+           would risk charging a volunteer twice for one shirt, which is the
+           exact defect this closes, and it could also silently undo one of the
+           52 flags an administrator set by hand. An administrator who genuinely
+           needs to re-charge has the checkbox on the dashboard.
+
+           firestore.rules:76 grants read, write and delete on this collection
+           to isSystemAdmin(), which is the same two addresses PAYOUTS_ADMIN_ADDRESSES
+           gates this page on. No rules change is needed and X-53 stays unruled.
+           ------------------------------------------------------------------ */
+
+        /**
+         * Sets hasLOSShirt on the roster records of volunteers who were charged.
+         * Names are resolved through lookupWorker so the matching rule has one
+         * home; see M-25 about that rule being a two-way substring match.
+         * Returns the number of records written.
+         */
+        async function markShirtsProvided(names) {
+            if (!db || !names || names.length === 0) return 0;
+
+            const ids = new Set();
+            for (const name of names) {
+                const found = lookupWorker(name);
+                // Already flagged, or no roster record to flag. Writing true
+                // over true is a wasted write, not a correction.
+                if (found.id && !found.hasLOSShirt) ids.add(found.id);
+            }
+            if (ids.size === 0) return 0;
+
+            const list = [...ids];
+            for (let i = 0; i < list.length; i += 400) {
+                const batch = writeBatch(db);
+                list.slice(i, i + 400).forEach(id =>
+                    batch.update(doc(db, 'Lions-Fundraising-Users', id), { hasLOSShirt: true }));
+                await batch.commit();
+            }
+            return list.length;
+        }
+
+        /** Every volunteer name a FINALIZED shift has charged a shirt to. */
+        function shirtChargedNames() {
+            const names = new Set();
+            allShifts.filter(s => s.status === 'finalized').forEach(shift => {
+                // payoutsFor is the single read path: frozen when frozen, and
+                // recomputed only when there is no settlement to read.
+                payoutsFor(shift).workerPayouts
+                    .filter(w => w.shirtDeduction > 0)
+                    .forEach(w => names.add(w.name));
+            });
+            return [...names];
+        }
+
+        /* The shirts already paid for before the writeback existed. Without
+           this, everyone charged historically stays invisible and is charged a
+           second time on their next shift, which is the symptom rather than the
+           cause being fixed. */
+        function volunteersNeedingShirtFlag() {
+            return shirtChargedNames().filter(n => {
+                const found = lookupWorker(n);
+                return found.id && !found.hasLOSShirt;
+            });
+        }
+
+        function updateShirtFlagVisibility() {
+            const btn = document.getElementById('shirtFlagBackfillBtn');
+            if (!btn) return;
+            const pending = volunteersNeedingShirtFlag().length;
+            btn.hidden = pending === 0;
+            btn.textContent = 'Credit ' + pending + ' Paid Shirt' + (pending === 1 ? '' : 's');
+        }
+
+        async function backfillShirtFlags() {
+            if (!db) { showError('Database connection not available'); return; }
+            const pending = volunteersNeedingShirtFlag();
+            if (pending.length === 0) { alert('Every volunteer who has paid for a shirt is already credited.'); return; }
+
+            if (!confirm('Credit ' + pending.length + ' volunteer(s) with the shirt they have already paid for?\n\n'
+                + pending.slice(0, 12).join(', ') + (pending.length > 12 ? ', and ' + (pending.length - 12) + ' more' : '')
+                + '\n\nThis changes no past settlement and no amount anyone was paid. It stops them '
+                + 'being charged a second time on their next shift.')) return;
+
+            try {
+                const written = await markShirtsProvided(pending);
+                await loadData();
+                alert('Credited ' + written + ' volunteer(s).');
+            } catch (error) {
+                showError('Failed to credit paid shirts. Please try again.');
+            }
+        }
+
         const BACKFILL_REQUIRES_VERSION = '2026-09-02-pre-correction';
 
         function shiftsNeedingFreeze() {
@@ -4190,6 +4310,7 @@
             document.getElementById('refreshBtn')?.addEventListener('click', loadData);
             document.getElementById('exportPayoutsBtn')?.addEventListener('click', exportPayouts);
             document.getElementById('backfillFreezeBtn')?.addEventListener('click', backfillFrozenCalculations);
+            document.getElementById('shirtFlagBackfillBtn')?.addEventListener('click', backfillShirtFlags);
             document.getElementById('finalizeAllBtn')?.addEventListener('click', finalizeAllDrafts);
             document.getElementById('workerTotalsBtn')?.addEventListener('click', showWorkerTotals);
             document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
