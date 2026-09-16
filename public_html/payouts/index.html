@@ -2090,7 +2090,7 @@
            every amount is recomputed at read time, so an export is only
            interpretable if it says which version of the formula produced it.
            Bump this in the same commit as any change to the arithmetic. */
-        const FORMULA_VERSION = '2026-09-16-shirt-split';
+        const FORMULA_VERSION = '2026-09-16-one-shirt-per-person';
 
         /* Accepts 24 hour ("19:30"), 12 hour with a meridiem ("7:30 PM"),
            four digit ("1930"), three digit ("930") and decimal hours
@@ -2441,15 +2441,40 @@
                 return formatCalcResult(result);
             }
 
-            let shirtsNeededCount = 0;
-            workers.forEach(worker => {
-                if (worker.finalizedShirtDeduction !== undefined) {
-                    if (worker.finalizedShirtDeduction > 0) shirtsNeededCount++;
-                } else {
-                    const lookup = lookupWorker(worker.name);
-                    if (!lookup.hasLOSShirt) shirtsNeededCount++;
-                }
-            });
+            /* ONE SHIRT PER PERSON PER SHIFT. M-5, specified by Jason
+               2026-09-16: "1st time you work $5 and then never again."
+
+               The decision is made ONCE here, per row, and both the shirt count
+               and the payout map below read this array. They used to decide
+               independently off lookupWorker, which meant they could only agree
+               by coincidence, and neither of them knew that a person can appear
+               on two rows of the same shift. collectWorkersFromForm does not
+               dedupe, and matchWorkerRow takes an index precisely because names
+               repeat, so two rows for one volunteer is a shape the data already
+               allows.
+
+               A frozen row is historical truth and passes through untouched. A
+               live row is charged only if the volunteer holds no shirt AND no
+               earlier row of this same shift already charged them. Identity is
+               the roster record when there is one, so two spellings that
+               resolve to the same person count once, and falls back to the
+               trimmed name when there is no record to resolve to. */
+            const shirtChargedRows = [];
+            {
+                const seen = new Set();
+                workers.forEach((worker, i) => {
+                    if (worker.finalizedShirtDeduction !== undefined) {
+                        shirtChargedRows[i] = worker.finalizedShirtDeduction > 0;
+                        return;
+                    }
+                    const rowLookup = lookupWorker(worker.name);
+                    const person = rowLookup.id || (worker.name || '').toLowerCase().trim();
+                    const charge = !rowLookup.hasLOSShirt && !seen.has(person);
+                    if (charge) seen.add(person);
+                    shirtChargedRows[i] = charge;
+                });
+            }
+            const shirtsNeededCount = shirtChargedRows.filter(Boolean).length;
             result.shirtsNeeded = shirtsNeededCount;
             result.lionsShirtCosts = shirtsNeededCount * 5;
 
@@ -2475,20 +2500,22 @@
             let totalTheoreticalAmount = 0;
             let totalTruncatedAmount = 0;
             
-            result.workerPayouts = workers.map(worker => {
+            result.workerPayouts = workers.map((worker, i) => {
                 const hours = calculateHours(worker.startTime, worker.endTime);
                 const lookup = lookupWorker(worker.name);
                 const theoreticalGrossAmount = hours * result.hourlyRate;
                 const truncatedGrossAmount = Math.floor(theoreticalGrossAmount * 100) / 100;
                 const shirtDeduction = worker.finalizedShirtDeduction !== undefined
                 ? worker.finalizedShirtDeduction
-                : (lookup.hasLOSShirt ? 0 : 5);
+                : (shirtChargedRows[i] ? 5 : 0);
                 const netAmount = Math.max(0, truncatedGrossAmount - shirtDeduction);
                 
                 totalTheoreticalAmount += theoreticalGrossAmount;
                 totalTruncatedAmount += truncatedGrossAmount;
                 result.totalWorkerPayouts += truncatedGrossAmount;
-                if (!lookup.hasLOSShirt) result.workerShirtContributions += 5;
+                /* What the volunteer actually paid, rather than a second guess
+                   at whether they should have. These two can no longer differ. */
+                result.workerShirtContributions += shirtDeduction;
 
                 return {
                     name: worker.name, stand: worker.stand || 'N/A', hours: hours,
@@ -3863,7 +3890,11 @@
             try {
                 const batch = writeBatch(db);
                 const now = new Date().toISOString();
-                const chargedNames = [];
+                /* ONE SHIRT PER PERSON ACROSS THE WHOLE BATCH. Every draft used
+                   to be computed before anything was credited, so a volunteer on
+                   two drafts finalized together was charged on both. Crediting in
+                   memory as we go means the next draft sees it. */
+                const chargedIds = new Set();
                 draftShifts.forEach(shift => {
                     const docRef = doc(db, 'Work-Shifts', shift.id);
                     const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -3874,13 +3905,19 @@
                         const workerCalc = matchWorkerRow(calculations.workerPayouts, worker.name, i);
                         return { ...worker, finalizedShirtDeduction: workerCalc ? workerCalc.shirtDeduction : 0 };
                     });
-                    calculations.workerPayouts.filter(w => w.shirtDeduction > 0).forEach(w => chargedNames.push(w.name));
+                    calculations.workerPayouts.filter(w => w.shirtDeduction > 0).forEach(w => {
+                        const found = lookupWorker(w.name);
+                        if (!found.id) return;
+                        chargedIds.add(found.id);
+                        const user = dashboardUsers.find(u => u.id === found.id);
+                        if (user) user.hasLOSShirt = true;
+                    });
                     batch.update(docRef, { status: 'finalized', workers: workersWithSnapshot, lowRateRuleApplied: calculations.lowRateRuleApplied, finalizedAt: now, finalizedBy: currentUser.email, finalizedCalc: freezeCalculations(calculations) });
                 });
                 await batch.commit();
                 /* M-12, the second finalize path. Both have to credit or the
                    two routes into the same state disagree. */
-                await markShirtsProvided(chargedNames);
+                await writeShirtFlags([...chargedIds]);
                 await loadData();
             } catch (error) { showError('Failed to finalize all drafts. Please try again.'); }
         }
@@ -4023,8 +4060,7 @@
          * Returns the number of records written.
          */
         async function markShirtsProvided(names) {
-            if (!db || !names || names.length === 0) return 0;
-
+            if (!names || names.length === 0) return 0;
             const ids = new Set();
             for (const name of names) {
                 const found = lookupWorker(name);
@@ -4032,9 +4068,20 @@
                 // over true is a wasted write, not a correction.
                 if (found.id && !found.hasLOSShirt) ids.add(found.id);
             }
-            if (ids.size === 0) return 0;
+            return writeShirtFlags([...ids]);
+        }
 
-            const list = [...ids];
+        /**
+         * Writes the flag for roster records already resolved to ids.
+         *
+         * Separate from markShirtsProvided because finalizeAllDrafts has to
+         * credit each volunteer in memory as it goes, so that the next draft in
+         * the same batch sees it, which means by the time it writes there is
+         * nothing left for a name-based lookup to find.
+         */
+        async function writeShirtFlags(ids) {
+            if (!db || !ids || ids.length === 0) return 0;
+            const list = [...new Set(ids)];
             for (let i = 0; i < list.length; i += 400) {
                 const batch = writeBatch(db);
                 list.slice(i, i + 400).forEach(id =>

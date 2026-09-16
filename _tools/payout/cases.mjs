@@ -158,6 +158,25 @@ export const CASES = [
             { name: FIVE[2], startTime: '17:00', endTime: '21:00' }
         ],
         roster: THREE.map(NO_SHIRT)
+    },
+    {
+        id: 'one-shirt-per-person-two-rows',
+        why: 'M-5, specified by Jason 2026-09-16: "1st time you work $5 and then ' +
+             'never again." Ada works two stands on one shift and so appears on TWO ' +
+             'rows. collectWorkersFromForm does not dedupe and matchWorkerRow takes ' +
+             'an index precisely because names repeat, so this is a shape the data ' +
+             'already allows. Before the fix she was charged $5 on each row and the ' +
+             'shift counted two shirts for one person. Expect shirtsNeeded 2, not 3: ' +
+             'Ada once plus Ben. S = $1200 keeps this on the standard branch so the ' +
+             'shirt count is isolated from the low rate waiver.',
+        sodexoAmount: 1200,
+        workers: [
+            { name: FIVE[0], startTime: '17:00', endTime: '21:00', stand: 'Main' },
+            { name: FIVE[0], startTime: '17:00', endTime: '21:00', stand: 'North 118' },
+            { name: FIVE[1], startTime: '17:00', endTime: '21:00', stand: 'Main' },
+            { name: FIVE[2], startTime: '17:00', endTime: '21:00', stand: 'Main' }
+        ],
+        roster: [NO_SHIRT(FIVE[0]), NO_SHIRT(FIVE[1]), HAS_SHIRT(FIVE[2])]
     }
 ];
 

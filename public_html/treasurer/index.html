@@ -1710,16 +1710,44 @@
                 return formatCalcResult(result);
             }
 
-            // Count shirts needed for Lions shirt costs calculation
-            let shirtsNeededCount = 0;
-            workers.forEach(worker => {
-                const lookup = lookupWorker(worker.name);
-                if (!lookup.hasLOSShirt) {
-                    shirtsNeededCount++;
-                }
-            });
+            /* ONE SHIRT PER PERSON PER SHIFT. M-5, specified by Jason
+               2026-09-16: "1st time you work $5 and then never again."
+
+               The decision is made ONCE here, per row, and both the shirt count
+               and the payout map below read this array. They used to decide
+               independently off lookupWorker, which meant they could only agree
+               by coincidence, and neither of them knew that a person can appear
+               on two rows of the same shift. collectWorkersFromForm does not
+               dedupe, and matchWorkerRow takes an index precisely because names
+               repeat, so two rows for one volunteer is a shape the data already
+               allows.
+
+               A frozen row is historical truth and passes through untouched. A
+               live row is charged only if the volunteer holds no shirt AND no
+               earlier row of this same shift already charged them. Identity is
+               the roster record when there is one, so two spellings that
+               resolve to the same person count once, and falls back to the
+               trimmed name when there is no record to resolve to. */
+            const shirtChargedRows = [];
+            {
+                const seen = new Set();
+                workers.forEach((worker, i) => {
+                    if (worker.finalizedShirtDeduction !== undefined) {
+                        shirtChargedRows[i] = worker.finalizedShirtDeduction > 0;
+                        return;
+                    }
+                    const rowLookup = lookupWorker(worker.name);
+                    const person = rowLookup.id || (worker.name || '').toLowerCase().trim();
+                    const charge = !rowLookup.hasLOSShirt && !seen.has(person);
+                    if (charge) seen.add(person);
+                    shirtChargedRows[i] = charge;
+                });
+            }
+            const shirtsNeededCount = shirtChargedRows.filter(Boolean).length;
             result.shirtsNeeded = shirtsNeededCount;
-            result.lionsShirtCosts = shirtsNeededCount * 5; // $5 Lions portion per shirt
+            result.lionsShirtCosts = shirtsNeededCount * 5;
+            /* This copy also now honours a frozen deduction, which it never did.
+               The payouts copy always has, so the two disagreed by construction. */
 
             // LOW RATE RULE CHECK
             // Check what hourly rate WOULD BE after 5% org deductions
@@ -1753,21 +1781,19 @@
 
             let totalTheoreticalAmount = 0;
             let totalTruncatedAmount = 0;
-            result.workerPayouts = workers.map(worker => {
+            result.workerPayouts = workers.map((worker, i) => {
                 const hours = calculateHours(worker.startTime, worker.endTime);
                 const lookup = lookupWorker(worker.name);
                 const theoreticalGrossAmount = hours * result.hourlyRate;
                 const truncatedGrossAmount = Math.floor(theoreticalGrossAmount * 100) / 100;
                 const shirtDeduction = worker.finalizedShirtDeduction !== undefined
                 ? worker.finalizedShirtDeduction
-                : (lookup.hasLOSShirt ? 0 : 5);
+                : (shirtChargedRows[i] ? 5 : 0);
                 const netAmount = Math.max(0, truncatedGrossAmount - shirtDeduction);
                 totalTheoreticalAmount += theoreticalGrossAmount;
                 totalTruncatedAmount += truncatedGrossAmount;
                 result.totalWorkerPayouts += truncatedGrossAmount;
-                if (!lookup.hasLOSShirt) {
-                    result.workerShirtContributions += 5;
-                }
+                result.workerShirtContributions += shirtDeduction;
                 return {
                     name: worker.name, stand: worker.stand || 'N/A', hours: hours,
                     grossAmount: truncatedGrossAmount, shirtDeduction: shirtDeduction,
