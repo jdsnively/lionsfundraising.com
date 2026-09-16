@@ -349,8 +349,8 @@
         }
 
         .btn-success:hover {
-            background: #059669;
-            border-color: #059669;
+            background: #047857;
+            border-color: #047857;
         }
 
         .btn-warning {
@@ -372,14 +372,18 @@
            The disabled state below stays gray on purpose. Once a shift is
            locked the red border and banner already say so, and a second red
            element that cannot be clicked is noise. */
+        /* The brand error red, the same token and the same hover the payouts
+           page uses for its destructive actions. This was #ed4337, which is a
+           lighter, oranger red that appears nowhere else in the system, so the
+           two money pages disagreed about what "stop" looks like. */
         .btn-lock {
-            background: #ed4337;
-            border-color: #ed4337;
+            background: var(--error);
+            border-color: var(--error);
         }
 
         .btn-lock:hover {
-            background: #c9352b;
-            border-color: #c9352b;
+            background: #b91c1c;
+            border-color: #b91c1c;
         }
 
         .btn-lock:disabled {
@@ -394,7 +398,7 @@
         .btn[hidden] { display: none; }
 
         .shift-card.locked {
-            border: 3px solid #ed4337;
+            border: 3px solid var(--error);
             box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.2);
         }
 
@@ -404,7 +408,7 @@
             top: -1px;
             left: -1px;
             right: -1px;
-            background: #ed4337;
+            background: var(--error);
             color: white;
             padding: var(--space-1) var(--space-2);
             font-size: 0.75rem;
@@ -3179,14 +3183,18 @@
             filteredShifts = allShifts.filter(shift => {
                 if (seasonValue && seasonOf(shift.eventDate) !== seasonValue) return false;
                 if (searchTerm) {
-                    const searchableFields = [
-                        shift.eventName?.toLowerCase() || '',
-                        shift.primaryStand?.toLowerCase() || '',
-                        shift.standNumber?.toLowerCase() || '',
-                        shift.secondaryStand?.toLowerCase() || ''
-                    ];
-                    const matches = searchableFields.some(field => field.includes(searchTerm));
-                    if (!matches) return false;
+                    /* WORKER NAMES TOO. The payouts page has always matched on
+                       them and this page never did, so typing a volunteer's name
+                       here returned nothing at all while the same search on the
+                       other page worked. One field joined into one string, which
+                       is how payouts does it, so the two behave alike. */
+                    const haystack = [
+                        shift.eventName,
+                        shift.primaryStand || shift.standNumber,
+                        shift.secondaryStand,
+                        ...(shift.workers || []).map(w => w.name)
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    if (!haystack.includes(searchTerm)) return false;
                 }
                 if (statusValue && (shift.paymentStatus || 'finalized') !== statusValue) return false;
                 return true;
