@@ -2193,7 +2193,8 @@
                 u.name?.toLowerCase().includes(name.toLowerCase().trim()) ||
                 name.toLowerCase().trim().includes(u.name?.toLowerCase())
             );
-            return { found: !!user, hasLOSShirt: user?.hasLOSShirt === true, email: user?.email || null, id: user?.id || null };
+            return { found: !!user, hasLOSShirt: user?.hasLOSShirt === true, email: user?.email || null,
+                     id: user?.id || null, creditedThrough: user?.shirtCreditedThrough || '' };
         }
 
         function formatCurrency(amount) {
@@ -3743,8 +3744,17 @@
                    hold a shirt. After the write, not before: a failed save must
                    not credit a shirt nobody paid for. */
                 if (andFinalize) {
-                    await markShirtsProvided(
-                        calculations.workerPayouts.filter(w => w.shirtDeduction > 0).map(w => w.name));
+                    /* With the shift's own date, so the watermark is complete the
+                       moment the shift settles. A credit written without one
+                       would let any earlier charge re-credit this volunteer,
+                       which is exactly what would undo an administrator who had
+                       unticked them for a lost shirt. */
+                    const credits = [];
+                    calculations.workerPayouts.filter(w => w.shirtDeduction > 0).forEach(w => {
+                        const found = lookupWorker(w.name);
+                        if (found.id) credits.push({ id: found.id, through: eventDate });
+                    });
+                    await writeShirtFlags(credits);
                 }
                 await loadData();
                 cancelShiftForm();
@@ -3904,7 +3914,7 @@
                    to be computed before anything was credited, so a volunteer on
                    two drafts finalized together was charged on both. Crediting in
                    memory as we go means the next draft sees it. */
-                const chargedIds = new Set();
+                const chargedIds = new Map();   // roster id -> latest charge date
                 draftShifts.forEach(shift => {
                     const docRef = doc(db, 'Work-Shifts', shift.id);
                     const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -3918,7 +3928,9 @@
                     calculations.workerPayouts.filter(w => w.shirtDeduction > 0).forEach(w => {
                         const found = lookupWorker(w.name);
                         if (!found.id) return;
-                        chargedIds.add(found.id);
+                        const at = String(shift.eventDate || '');
+                        const prior = chargedIds.get(found.id);
+                        if (!prior || at > prior) chargedIds.set(found.id, at);
                         const user = dashboardUsers.find(u => u.id === found.id);
                         if (user) user.hasLOSShirt = true;
                     });
@@ -3927,7 +3939,7 @@
                 await batch.commit();
                 /* M-12, the second finalize path. Both have to credit or the
                    two routes into the same state disagree. */
-                await writeShirtFlags([...chargedIds]);
+                await writeShirtFlags([...chargedIds].map(([id, through]) => ({ id: id, through: through })));
                 await loadData();
             } catch (error) { showError('Failed to finalize all drafts. Please try again.'); }
         }
@@ -4069,33 +4081,33 @@
          * home; see M-25 about that rule being a two-way substring match.
          * Returns the number of records written.
          */
-        async function markShirtsProvided(names) {
-            if (!names || names.length === 0) return 0;
-            const ids = new Set();
-            for (const name of names) {
-                const found = lookupWorker(name);
-                // Already flagged, or no roster record to flag. Writing true
-                // over true is a wasted write, not a correction.
-                if (found.id && !found.hasLOSShirt) ids.add(found.id);
-            }
-            return writeShirtFlags([...ids]);
-        }
 
         /**
          * Writes the flag for roster records already resolved to ids.
          *
-         * Separate from markShirtsProvided because finalizeAllDrafts has to
-         * credit each volunteer in memory as it goes, so that the next draft in
-         * the same batch sees it, which means by the time it writes there is
-         * nothing left for a name-based lookup to find.
+         * THE ONLY WRITER. An earlier name-based variant took no date and so
+         * wrote the flag without a watermark, which would have let any earlier
+         * charge re-credit a volunteer and silently undo an administrator who
+         * had unticked them for a lost shirt. Every caller now resolves the
+         * roster id and the charge date before it gets here, so a credit without
+         * a watermark is no longer expressible.
          */
-        async function writeShirtFlags(ids) {
-            if (!db || !ids || ids.length === 0) return 0;
-            const list = [...new Set(ids)];
+        async function writeShirtFlags(credits) {
+            if (!db || !credits || credits.length === 0) return 0;
+            // Accept bare ids from the finalize paths as well as full credits.
+            const list = credits.map(c => (typeof c === 'string' ? { id: c, through: '' } : c))
+                                .filter(c => c && c.id);
+            if (list.length === 0) return 0;
             for (let i = 0; i < list.length; i += 400) {
                 const batch = writeBatch(db);
-                list.slice(i, i + 400).forEach(id =>
-                    batch.update(doc(db, 'Lions-Fundraising-Users', id), { hasLOSShirt: true }));
+                list.slice(i, i + 400).forEach(c => {
+                    const patch = { hasLOSShirt: true };
+                    // The watermark is what lets a lost or outgrown shirt be
+                    // charged again later. A finalize path that does not know the
+                    // date leaves it alone rather than guessing.
+                    if (c.through) patch.shirtCreditedThrough = c.through;
+                    batch.update(doc(db, 'Lions-Fundraising-Users', c.id), patch);
+                });
                 await batch.commit();
             }
 
@@ -4104,9 +4116,11 @@
                collection to learn what we ourselves just wrote would be a round
                trip for nothing. It also keeps reconcileShirtCredits from
                needing to call loadData, which would re-enter it. */
-            list.forEach(id => {
-                const user = dashboardUsers.find(u => u.id === id);
-                if (user) user.hasLOSShirt = true;
+            list.forEach(c => {
+                const user = dashboardUsers.find(u => u.id === c.id);
+                if (!user) return;
+                user.hasLOSShirt = true;
+                if (c.through) user.shirtCreditedThrough = c.through;
             });
             return list.length;
         }
@@ -4131,12 +4145,12 @@
          */
         async function reconcileShirtCredits() {
             try {
-                const pending = volunteersNeedingShirtFlag();
-                if (pending.length === 0) return 0;
-                const written = await markShirtsProvided(pending);
+                const due = shirtCreditsDue();
+                if (due.length === 0) return 0;
+                const written = await writeShirtFlags(due);
                 if (written) {
-                    console.log('Credited ' + written + ' volunteer(s) with a shirt they had already paid for: '
-                        + pending.join(', '));
+                    console.log('Credited ' + written + ' volunteer(s) for a shirt they paid for: '
+                        + due.map(c => c.name + ' (' + c.through + ')').join(', '));
                 }
                 return written;
             } catch (error) {
@@ -4146,44 +4160,50 @@
         }
 
         /**
-         * Every volunteer a FINALIZED shift of THE CURRENT SEASON has charged a
-         * shirt to.
+         * Credits owed, as { id, name, through }.
          *
-         * THE SEASON BOUND IS THE POINT, not a detail. Without it this reached
-         * back across every shift ever stored and proposed crediting ten people
-         * when six had paid this season; the other four last paid in 2025-2026.
-         * Jason ruled on 2026-09-16 that the previous season is left alone, and
-         * a shirt is a season's shirt.
+         * A SHIRT IS NOT A SEASON'S SHIRT. Jason ruled 2026-09-16: "the has
+         * shirt does continue across season until Sodexo changes it. So if you
+         * have a 2025-2026 or a 2026-2027 your shirt is still good and not
+         * charged again in 2027-2028." An earlier cut of this bounded the scan to
+         * the current season, which would have charged four volunteers a second
+         * time next August for a shirt they already own.
          *
-         * seasonOf and currentSeasonKey are the same pair the season filter uses,
-         * so this cannot drift away from what the page shows. It is deliberately
-         * NOT the season dropdown: a reconciliation must not change its mind
-         * because somebody is looking at an old season.
+         * THE WATERMARK IS WHAT MAKES A REPLACEMENT POSSIBLE. shirtCreditedThrough
+         * is the event date of the purchase this volunteer has already been
+         * credited for, and only a charge on a LATER shift earns a new credit.
+         *
+         * Without it the reconcile is a trap: it derives from settled history
+         * and runs on every load, so an administrator who unticks somebody's box
+         * because the shirt was lost, outgrown or damaged would have it silently
+         * ticked straight back, and there would be no way to charge anybody for
+         * a replacement ever again. With it, unticking the box means the next
+         * shift charges them five dollars, that new and later charge clears the
+         * watermark, and they are credited again for the shirt they just bought.
+         *
+         * The same field is what a future "Sodexo changed the shirt" reset would
+         * move: advance everybody's watermark past the changeover and the whole
+         * roster owes a new five dollars on their next shift, with every earlier
+         * purchase still correctly recorded rather than erased.
          */
-        function shirtChargedNames() {
-            const season = currentSeasonKey();
-            const names = new Set();
-            allShifts
-                .filter(s => s.status === 'finalized' && seasonOf(s.eventDate) === season)
-                .forEach(shift => {
-                    // payoutsFor is the single read path: frozen when frozen, and
-                    // recomputed only when there is no settlement to read.
-                    payoutsFor(shift).workerPayouts
-                        .filter(w => w.shirtDeduction > 0)
-                        .forEach(w => names.add(w.name));
-                });
-            return [...names];
-        }
-
-        /* The shirts already paid for before the writeback existed. Without
-           this, everyone charged historically stays invisible and is charged a
-           second time on their next shift, which is the symptom rather than the
-           cause being fixed. */
-        function volunteersNeedingShirtFlag() {
-            return shirtChargedNames().filter(n => {
-                const found = lookupWorker(n);
-                return found.id && !found.hasLOSShirt;
+        function shirtCreditsDue() {
+            const due = new Map();   // roster id -> { id, name, through }
+            allShifts.filter(s => s.status === 'finalized').forEach(shift => {
+                const date = String(shift.eventDate || '');
+                if (!date) return;
+                // payoutsFor is the single read path: frozen when frozen, and
+                // recomputed only when there is no settlement to read.
+                payoutsFor(shift).workerPayouts
+                    .filter(w => w.shirtDeduction > 0)
+                    .forEach(w => {
+                        const found = lookupWorker(w.name);
+                        if (!found.id) return;
+                        if (date <= found.creditedThrough) return;   // that purchase is already credited
+                        const prev = due.get(found.id);
+                        if (!prev || date > prev.through) due.set(found.id, { id: found.id, name: w.name, through: date });
+                    });
             });
+            return [...due.values()];
         }
 
 
