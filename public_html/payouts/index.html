@@ -1687,7 +1687,6 @@
                 <button class="btn btn-success" id="finalizeAllBtn">Finalize All Drafts</button>
                 <button class="btn btn-secondary" id="exportPayoutsBtn">Export Payout Record</button>
                 <button class="btn btn-warning" id="backfillFreezeBtn" hidden>Freeze Historical Shifts</button>
-                <button class="btn btn-warning" id="shirtFlagBackfillBtn" hidden>Credit Paid Shirts</button>
             </div>
 
             <!-- Add/Edit Shift Form -->
@@ -2866,6 +2865,9 @@
                 dashboardUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 const shiftsSnapshot = await getDocs(query(collection(db, 'Work-Shifts'), orderBy('eventDate', 'desc')));
                 allShifts = shiftsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                /* Before the render, not after: a volunteer credited here must
+                   not be drawn with a charge they no longer owe. */
+                await reconcileShirtCredits();
                 populateSeasonFilter();
                 applyFilters();
             } catch (error) {
@@ -3012,7 +3014,6 @@
             if (elements.avgNetPerWorker) elements.avgNetPerWorker.textContent = formatCurrency(stats.avgNetPerWorker);
 
             updateBackfillVisibility();
-            updateShirtFlagVisibility();
         }
 
         window.viewShiftDetails = function(shiftId) {
@@ -3994,6 +3995,13 @@
            Holdcroft was charged on 2026-08-29 and again on the 09-09 draft,
            which is how it was finally noticed.
 
+           NO BUTTON. reconcileShirtCredits runs on every load and brings the
+           roster into line with what the settled shifts already say. It is a
+           reconciliation rather than a decision, it is idempotent, and it needs
+           nobody to remember anything. Finalizing still credits directly, which
+           is the fast path; the reconcile is the safety net that catches a shift
+           settled on another device or a roster record created after the fact.
+
            ONE DIRECTION ONLY, and that is the canon. Finalizing sets the flag.
            Nothing here ever clears it. Unlocking a shift does NOT clear it,
            because the shirt was ordered when the shift settled and unlocking to
@@ -4033,19 +4041,80 @@
                     batch.update(doc(db, 'Lions-Fundraising-Users', id), { hasLOSShirt: true }));
                 await batch.commit();
             }
+
+            /* Keep the in-memory roster in step with what was just written.
+               loadData renders straight after reconciling, and re-reading the
+               collection to learn what we ourselves just wrote would be a round
+               trip for nothing. It also keeps reconcileShirtCredits from
+               needing to call loadData, which would re-enter it. */
+            list.forEach(id => {
+                const user = dashboardUsers.find(u => u.id === id);
+                if (user) user.hasLOSShirt = true;
+            });
             return list.length;
         }
 
-        /** Every volunteer name a FINALIZED shift has charged a shirt to. */
+        /**
+         * Brings the roster into line with what the settled shifts say.
+         *
+         * Runs on every load rather than behind a button. It is a reconciliation,
+         * not a decision: the only thing it can do is set the flag for somebody a
+         * FINALIZED shift already charged five dollars, which is a fact that has
+         * already been settled and frozen. It is idempotent, so the second run
+         * finds nothing and writes nothing, and it is one directional, so it can
+         * never un-credit anybody.
+         *
+         * This also means a shift finalized on another device, or a roster record
+         * created after the fact, is picked up on the next load with nobody having
+         * to remember anything.
+         *
+         * A failure here must not stop the page rendering. The cost of losing this
+         * write is that somebody is charged again next shift, which is the old
+         * behaviour, and the next successful load repairs it.
+         */
+        async function reconcileShirtCredits() {
+            try {
+                const pending = volunteersNeedingShirtFlag();
+                if (pending.length === 0) return 0;
+                const written = await markShirtsProvided(pending);
+                if (written) {
+                    console.log('Credited ' + written + ' volunteer(s) with a shirt they had already paid for: '
+                        + pending.join(', '));
+                }
+                return written;
+            } catch (error) {
+                console.warn('Shirt credit reconciliation failed; it will retry on the next load.', error);
+                return 0;
+            }
+        }
+
+        /**
+         * Every volunteer a FINALIZED shift of THE CURRENT SEASON has charged a
+         * shirt to.
+         *
+         * THE SEASON BOUND IS THE POINT, not a detail. Without it this reached
+         * back across every shift ever stored and proposed crediting ten people
+         * when six had paid this season; the other four last paid in 2025-2026.
+         * Jason ruled on 2026-09-16 that the previous season is left alone, and
+         * a shirt is a season's shirt.
+         *
+         * seasonOf and currentSeasonKey are the same pair the season filter uses,
+         * so this cannot drift away from what the page shows. It is deliberately
+         * NOT the season dropdown: a reconciliation must not change its mind
+         * because somebody is looking at an old season.
+         */
         function shirtChargedNames() {
+            const season = currentSeasonKey();
             const names = new Set();
-            allShifts.filter(s => s.status === 'finalized').forEach(shift => {
-                // payoutsFor is the single read path: frozen when frozen, and
-                // recomputed only when there is no settlement to read.
-                payoutsFor(shift).workerPayouts
-                    .filter(w => w.shirtDeduction > 0)
-                    .forEach(w => names.add(w.name));
-            });
+            allShifts
+                .filter(s => s.status === 'finalized' && seasonOf(s.eventDate) === season)
+                .forEach(shift => {
+                    // payoutsFor is the single read path: frozen when frozen, and
+                    // recomputed only when there is no settlement to read.
+                    payoutsFor(shift).workerPayouts
+                        .filter(w => w.shirtDeduction > 0)
+                        .forEach(w => names.add(w.name));
+                });
             return [...names];
         }
 
@@ -4058,33 +4127,6 @@
                 const found = lookupWorker(n);
                 return found.id && !found.hasLOSShirt;
             });
-        }
-
-        function updateShirtFlagVisibility() {
-            const btn = document.getElementById('shirtFlagBackfillBtn');
-            if (!btn) return;
-            const pending = volunteersNeedingShirtFlag().length;
-            btn.hidden = pending === 0;
-            btn.textContent = 'Credit ' + pending + ' Paid Shirt' + (pending === 1 ? '' : 's');
-        }
-
-        async function backfillShirtFlags() {
-            if (!db) { showError('Database connection not available'); return; }
-            const pending = volunteersNeedingShirtFlag();
-            if (pending.length === 0) { alert('Every volunteer who has paid for a shirt is already credited.'); return; }
-
-            if (!confirm('Credit ' + pending.length + ' volunteer(s) with the shirt they have already paid for?\n\n'
-                + pending.slice(0, 12).join(', ') + (pending.length > 12 ? ', and ' + (pending.length - 12) + ' more' : '')
-                + '\n\nThis changes no past settlement and no amount anyone was paid. It stops them '
-                + 'being charged a second time on their next shift.')) return;
-
-            try {
-                const written = await markShirtsProvided(pending);
-                await loadData();
-                alert('Credited ' + written + ' volunteer(s).');
-            } catch (error) {
-                showError('Failed to credit paid shirts. Please try again.');
-            }
         }
 
         const BACKFILL_REQUIRES_VERSION = '2026-09-02-pre-correction';
@@ -4310,7 +4352,6 @@
             document.getElementById('refreshBtn')?.addEventListener('click', loadData);
             document.getElementById('exportPayoutsBtn')?.addEventListener('click', exportPayouts);
             document.getElementById('backfillFreezeBtn')?.addEventListener('click', backfillFrozenCalculations);
-            document.getElementById('shirtFlagBackfillBtn')?.addEventListener('click', backfillShirtFlags);
             document.getElementById('finalizeAllBtn')?.addEventListener('click', finalizeAllDrafts);
             document.getElementById('workerTotalsBtn')?.addEventListener('click', showWorkerTotals);
             document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
