@@ -3841,14 +3841,16 @@
                no longer exists to rebuild one with, so a separate-mode shift
                would refinalize as combined and restate money already paid. */
             const shift = allShifts.find(s => s.id === shiftId);
-            /* PAID IS THE LINE. Unlocking clears the frozen settlement, and a
-               paid settlement is the record of money that has already left. The
-               treasurer marks this on their own page; an administrator can move
-               it back there if the money did not in fact go out. */
-            if (shift && shift.paymentStatus === 'paid') {
-                showError('"' + eventName + '" is marked PAID by the treasurer. Unlocking would clear '
-                    + 'the settlement that records what was actually paid. If the money did not go out, '
-                    + 'an administrator can move it back on the treasurer page first.');
+            /* THE CHECK AND BALANCE. Once the treasurer has processed and
+               locked a shift she has taken it into her own payroll system, and
+               returning it to draft here would clear the settlement she worked
+               from. This page cannot undo that on its own; reopening happens on
+               her page and is administrator only. That is the whole point of
+               two people and two pages. */
+            if (shift && shift.isLocked === true) {
+                showError('"' + eventName + '" has been processed and locked by the treasurer. Returning '
+                    + 'it to a draft here would clear the settlement she worked from. If it genuinely '
+                    + 'needs correcting, reopen it on the treasurer page first.');
                 return;
             }
             if (shift && shift.separateStandsMode === true) {

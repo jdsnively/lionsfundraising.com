@@ -531,12 +531,6 @@
             border: 1px solid #8b5cf6;
         }
 
-        .status-paid {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #22c55e;
-        }
-
         .shift-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1262,12 +1256,11 @@
                     <select id="filterSeason"></select>
                 </div>
                 <div class="form-group">
-                    <label for="paymentStatus">Payment Status</label>
+                    <label for="paymentStatus">Status</label>
                     <select id="paymentStatus">
                         <option value="">All Statuses</option>
-                        <option value="finalized">Ready for Processing</option>
-                        <option value="processed">Processed</option>
-                        <option value="paid">Paid</option>
+                        <option value="ready">Ready</option>
+                        <option value="processed">Processed &amp; Locked</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1324,15 +1317,16 @@
 
     <div id="lockConfirmModal" class="dialog hidden">
         <div class="dialog-content">
-            <h3 class="dialog-title">Lock Shift for Review</h3>
+            <h3 class="dialog-title">Process and Lock</h3>
             <div id="lockModalContent">
                 <p style="margin-bottom: 1rem; color: var(--tr-gray-700);">
-                    Locking this shift will prevent further editing until unlocked from the payouts page.
-                    This helps ensure finalized payroll data remains unchanged.
+                    Marks this shift as processed and locks it. Use it once you have taken the shift
+                    into your own payroll system.
                 </p>
                 <div
                     style="background: #fffbeb; border: 1px solid var(--warning); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-3);">
-                    <strong>Note:</strong> Once locked, this shift can only be unlocked from the payouts page.
+                    <strong>Note:</strong> The payouts page will refuse to change a processed shift.
+                    If it needs correcting, an administrator reopens it here first.
                 </div>
             </div>
             <div class="dialog-buttons">
@@ -2311,73 +2305,54 @@
             ];
 
         /* ------------------------------------------------------------------
-           The payment lifecycle.
+           PROCESSED AND LOCKED ARE ONE THING.
 
-           Ready for Processing -> Processed -> Paid.
+           Jason ruled 2026-09-16, after using it: this page is a check and
+           balance between him and the treasurer. SHE DOES NOT PAY OUT OF THIS
+           SYSTEM, she uses a separate one, so this system can never honestly
+           know that money moved. A "Paid" state nobody can truthfully set is
+           the decorative problem all over again, and Processed sitting beside
+           Lock Shift made two clicks and two mental models out of one act.
 
-           This existed as three CSS classes, a filter and an export column, and
-           NOTHING ANYWHERE WROTE IT. Every shift fell back to the default and
-           displayed "ready", so the page could not answer "has this been paid",
-           which is the one question that decides whether a settlement may be
-           reopened. On 2026-09-16 that question had to be answered from memory
-           before the season could be re-settled. Jason: "I don't want anything
-           decorative it should be functional."
+           So there is one axis, isLocked, and two states: Ready, and Processed
+           and Locked. The treasurer presses one button when she has taken a
+           shift into her own system. paymentStatus is still written as a record
+           for the export, but nothing branches on it.
 
-           PAID IS LOAD BEARING. The payouts page refuses to unlock a shift
-           marked paid, because unlocking clears the frozen settlement and a paid
-           settlement is the record of money that has already moved. That refusal
-           is the whole point of this control; without it the status is still
-           just a label.
+           THE CHECK AND BALANCE IS THE POINT. The payouts page refuses to
+           return a locked shift to draft, so Jason cannot quietly change work
+           the treasurer has already taken. Reopening is deliberate, it happens
+           on her page, and it is administrator only so one wrong click is not
+           permanent.
 
-           Forward is the treasurer or an administrator. BACKWARD IS AN
-           ADMINISTRATOR ONLY, and it exists so that one wrong click is not
-           permanent. A status that could only ever go forward would be a trap.
+           The fourteen shifts already carrying isLocked from previous seasons
+           read as Processed and Locked with no migration, because that is
+           exactly what they are.
            ------------------------------------------------------------------ */
-        const PAYMENT_STATUSES = ['finalized', 'processed', 'paid'];
-        const PAYMENT_LABELS = {
-            finalized: 'Ready for Processing',
-            processed: 'Processed',
-            paid: 'Paid'
-        };
-
-        window.setPaymentStatus = async function(shiftId, to) {
-            if (!TREASURER_WRITE_ADDRESSES.includes(currentAddress())) {
-                showError('Only the treasurer and administrators can change payment status.');
+        window.reopenShift = async function(shiftId) {
+            if (!TREASURER_ADMIN_ADDRESSES.includes(currentAddress())) {
+                showError('Only an administrator can reopen a processed shift.');
                 return;
             }
             const shift = allShifts.find(s => s.id === shiftId);
             if (!shift) { showError('Shift not found.'); return; }
-
-            const from = shift.paymentStatus || 'finalized';
-            if (!PAYMENT_STATUSES.includes(to)) { showError('Unknown payment status.'); return; }
-
-            const goingBack = PAYMENT_STATUSES.indexOf(to) < PAYMENT_STATUSES.indexOf(from);
-            if (goingBack && !TREASURER_ADMIN_ADDRESSES.includes(currentAddress())) {
-                showError('Only an administrator can move a shift back to ' + PAYMENT_LABELS[to] + '.');
-                return;
-            }
-
-            const name = shift.eventName || 'this shift';
-            const note = to === 'paid'
-                ? '\n\nMarking a shift PAID is what stops its settlement being reopened. '
-                  + 'The payouts page will refuse to unlock it.'
-                : (goingBack && from === 'paid'
-                    ? '\n\nThis makes the shift unlockable again. Only do it if the money did not actually go out.'
-                    : '');
-            if (!confirm('Move "' + name + '"\n\nfrom  ' + PAYMENT_LABELS[from]
-                + '\nto    ' + PAYMENT_LABELS[to] + note)) return;
-
+            if (!confirm('Reopen "' + (shift.eventName || 'this shift') + '"?\n\n'
+                + 'It goes back to Ready, and the payouts page will be able to return it to a '
+                + 'draft again. Only do this if the shift genuinely needs correcting.')) return;
             try {
                 await updateDoc(doc(db, 'Work-Shifts', shiftId), {
-                    paymentStatus: to,
-                    paymentStatusAt: new Date().toISOString(),
-                    paymentStatusBy: currentUser.email
+                    isLocked: false,
+                    paymentStatus: 'finalized',
+                    reopenedAt: new Date().toISOString(),
+                    reopenedBy: currentUser.email
                 });
+                lockedShifts.delete(shiftId);
                 await loadData();
             } catch (error) {
-                showError('Failed to change payment status. Please try again.');
+                showError('Failed to reopen the shift. Please try again.');
             }
         };
+
 
         /** Lower-cased, trimmed address of the signed-in user, or an empty string. */
         function currentAddress() {
@@ -2568,9 +2543,9 @@
             const calculations = payoutsFor(shift);
             
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
-            const paymentStatus = shift.paymentStatus || 'finalized';
-            const statusClass = paymentStatus === 'paid' ? 'status-paid' : 
-                              paymentStatus === 'processed' ? 'status-processed' : 'status-finalized';
+            /* One axis. isLocked is the truth; paymentStatus is only a record. */
+            const isProcessed = shift.isLocked === true;
+            const statusClass = isProcessed ? 'status-processed' : 'status-finalized';
             const isAdmin = TREASURER_ADMIN_ADDRESSES.includes(currentAddress());
             const isTreasurerOrAdmin = TREASURER_PORTAL_ADDRESSES.includes(currentAddress());
             const eventName = shift.eventName || 'Unnamed Event';
@@ -2584,7 +2559,7 @@
                                 <div class="shift-title">${highlightedEventName}</div>
                                 <div class="shift-date">${formatDate(shift.eventDate)}, stand ${highlightedStand}${shift.separateStandsMode ? ' (Separate Mode)' : ''}</div>
                             </div>
-                            <div class="shift-status ${statusClass}">${paymentStatus === 'paid' ? 'paid' : paymentStatus === 'processed' ? 'processed' : 'ready'}</div>
+                            <div class="shift-status ${statusClass}">${isProcessed ? 'processed &amp; locked' : 'ready'}</div>
                         </div>
                         <div class="shift-details">
                             <div class="detail-item">
@@ -2621,19 +2596,12 @@
                         ` : ''}
                     </div>
                     <div class="shift-actions">
-                        <button class="btn btn-lock" onclick="lockShift('${shift.id}')" 
-                                style="display: ${isTreasurerOrAdmin ? 'inline-flex' : 'none'};" 
-                                ${shift.isLocked ? 'disabled' : ''}>
-                            ${shift.isLocked ? 'Locked' : 'Lock Shift'}
-                        </button>
-                        ${isTreasurerOrAdmin && paymentStatus !== 'paid' ? `
-                        <button class="btn btn-success" onclick="setPaymentStatus('${shift.id}', '${paymentStatus === 'finalized' ? 'processed' : 'paid'}')">
-                            Mark ${paymentStatus === 'finalized' ? 'Processed' : 'Paid'}
-                        </button>` : ''}
-                        ${isAdmin && paymentStatus !== 'finalized' ? `
-                        <button class="btn btn-secondary" onclick="setPaymentStatus('${shift.id}', '${paymentStatus === 'paid' ? 'processed' : 'finalized'}')"
-                                title="Administrator only. Undoes a wrong click.">
-                            Back to ${paymentStatus === 'paid' ? 'Processed' : 'Ready'}
+                        ${isTreasurerOrAdmin && !isProcessed ? `
+                        <button class="btn btn-lock" onclick="lockShift('${shift.id}')">Process &amp; Lock</button>` : ''}
+                        ${isAdmin && isProcessed ? `
+                        <button class="btn btn-secondary" onclick="reopenShift('${shift.id}')"
+                                title="Administrator only. Sends it back to Ready so it can be corrected.">
+                            Reopen
                         </button>` : ''}
                         <button class="btn btn-secondary" onclick="viewShiftDetails('${shift.id}')">View Details</button>
                     </div>
@@ -2742,14 +2710,16 @@
                 const shiftRef = doc(db, 'Work-Shifts', shiftId);
                 await updateDoc(shiftRef, {
                     isLocked: true,
+                    paymentStatus: 'processed',
                     lockedBy: currentUser.email,
                     lockedDate: new Date().toISOString(),
-                    lockReason: 'Locked by treasurer for review'
+                    lockReason: 'Processed and locked by the treasurer'
                 });
                 shift.isLocked = true;
+                shift.paymentStatus = 'processed';
                 shift.lockedBy = currentUser.email;
                 shift.lockedDate = new Date().toISOString();
-                shift.lockReason = 'Locked by treasurer for review';
+                shift.lockReason = 'Processed and locked by the treasurer';
                 lockedShifts.set(shiftId, {
                     shiftName: shift.eventName || 'Unnamed Event',
                     lockedBy: currentUser.email,
@@ -2758,7 +2728,7 @@
                 console.log('Shift locked successfully in Firebase');
                 displayShifts();
                 closeLockModal();
-                showNotification('Shift locked successfully in Firebase. Can be unlocked from payouts page.', 'success');
+                showNotification('Processed and locked. An administrator can reopen it here if it needs correcting.', 'success');
             } catch (error) {
                 console.error('Error locking shift:', error);
                 if (error.code === 'permission-denied') {
@@ -3031,7 +3001,7 @@
                     `"${shift.separateStandsMode ? 'Separate' : 'Combined'}"`,
                     `$${totalPayout.toFixed(2)}`, (shift.workers || []).length,
                     calculations.totalHours.toFixed(2), `$${calculations.totalWorkerPayouts.toFixed(2)}`,
-                    `$${calculations.lionsFinalTotal.toFixed(2)}`, `"${shift.paymentStatus || 'finalized'}"`
+                    `$${calculations.lionsFinalTotal.toFixed(2)}`, `"${shift.isLocked ? 'processed-locked' : 'ready'}"`
                 ];
                 csvRows.push(row.join(','));
             });
@@ -3196,7 +3166,10 @@
                     ].filter(Boolean).join(' ').toLowerCase();
                     if (!haystack.includes(searchTerm)) return false;
                 }
-                if (statusValue && (shift.paymentStatus || 'finalized') !== statusValue) return false;
+                /* Filters the same axis the card shows, so the dropdown cannot
+                   disagree with the badge beside it. */
+                if (statusValue === 'processed' && shift.isLocked !== true) return false;
+                if (statusValue === 'ready' && shift.isLocked === true) return false;
                 return true;
             });
             visibleRange = { start: 0, end: 20 };
