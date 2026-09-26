@@ -142,4 +142,55 @@ export async function loadFormula(file) {
     };
 }
 
+// ---------------------------------------------------------------------------
+// The check-received chain.
+//
+// Same discipline as loadFormula and the same reason: the suite must test the
+// code that ships, not a copy of it. These functions are byte identical on the
+// two pages by intent, and a test that extracts them from both is what makes
+// that claim checkable instead of aspirational.
+// ---------------------------------------------------------------------------
+
+const CHECK_CENT_PATTERN = /^[ \t]*const CHECK_CENT = [0-9.]+;[ \t]*(\/\/.*)?$/gm;
+
+function sliceCheckCent(source, file) {
+    const hits = source.match(CHECK_CENT_PATTERN);
+    if (!hits || hits.length !== 1) refuse('CHECK_CENT', hits ? hits.length : 0, file);
+    return hits[0].trim();
+}
+
+// Pulls a named set of functions out of a page and returns them callable.
+// Anything the page would have supplied from its own scope is handed in as a
+// stub, so a function can be exercised without dragging the whole page in.
+export async function loadNamed(file, names, stubNames = []) {
+    const source = await readFile(file, 'utf8');
+    const parts = {};
+    for (const name of names) {
+        parts[name] = sliceFunction(source, name, file);
+    }
+    const cent = sliceCheckCent(source, file);
+
+    const built =
+        '"use strict";\n' +
+        (stubNames.length ? 'const { ' + stubNames.join(', ') + ' } = __stubs;\n' : '') +
+        cent + '\n' +
+        names.map((n) => parts[n]).join('\n\n') + '\n\n' +
+        'return { ' + names.join(', ') + ' };\n';
+
+    let factory;
+    try {
+        factory = new Function('__stubs', built);
+    } catch (err) {
+        throw new Error('extract refused: the assembled check module from ' + file +
+            ' did not compile (' + err.message + '). Nothing was built.');
+    }
+
+    return {
+        file,
+        cent,
+        sources: parts,
+        load(stubs = {}) { return factory(stubs); }
+    };
+}
+
 export { NEEDED };

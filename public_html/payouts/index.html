@@ -610,6 +610,63 @@
             letter-spacing: 0.05em;
         }
 
+        /* CHECK RECEIVED. Same three badges on both pages, so one check reads
+           the same way wherever it is seen. */
+        .shift-badges {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--space-1);
+            flex-shrink: 0;
+        }
+
+        .check-badge {
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            cursor: help;
+        }
+
+        .check-awaiting {
+            background: rgba(245, 158, 11, 0.12);
+            color: #b45309;
+            border: 1px solid #f59e0b;
+        }
+
+        .check-in {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        /* A gap stays red until somebody resolves it. It does not soften once a
+           note is written: the note explains the money, it does not return it. */
+        .check-short {
+            background: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+            border: 1px solid #dc2626;
+        }
+
+        .stale-receivable {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid #dc2626;
+            border-left-width: 4px;
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-4);
+            color: #7f1d1d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .stat-alarm {
+            color: #b91c1c;
+        }
+
         .status-draft {
             background: rgba(59, 130, 246, 0.1);
             color: #1e40af;
@@ -1650,6 +1707,14 @@
                     <div class="stat-card">
                         <div class="stat-number" id="avgNetPerWorker">-</div>
                         <div class="stat-label">Avg Take Home</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAwaitingCheck">-</div>
+                        <div class="stat-label">Awaiting Sodexo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCheckShortfall">-</div>
+                        <div class="stat-label">Short Paid</div>
                     </div>
                 </div>
             </div>
@@ -2912,12 +2977,273 @@
         function displayShifts() {
             const shiftsGrid = document.getElementById('shiftsGrid');
             if (!shiftsGrid) return;
+            /* From allShifts and outside the grid: a debt from a closed season
+               does not stop being owed because the page is filtered. */
+            renderStaleReceivable(shiftsGrid);
             if (filteredShifts.length === 0) {
                 shiftsGrid.innerHTML = '<div class="loading">No work shifts found. Click "New Shift" to create one.</div>';
                 return;
             }
             shiftsGrid.innerHTML = filteredShifts.map(shift => createShiftCard(shift)).join('');
         }
+
+        /** Puts the closed season receivable above the cards, or takes it away. */
+        function renderStaleReceivable(grid) {
+            if (!grid || !grid.parentNode) return;
+            let banner = document.getElementById('staleReceivable');
+            const html = staleReceivableHtml(allShifts);
+            if (!html) {
+                if (banner) banner.remove();
+                return;
+            }
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'staleReceivable';
+                grid.parentNode.insertBefore(banner, grid);
+            }
+            banner.innerHTML = html;
+        }
+
+        /* ------------------------------------------------------------------
+           CHECK RECEIVED. Sodexo's money, and whether it actually arrived.
+
+           Crystal asked for it and Jason asked to see it here. Until now this
+           system could say what Sodexo OWED and never whether Sodexo PAID, and
+           the April 2026 shortfall is what that costs: a check arrived
+           $1,417.13 light, the club settled from the expected figure, and
+           volunteers were paid out of money that had not landed.
+
+           THE CHECK IS THE THING. EVENTS BELONG TO IT. Sodexo sometimes pays
+           several events on one check and sometimes one, and a lump sum may
+           carry no per-event breakdown at all. So the treasurer records what is
+           printed on the paper in her hand, number, date and total, and ticks
+           the events on the stub. SHE IS NEVER ASKED FOR A PER EVENT AMOUNT:
+           she may not have one, and a field that is sometimes unavailable gets
+           filled with a guess.
+
+           That makes the reconciliation one subtraction, correct in both shapes
+           with no branching:
+
+               the check's face amount  -  the billed total of its events
+
+           One event on a check is a sum of one. Five is a sum of five.
+
+           It lives on the shift document, the same values repeated on every
+           event of a check. A new collection would need new Firestore rules and
+           rules are frozen pending X-53, and a dozen checks a season does not
+           justify a join. checkOf, checksIn and the batch writer are the only
+           code that touches these fields, so the duplication has one seam.
+
+           RECORDING A CHECK CHANGES NO SETTLEMENT. It is additive metadata, so
+           it is safe on a previous season's events, and that matters: the
+           events still unpaid are the April ones, and they are why this exists.
+           ------------------------------------------------------------------ */
+
+        /** Half a cent. Below this a difference is float noise, not money. */
+        const CHECK_CENT = 0.005;
+
+        /** What Sodexo owes for a shift, both stands. Billed, not received. */
+        function billedFor(shift) {
+            return ((shift && (shift.primarySodexoPayout || shift.sodexoPayout)) || 0)
+                + ((shift && shift.secondarySodexoPayout) || 0);
+        }
+
+        /** The check a shift sits on, or null while it is still awaiting one. */
+        function checkOf(shift) {
+            const number = String((shift && shift.checkNumber) || '').trim();
+            if (!number) return null;
+            return {
+                number: number,
+                date: String((shift && shift.checkDate) || ''),
+                amount: Number((shift && shift.checkAmount) || 0),
+                note: String((shift && shift.checkNote) || '')
+            };
+        }
+
+        /** True when a shift is one a check could still be recorded against. */
+        function awaitsCheck(shift) {
+            return !checkOf(shift) && billedFor(shift) > 0;
+        }
+
+        /** Later checks that made good on a short one. Never one field: Sodexo
+            has settled in instalments before, and a single field would have the
+            second one quietly overwrite the first. */
+        function settlementsOn(shift) {
+            const raw = (shift && shift.gapSettlements) || [];
+            if (!Array.isArray(raw)) return [];
+            return raw.filter(s => s && s.check).map(s => ({
+                check: String(s.check),
+                date: String(s.date || ''),
+                amount: Number(s.amount || 0),
+                note: String(s.note || '')
+            }));
+        }
+
+        /**
+         * Every check carried by a set of shifts, keyed by number, each with its
+         * face amount, the billed total of its events, the gap between them, and
+         * what any later check has since made good.
+         *
+         * PASS EVERY SHIFT, NEVER A FILTERED LIST. A filter that hides one event
+         * of a three event check drops its billed total, and the check then
+         * reads short when nothing is wrong. The gap belongs to the check, so it
+         * is computed from every event carrying the number.
+         *
+         *     gap          the check against what it should have been
+         *     settled      what later checks have paid toward that gap
+         *     outstanding  what the club is still out of pocket
+         *
+         * OUTSTANDING IS THE ONE THAT MATTERS. gap is history and never changes;
+         * outstanding is money, and it is what goes red and what gets totalled.
+         */
+        function checksIn(shifts) {
+            const byNumber = new Map();
+            (shifts || []).forEach(shift => {
+                const check = checkOf(shift);
+                if (!check) return;
+                let row = byNumber.get(check.number);
+                if (!row) {
+                    row = {
+                        number: check.number, date: check.date, amount: check.amount,
+                        note: check.note, billed: 0, events: 0, shiftIds: [],
+                        settlements: settlementsOn(shift)
+                    };
+                    byNumber.set(check.number, row);
+                }
+                row.billed += billedFor(shift);
+                row.events += 1;
+                row.shiftIds.push(shift.id);
+            });
+            byNumber.forEach(row => {
+                row.gap = row.amount - row.billed;
+                row.settled = row.settlements.reduce((sum, s) => sum + s.amount, 0);
+                row.outstanding = row.gap + row.settled;
+            });
+            return byNumber;
+        }
+
+        /** Checks the club is still short on, worst first. What the dialog offers
+            as something a new check might be making good. */
+        function unsettledChecks(checks) {
+            return Array.from(checks.values())
+                .filter(row => Math.abs(row.outstanding) >= CHECK_CENT)
+                .sort((a, b) => a.outstanding - b.outstanding);
+        }
+
+        /** 'YYYY-MM-DD' to 'M/D'. Read as text: new Date on a bare date string
+            is UTC midnight and prints the day before in Indiana. */
+        function shortCheckDate(iso) {
+            const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+            return parts ? Number(parts[2]) + '/' + Number(parts[3]) : '';
+        }
+
+        /** Free text into HTML. The check number and the note are both typed. */
+        function escapeText(value) {
+            return String(value === null || value === undefined ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        /** Money, signed with a real minus so a shortfall cannot be misread. */
+        function signedMoney(amount) {
+            return (amount < 0 ? '−' : '+') + '$' + Math.abs(amount).toFixed(2);
+        }
+
+        /**
+         * The check badge for a card. Identical wording on both pages, so the
+         * treasurer page and the payouts page cannot describe one check two
+         * different ways, which is the disagreement 2026-09-16 spent itself
+         * removing. Pass the map from checksIn(allShifts).
+         */
+        function checkBadgeHtml(shift, checks) {
+            const check = checkOf(shift);
+            if (!check) {
+                if (!awaitsCheck(shift)) return '';
+                return '<div class="check-badge check-awaiting" title="No Sodexo check has been '
+                    + 'recorded against this event yet.">awaiting check</div>';
+            }
+            const row = checks.get(check.number);
+            const gap = row ? row.gap : 0;
+            const outstanding = row ? row.outstanding : 0;
+            const events = row ? row.events : 1;
+            const label = 'check ' + escapeText(check.number)
+                + (check.date ? ' &middot; ' + shortCheckDate(check.date) : '');
+            if (Math.abs(gap) < CHECK_CENT) {
+                return '<div class="check-badge check-in" title="'
+                    + escapeText('Received $' + check.amount.toFixed(2) + ', matching what Sodexo owed'
+                        + (events > 1 ? ' across ' + events + ' events' : '') + '.')
+                    + '">' + label + '</div>';
+            }
+            const history = 'Check ' + check.number + ' paid $' + check.amount.toFixed(2)
+                + ' against $' + (row ? row.billed : 0).toFixed(2) + ' billed across '
+                + events + (events === 1 ? ' event. ' : ' events. ')
+                + (check.note || 'No explanation was recorded.');
+            /* A short check that has since been made good goes green, but it
+               keeps saying so. The shortfall happened, and the record of how it
+               was put right is the thing worth having next time. */
+            if (Math.abs(outstanding) < CHECK_CENT) {
+                const by = (row ? row.settlements : []).map(s => s.check).join(' and ');
+                return '<div class="check-badge check-in" title="'
+                    + escapeText(history + ' Made good by check ' + by + '.') + '">'
+                    + label + ' &middot; settled</div>';
+            }
+            const detail = history
+                + (row && row.settled ? ' $' + row.settled.toFixed(2) + ' has since been recovered.' : '');
+            return '<div class="check-badge check-short" title="' + escapeText(detail) + '">'
+                + label + ' &middot; ' + signedMoney(outstanding) + '</div>';
+        }
+
+        /**
+         * The banner for money Sodexo still owes from a season that has closed.
+         *
+         * A current season event awaiting its check is ordinary. One from a
+         * closed season is a debt, and until now no line on either page said
+         * so: the April 2026 events sat unpaid for five months while every
+         * headline number on both pages reported them as revenue.
+         */
+        function staleReceivableHtml(shifts) {
+            const current = currentSeasonKey();
+            const stale = (shifts || []).filter(s => awaitsCheck(s) && seasonOf(s.eventDate) !== current);
+            if (stale.length === 0) return '';
+            const owed = stale.reduce((sum, s) => sum + billedFor(s), 0);
+            const seasons = Array.from(new Set(stale.map(s => seasonOf(s.eventDate)))).sort().join(' and ');
+            const oldest = stale.map(s => s.eventDate).filter(Boolean).sort()[0] || '';
+            return '<div class="stale-receivable"><strong>$' + owed.toFixed(2) + ' is still owed from '
+                + escapeText(seasons) + '.</strong> ' + stale.length
+                + (stale.length === 1 ? ' event from a closed season has' : ' events from a closed season have')
+                + ' no Sodexo check recorded'
+                + (oldest ? ', the oldest ' + escapeText(formatDate(oldest)) : '') + '.</div>';
+        }
+
+        /** Billed total of every filtered event with no check recorded yet. */
+        function awaitingTotal(shifts) {
+            return (shifts || []).filter(awaitsCheck).reduce((sum, s) => sum + billedFor(s), 0);
+        }
+
+        /**
+         * The money still missing from checks that touch the filtered set,
+         * counted once per check however many of its events are on screen.
+         * Negative when Sodexo underpaid, which is the direction that has
+         * actually happened. Reads outstanding, so recovering a shortfall
+         * takes it off this total and a partial recovery leaves the rest.
+         */
+        function shortfallTotal(shifts, checks) {
+            const seen = new Set();
+            let total = 0;
+            (shifts || []).forEach(shift => {
+                const check = checkOf(shift);
+                if (!check || seen.has(check.number)) return;
+                seen.add(check.number);
+                const row = checks.get(check.number);
+                if (row && Math.abs(row.outstanding) >= CHECK_CENT) total += row.outstanding;
+            });
+            return total;
+        }
+
+        /* READ ONLY HERE. The treasurer records a check, this page shows it.
+           She is the only person in a position to see the paper arrive, and
+           splitting that would rebuild the two-pages-disagreeing problem the
+           2026-09-16 session spent itself removing. */
 
         function createShiftCard(shift) {
             const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -2976,7 +3302,7 @@
                 workersHtml += '</div>';
             }
             
-            return '<div class="' + cardClasses + '"><div class="shift-card-content"><div class="shift-header"><div><div class="shift-title">' + (shift.eventName || 'Unnamed Event') + '</div><div class="shift-date">' + formatDate(shift.eventDate) + ', Primary Stand ' + primaryStand + '</div></div><div class="shift-status ' + statusClass + '">' + shiftStatus + '</div></div><div class="shift-details"><div class="detail-item"><div class="detail-label">Total Sodexo Payment</div><div class="detail-value">' + formatCurrency(totalPayout) + '</div></div><div class="detail-item"><div class="detail-label">Total Hours</div><div class="detail-value">' + calculations.totalHoursFormatted + '</div></div><div class="detail-item"><div class="detail-label">Hourly Rate</div><div class="detail-value">' + calculations.hourlyRateFormatted + '</div></div><div class="detail-item"><div class="detail-label">Workers</div><div class="detail-value">' + (shift.workers || []).length + '</div></div></div>' + workersHtml + '</div><div class="shift-actions">' + actionButtons + '</div></div>';
+            return '<div class="' + cardClasses + '"><div class="shift-card-content"><div class="shift-header"><div><div class="shift-title">' + (shift.eventName || 'Unnamed Event') + '</div><div class="shift-date">' + formatDate(shift.eventDate) + ', Primary Stand ' + primaryStand + '</div></div><div class="shift-badges"><div class="shift-status ' + statusClass + '">' + shiftStatus + '</div>' + checkBadgeHtml(shift, checksIn(allShifts)) + '</div></div><div class="shift-details"><div class="detail-item"><div class="detail-label">Total Sodexo Payment</div><div class="detail-value">' + formatCurrency(totalPayout) + '</div></div><div class="detail-item"><div class="detail-label">Total Hours</div><div class="detail-value">' + calculations.totalHoursFormatted + '</div></div><div class="detail-item"><div class="detail-label">Hourly Rate</div><div class="detail-value">' + calculations.hourlyRateFormatted + '</div></div><div class="detail-item"><div class="detail-label">Workers</div><div class="detail-value">' + (shift.workers || []).length + '</div></div></div>' + workersHtml + '</div><div class="shift-actions">' + actionButtons + '</div></div>';
         }
 
         /* Reads filteredShifts, not allShifts. Before the season filter existed
@@ -3032,7 +3358,9 @@
                 totalPayout: document.getElementById('totalPayout'),
                 totalHours: document.getElementById('totalHours'),
                 avgHourlyRate: document.getElementById('avgHourlyRate'),
-                avgNetPerWorker: document.getElementById('avgNetPerWorker')
+                avgNetPerWorker: document.getElementById('avgNetPerWorker'),
+                totalAwaitingCheck: document.getElementById('totalAwaitingCheck'),
+                totalCheckShortfall: document.getElementById('totalCheckShortfall')
             };
 
             if (elements.totalShifts) elements.totalShifts.textContent = stats.totalShifts;
@@ -3040,6 +3368,24 @@
             if (elements.totalHours) elements.totalHours.textContent = formatHours(stats.totalHours);
             if (elements.avgHourlyRate) elements.avgHourlyRate.textContent = formatCurrency(stats.avgHourlyRate);
             if (elements.avgNetPerWorker) elements.avgNetPerWorker.textContent = formatCurrency(stats.avgNetPerWorker);
+
+            /* MONEY SODEXO HAS NOT SENT. Every other tile on this page counts a
+               payout as though the money were in hand, which is what let an
+               April shortfall of $1,417.13 sit behind healthy looking totals for
+               five months. The gaps are computed from every event on each check,
+               so a filtered out sibling cannot make a sound check read short. */
+            const checks = checksIn(allShifts);
+            const awaiting = awaitingTotal(scope);
+            const shortfall = shortfallTotal(scope, checks);
+            if (elements.totalAwaitingCheck) {
+                elements.totalAwaitingCheck.textContent = formatCurrency(awaiting);
+                elements.totalAwaitingCheck.classList.toggle('stat-alarm', awaiting > 0);
+            }
+            if (elements.totalCheckShortfall) {
+                elements.totalCheckShortfall.textContent = Math.abs(shortfall) < CHECK_CENT
+                    ? formatCurrency(0) : signedMoney(shortfall);
+                elements.totalCheckShortfall.classList.toggle('stat-alarm', Math.abs(shortfall) >= CHECK_CENT);
+            }
 
             updateBackfillVisibility();
         }

@@ -31,9 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # Static HTML with inline modules. There is no build and no test suite
-      # yet, so this is a shape check, not a proof. The golden-file suite for
-      # the payout formula belongs here once it exists.
+      # Static HTML with inline modules and no build. The shape checks below
+      # are not a proof; the money gates further down are. Those run the suites
+      # in _tools/payout, which slice the formula and the check chain out of the
+      # shipped pages, so a push that changes what a volunteer is paid, or what
+      # the pages say about a Sodexo check, cannot reach production quietly.
       - name: No private keys or service accounts in client code
         run: |
           # A Firebase web apiKey (AIza...) is NOT a secret. It is a public
@@ -74,6 +76,32 @@ jobs:
           test -s firebase/firestore.rules \
             || { echo "::error::firebase/firestore.rules is missing or empty."; exit 1; }
           echo "rules present, $(wc -l < firebase/firestore.rules) lines"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # THE MONEY GATES. Each one extracts the real functions out of
+      # public_html and runs them, so none of this can pass against a copy.
+      #
+      #   check   the formula still does what it did          (regression)
+      #   pages   payouts and treasurer still agree           (the two copies)
+      #   adr     the formula does what ADR-005 says           (specification)
+      #   checks  the check-received chain still sees April    (the $1,417.13)
+      #
+      # adr was failing from 2026-09-02 until the shirt split was corrected on
+      # 2026-09-16. It passes now, and it is a gate now, so it stays passing.
+      - name: Payout formula, regression against the goldens
+        run: node _tools/payout/run.mjs check
+
+      - name: Payout formula, the two page copies agree
+        run: node _tools/payout/run.mjs pages
+
+      - name: Payout formula, conforms to ADR-005
+        run: node _tools/payout/run.mjs adr
+
+      - name: Check-received chain, both pages
+        run: node _tools/payout/checks.mjs
 
   deploy:
     needs: checks
