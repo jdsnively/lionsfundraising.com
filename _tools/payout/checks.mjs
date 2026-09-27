@@ -143,14 +143,14 @@ for (const { page, file } of PAGES) {
     ok(page, 'short check badge carries the gap',
         shortBadge.indexOf('1417.13') !== -1, shortBadge);
     ok(page, 'short check badge uses a real minus sign',
-        shortBadge.indexOf('−$1417.13') !== -1, shortBadge);
+        shortBadge.indexOf('\u2212$1417.13') !== -1, shortBadge);
     ok(page, 'short check badge names the check', shortBadge.indexOf('4109045') !== -1, shortBadge);
     ok(page, 'short check badge dates it 5/22', shortBadge.indexOf('5/22') !== -1, shortBadge);
 
     const inBadge = fn.checkBadgeHtml(shifts[2], checks);
     ok(page, 'reconciled check badge is green', inBadge.indexOf('check-in') !== -1, inBadge);
     ok(page, 'reconciled check badge shows no difference',
-        inBadge.indexOf('−') === -1, inBadge);
+        inBadge.indexOf('\u2212') === -1, inBadge);
 
     ok(page, 'unpaid event badge says awaiting check',
         fn.checkBadgeHtml(shifts[3], checks).indexOf('check-awaiting') !== -1);
@@ -164,7 +164,7 @@ for (const { page, file } of PAGES) {
     eq(page, 'a typed check number cannot carry markup',
         fn.escapeText('4109045"><script>x</script>'),
         '4109045&quot;&gt;&lt;script&gt;x&lt;/script&gt;');
-    eq(page, 'a shortfall reads as negative', fn.signedMoney(-1417.13), '−$1417.13');
+    eq(page, 'a shortfall reads as negative', fn.signedMoney(-1417.13), '\u2212$1417.13');
     eq(page, 'an overpayment reads as positive', fn.signedMoney(450), '+$450.00');
 
     // --- RECOVERING A SHORTFALL -------------------------------------------
