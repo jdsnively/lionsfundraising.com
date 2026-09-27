@@ -3106,8 +3106,15 @@
 
            So there is one axis, isLocked, and two states: Ready, and Processed
            and Locked. The treasurer presses one button when she has taken a
-           shift into her own system. paymentStatus is still written as a record
-           for the export, but nothing branches on it.
+           shift into her own system.
+
+           THAT BUTTON WRITES FOUR KEYS AND NO MORE, because the Firestore rules
+           whitelist exactly four for her. paymentStatus is NOT one of them and
+           is no longer written here: the earlier version of this comment said it
+           was "written as a record for the export, but nothing branches on it",
+           which was true of the code and false of the rules. Nothing reads the
+           field on either page, so removing the write costs nothing; the export
+           reports isLocked. M-30. See confirmLockShift.
 
            THE CHECK AND BALANCE IS THE POINT. The payouts page refuses to
            return a locked shift to draft, so Jason cannot quietly change work
@@ -3355,7 +3362,9 @@
             const calculations = payoutsFor(shift);
             
             const primaryStand = shift.primaryStand || shift.standNumber || 'N/A';
-            /* One axis. isLocked is the truth; paymentStatus is only a record. */
+            /* One axis. isLocked is the truth. paymentStatus is written only
+               by reopenShift, which is administrator only and so is not bound
+               by the treasurer's four-key whitelist. Nothing reads it. */
             const isProcessed = shift.isLocked === true;
             const statusClass = isProcessed ? 'status-processed' : 'status-finalized';
             const isAdmin = TREASURER_ADMIN_ADDRESSES.includes(currentAddress());
@@ -3548,15 +3557,26 @@
                 }
                 console.log('Locking shift in Firebase:', shiftId);
                 const shiftRef = doc(db, 'Work-Shifts', shiftId);
+                /* FOUR KEYS, AND ONLY THESE FOUR. firestore.rules line 126
+                   reads:
+
+                     allow update: if isTreasurer() && changedKeys()
+                         .hasOnly(['isLocked','lockedBy','lockedDate','lockReason']);
+
+                   A fifth key fails hasOnly and the whole write is denied. This
+                   function used to add paymentStatus: 'processed', which meant
+                   the treasurer's ONE button returned permission-denied for
+                   her while working fine for an administrator, because
+                   isTreasurer() returns true for isSystemAdmin() too. It was
+                   live from 2026-09-26 until now. DO NOT ADD A KEY HERE without
+                   widening the rule first, and test as Crystal, not as Jason. */
                 await updateDoc(shiftRef, {
                     isLocked: true,
-                    paymentStatus: 'processed',
                     lockedBy: currentUser.email,
                     lockedDate: new Date().toISOString(),
                     lockReason: 'Processed and locked by the treasurer'
                 });
                 shift.isLocked = true;
-                shift.paymentStatus = 'processed';
                 shift.lockedBy = currentUser.email;
                 shift.lockedDate = new Date().toISOString();
                 shift.lockReason = 'Processed and locked by the treasurer';
