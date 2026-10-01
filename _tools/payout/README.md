@@ -52,6 +52,12 @@ replays the real 2026-05-22 remittance on this season's dates and requires both
 halves: the two events it paid in full read paid, and the club still reads
 $1,417.13 short.
 
+Since 2026-10-01 the dialog also takes the amount printed on the check, fills
+each ticked event with what Sodexo owes, and refuses to save until what is
+entered comes to the check exactly (Jason: reconcile every time). The suite
+proves the refusal both ways, over and short, and that a check left at the
+filled-in amounts while Sodexo paid less cannot be recorded.
+
 What none of this can see is permission. The Firestore rules decide whether the
 treasurer may save at all, and `_tools/rules/rules-test.mjs` tests that, signed
 in as her, in the emulator (M-30).

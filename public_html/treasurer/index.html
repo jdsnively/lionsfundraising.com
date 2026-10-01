@@ -593,11 +593,11 @@
             white-space: nowrap;
         }
 
-        /* The one dialog she uses. Two fields off the check, then the events
-           and the amount the stub shows for each. */
+        /* The one dialog she uses. Three fields off the check, then the
+           events and the amount the stub shows for each. */
         .check-form {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1.2fr 1fr 1fr;
             gap: var(--space-3);
             margin-bottom: var(--space-3);
         }
@@ -1562,9 +1562,9 @@
         <div class="dialog-content" style="max-width: 48rem;">
             <h3 class="dialog-title">Record a Sodexo Check</h3>
             <p style="margin-bottom: var(--space-4); color: var(--tr-gray-700);">
-                Type the check number and date, tick each event on the stub, and type the
-                amount the stub shows for that event's date. If one check pays two events,
-                tick both here.
+                Type the check number, date and amount. Tick each event the stub pays; its
+                amount fills in with what Sodexo owes, so change it only if the stub shows
+                something different. The check records once nothing is left over.
             </p>
             <div class="check-form">
                 <div class="form-group">
@@ -1576,6 +1576,11 @@
                 <div class="form-group">
                     <label for="checkDateInput">Check date</label>
                     <input type="date" id="checkDateInput">
+                </div>
+                <div class="form-group">
+                    <label for="checkTotalInput">Amount of check</label>
+                    <input type="number" id="checkTotalInput" step="0.01" min="0"
+                           placeholder="e.g. 3571.46" inputmode="decimal">
                 </div>
             </div>
             <div id="checkExistingNote" class="check-existing hidden"></div>
@@ -2521,7 +2526,7 @@
                 'totalFinalizedShifts', 'totalPayrollAmount', 'totalVolunteers', 'totalLionsRevenue',
                 'totalAwaitingCheck', 'totalCheckShortfall',
                 'filterSeason', 'searchShifts', 'paymentStatus', 'clearFiltersBtn',
-                'recordCheckBtn', 'checkModal', 'checkNumberInput', 'checkDateInput',
+                'recordCheckBtn', 'checkModal', 'checkNumberInput', 'checkDateInput', 'checkTotalInput',
                 'checkNoteInput', 'checkEventList', 'checkTally', 'checkAdjustList',
                 'checkAddAdjustBtn', 'checkCancelBtn', 'checkSaveBtn',
                 'awaitingCheckLabel', 'checkShortfallLabel',
@@ -2613,9 +2618,13 @@
            that number is on the paper in her hand.
 
            ONE CHECK PAYING SEVERAL EVENTS is the same check number on each.
-           The events stay separate; the number connects them, and the page
-           adds their amounts so the total can be tied to the face of the
-           check.
+           The events stay separate; the number connects them. Jason,
+           2026-10-01: the treasurer types the amount printed on the check
+           beside its date, each event she ticks fills in with what Sodexo owes
+           for it, and she changes that only where the stub differs. The check
+           cannot be recorded until what she has entered comes to the amount
+           of the check exactly, so a short event shows up as money left over
+           before it can be saved, not after.
 
            A LINE THAT IS NOT AN EVENT'S OWN MONEY, a deduction for something
            else or a later make-good, is an adjustment recorded against the
@@ -2635,6 +2644,8 @@
 
                checkNumber       string   connects the events on one check
                checkDate         YYYY-MM-DD
+               checkTotal        number   the amount printed on the check,
+                                          the same on every event it paid
                checkPaid         number   what the stub shows for THIS event
                checkNote         string   why a difference, when there is one
                checkReceivedAt   ISO      set once, never overwritten
@@ -2973,11 +2984,17 @@
          *
          *   events       [{ shift, typed }]            the events on this check
          *   adjustments  [{ amount, about, note }]     about is a shift id or 'none'
+         *   checkTotal   what she typed as the amount printed on the check
+         *   recorded     the sum of lines this check number already put on
+         *                events, which stay as they are and still count
          *
-         * Returns { lines, adjustments, total, differs, problem }. problem is
-         * the first thing that stops a save, or '' when it can be saved.
+         * Returns { lines, adjustments, total, checkTotal, remaining, differs,
+         * problem }. total is what has been entered against the check, and
+         * remaining is the check less that, so it reads $0.00 when the two
+         * agree. problem is the first thing that stops a save, or '' when it
+         * can be saved. Jason, 2026-10-01: it has to reconcile every time.
          */
-        function checkDraftSummary(number, date, note, events, adjustments) {
+        function checkDraftSummary(number, date, note, events, adjustments, checkTotal, recorded) {
             const lines = (events || []).map(e => {
                 const billed = billedFor(e.shift);
                 const paid = typedMoney(e.typed);
@@ -2990,7 +3007,10 @@
                 note: String(a.note || '').trim()
             }));
             const total = lines.reduce((sum, l) => sum + (Number.isFinite(l.paid) ? l.paid : 0), 0)
-                + extras.reduce((sum, a) => sum + (Number.isFinite(a.amount) ? a.amount : 0), 0);
+                + extras.reduce((sum, a) => sum + (Number.isFinite(a.amount) ? a.amount : 0), 0)
+                + (Number(recorded) || 0);
+            const face = typedMoney(checkTotal);
+            const remaining = Number.isFinite(face) ? Math.round((face - total) * 100) / 100 : NaN;
             const differs = lines.filter(l => Number.isFinite(l.diff) && Math.abs(l.diff) >= CHECK_CENT);
             const name = (shift) => String((shift && shift.eventName) || 'this event');
 
@@ -3000,6 +3020,8 @@
                 problem = 'Enter the check number printed on the check.';
             } else if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
                 problem = 'Enter the date printed on the check.';
+            } else if (!(face > 0)) {
+                problem = 'Enter the amount printed on the check.';
             } else if (lines.length === 0 && extras.length === 0) {
                 problem = 'Tick the events this check pays for, or add the line it carries '
                     + 'under Anything else on this stub.';
@@ -3014,12 +3036,19 @@
             } else if (extras.some(a => a.about === 'none') && lines.length === 0) {
                 problem = 'A line that is not one of our events has to be recorded with the events '
                     + 'the same check paid. Tick them.';
+            } else if (Math.abs(remaining) >= CHECK_CENT) {
+                problem = remaining > 0
+                    ? '$' + remaining.toFixed(2) + ' of the check is not accounted for. Tick the event '
+                        + 'it also pays, correct an amount, or add the line under Anything else on this stub.'
+                    : 'What is entered comes to $' + Math.abs(remaining).toFixed(2) + ' more than the '
+                        + 'check. Correct an amount, or add the deduction under Anything else on this stub.';
             } else if (differs.length > 0 && !String(note || '').trim()) {
                 const first = differs[0];
                 problem = name(first.shift) + ' is ' + signedMoney(first.diff)
                     + ' against what Sodexo owes. Write what the difference is before recording it.';
             }
-            return { lines: lines, adjustments: extras, total: total, differs: differs, problem: problem };
+            return { lines: lines, adjustments: extras, total: total, checkTotal: face,
+                     remaining: remaining, differs: differs, problem: problem };
         }
 
         /** The summary for what is on screen right now. */
@@ -3030,7 +3059,22 @@
             const ticked = allShifts.filter(s => checkDraft.ticked.has(s.id) && !fixed.includes(s));
             const events = fixed.concat(ticked).map(s => ({ shift: s, typed: checkDraft.amounts.get(s.id) }));
             return checkDraftSummary(number, value('checkDateInput'), value('checkNoteInput'),
-                events, checkDraft.adjustments);
+                events, checkDraft.adjustments, value('checkTotalInput'), recordedLinesOn(number));
+        }
+
+        /** The lines a check number has already put on events. Correcting a
+            check leaves them as they are, so they still count against it. */
+        function recordedLinesOn(number) {
+            const wanted = String(number || '').trim();
+            if (!wanted) return 0;
+            return allShifts.reduce((sum, s) => sum + adjustmentsOn(s)
+                .filter(a => a.check === wanted)
+                .reduce((inner, a) => inner + a.amount, 0), 0);
+        }
+
+        /** What Sodexo owes for an event, as the amount box fills it in. */
+        function prefillFor(shift) {
+            return billedFor(shift).toFixed(2);
         }
 
         window.openCheckModal = function(shiftId) {
@@ -3043,15 +3087,19 @@
                 const shift = allShifts.find(s => s.id === shiftId);
                 /* Opened from a card, so that event is already ticked. She came
                    in saying "this one was paid"; she should not have to say it
-                   again in here. Its amount box is still empty. */
-                if (shift && awaitsCheck(shift)) checkDraft.ticked.add(shiftId);
+                   again in here. Its amount fills in with what Sodexo owes, as
+                   every ticked event does (Jason, 2026-10-01). */
+                if (shift && awaitsCheck(shift)) {
+                    checkDraft.ticked.add(shiftId);
+                    checkDraft.amounts.set(shiftId, prefillFor(shift));
+                }
             }
             const numbers = Array.from(checksIn(allShifts).keys()).sort();
             const list = document.getElementById('checkNumberList');
             if (list) {
                 list.innerHTML = numbers.map(n => '<option value="' + escapeText(n) + '"></option>').join('');
             }
-            ['checkNumberInput', 'checkDateInput', 'checkNoteInput'].forEach(id => {
+            ['checkNumberInput', 'checkDateInput', 'checkTotalInput', 'checkNoteInput'].forEach(id => {
                 const field = document.getElementById(id);
                 if (field) field.value = '';
             });
@@ -3091,14 +3139,14 @@
             const row = (shift, isFixed) => {
                 const season = seasonOf(shift.eventDate);
                 const stale = season !== current;
-                const stand = shift.primaryStand || shift.standNumber || '?';
                 const on = isFixed || checkDraft.ticked.has(shift.id);
                 const eventName = escapeText(shift.eventName || 'Unnamed Event');
                 const typed = checkDraft.amounts.get(shift.id);
+                /* The event and its date, nothing else (Jason, 2026-10-01).
+                   The stand number named only the primary stand, and what
+                   Sodexo owes is the amount the box fills in with. */
                 const meta = [
                     shortCheckDate(shift.eventDate) || formatDate(shift.eventDate),
-                    'stand ' + stand,
-                    'owed $' + billedFor(shift).toFixed(2),
                     stale ? season : '',
                     isFixed ? 'already on this check' : ''
                 ].filter(Boolean).join(' &middot; ');
@@ -3132,8 +3180,16 @@
                        the check in one batch. */
                     const dateField = document.getElementById('checkDateInput');
                     const noteField = document.getElementById('checkNoteInput');
+                    const totalField = document.getElementById('checkTotalInput');
                     if (dateField && !dateField.value) dateField.value = existing.date;
                     if (noteField && !noteField.value) noteField.value = existing.note;
+                    /* A check recorded before 2026-10-01 carries no total, so
+                       it comes back as the sum of what is already on it. */
+                    if (totalField && !totalField.value) {
+                        const stored = Number(fixed[0].checkTotal);
+                        totalField.value = (stored > 0 ? stored
+                            : fixed.reduce((sum, s) => sum + checkOf(s).paid, 0) + recordedLinesOn(number)).toFixed(2);
+                    }
                     notice.innerHTML = 'Check ' + escapeText(existing.number) + ' is already recorded on '
                         + fixed.length + (fixed.length === 1 ? ' event' : ' events')
                         + '. Anything you change here updates ' + (fixed.length === 1 ? 'it' : 'all of them')
@@ -3187,12 +3243,17 @@
             if (!tally) return;
             const summary = currentCheckSummary();
             const targets = new Map(adjustmentTargets().map(s => [s.id, s]));
-            let rows = '';
+            /* Starts from the amount of the check and works down to what is
+               left (Jason, 2026-10-01). An event that differs from what Sodexo
+               owes shows the difference beside it. */
+            let rows = '<div class="t-label">Amount of check</div>'
+                + '<div class="t-value">' + (Number.isFinite(summary.checkTotal)
+                    ? '$' + summary.checkTotal.toFixed(2) : 'amount?') + '</div>';
             summary.lines.forEach(l => {
                 const typed = Number.isFinite(l.paid);
                 const off = typed && Math.abs(l.diff) >= CHECK_CENT;
                 rows += '<div class="t-label">' + escapeText(l.shift.eventName || 'Unnamed Event')
-                        + ' <span class="t-sub">owed $' + l.billed.toFixed(2) + '</span></div>'
+                        + ' <span class="t-sub">' + escapeText(shortCheckDate(l.shift.eventDate) || '') + '</span></div>'
                     + '<div class="t-value' + (off ? ' is-off' : '') + '">'
                         + (typed ? '$' + l.paid.toFixed(2) + (off ? ' (' + signedMoney(l.diff) + ')' : '')
                             : 'amount?') + '</div>';
@@ -3205,8 +3266,19 @@
                     + '<div class="t-value">' + (Number.isFinite(a.amount) ? signedMoney(a.amount) : 'amount?')
                     + '</div>';
             });
-            rows += '<div class="t-label t-gap">Check total. This should match the check.</div>'
-                + '<div class="t-value t-gap">$' + summary.total.toFixed(2) + '</div>';
+            const before = recordedLinesOn(String((document.getElementById('checkNumberInput') || {}).value || ''));
+            if (Math.abs(before) >= CHECK_CENT) {
+                rows += '<div class="t-label">Lines already recorded on this check</div>'
+                    + '<div class="t-value">' + signedMoney(before) + '</div>';
+            }
+            const left = summary.remaining;
+            const level = Number.isFinite(left) && Math.abs(left) < CHECK_CENT;
+            const over = Number.isFinite(left) && left <= -CHECK_CENT;
+            rows += '<div class="t-label t-gap' + (level ? ' is-level' : ' is-off') + '">'
+                + (over ? 'Entered over the check by' : 'Remaining') + '</div>'
+                + '<div class="t-value t-gap' + (level ? ' is-level' : ' is-off') + '">'
+                + (Number.isFinite(left) ? '$' + Math.abs(left).toFixed(2) : 'amount?')
+                + '</div>';
             tally.innerHTML = rows;
 
             const box = document.getElementById('checkGapBox');
@@ -3215,8 +3287,8 @@
             if (box) box.classList.toggle('hidden', !show);
             if (label && show) {
                 label.textContent = summary.differs.map(l => (l.shift.eventName || 'Unnamed Event')
-                    + (l.diff < 0 ? ' is $' + Math.abs(l.diff).toFixed(2) + ' short'
-                        : ' is $' + l.diff.toFixed(2) + ' over'))
+                    + (l.diff < 0 ? ' is $' + Math.abs(l.diff).toFixed(2) + ' short of'
+                        : ' is $' + l.diff.toFixed(2) + ' over') + ' the $' + l.billed.toFixed(2) + ' Sodexo owes')
                     .join('; ') + '. What does the difference account for?';
             }
         }
@@ -3240,7 +3312,8 @@
             const updates = new Map();
             const put = (id, fields) => updates.set(id, Object.assign(updates.get(id) || {}, fields));
             summary.lines.forEach(l => {
-                const fields = { checkNumber: number, checkDate: date, checkPaid: l.paid, checkNote: note };
+                const fields = { checkNumber: number, checkDate: date, checkTotal: summary.checkTotal,
+                                 checkPaid: l.paid, checkNote: note };
                 /* Kept from the first time it was recorded. The write is the
                    record of when she saw the check, and a later correction is
                    not a second arrival. */
@@ -3311,6 +3384,7 @@
                 await updateDoc(doc(db, 'Work-Shifts', shiftId), {
                     checkNumber: deleteField(),
                     checkDate: deleteField(),
+                    checkTotal: deleteField(),
                     checkPaid: deleteField(),
                     checkNote: deleteField(),
                     checkReceivedAt: deleteField(),
@@ -4367,6 +4441,7 @@
             /* The number decides which events are already on this check, so it
                redraws the list. */
             if (elements.checkNumberInput) elements.checkNumberInput.addEventListener('input', renderCheckList);
+            if (elements.checkTotalInput) elements.checkTotalInput.addEventListener('input', renderCheckTally);
             if (elements.checkEventList) {
                 /* Ticking redraws, so the amount box beside it opens, and the
                    cursor goes straight into it. */
@@ -4375,12 +4450,21 @@
                     if (!box || box.type !== 'checkbox' || box.disabled) return;
                     const id = box.getAttribute('data-shift');
                     if (!id) return;
-                    if (box.checked) checkDraft.ticked.add(id); else checkDraft.ticked.delete(id);
+                    if (box.checked) {
+                        checkDraft.ticked.add(id);
+                        /* Fills in with what Sodexo owes, once. An amount she
+                           has already changed is kept if she unticks and ticks
+                           again. */
+                        const shift = allShifts.find(s => s.id === id);
+                        if (shift && !checkDraft.amounts.has(id)) checkDraft.amounts.set(id, prefillFor(shift));
+                    } else {
+                        checkDraft.ticked.delete(id);
+                    }
                     renderCheckList();
                     if (box.checked) {
                         const amount = Array.from(elements.checkEventList.querySelectorAll('input[data-paid]'))
                             .find(input => input.getAttribute('data-paid') === id);
-                        if (amount) amount.focus();
+                        if (amount) { amount.focus(); amount.select(); }
                     }
                 });
                 /* Typing an amount only moves the tally, so the cursor stays. */

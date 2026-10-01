@@ -68,7 +68,7 @@ check('every key the treasurer writes is whitelisted',
     [...everything].every(k => whitelist.has(k)), [...everything].filter(k => !whitelist.has(k)).join(', '));
 check('nothing is whitelisted that the treasurer never writes',
     [...whitelist].every(k => everything.has(k)), [...whitelist].filter(k => !everything.has(k)).join(', '));
-check('record a check writes nine keys', recordKeys.size === 9, String(recordKeys.size));
+check('record a check writes ten keys', recordKeys.size === 10, String(recordKeys.size));
 check('process and lock writes exactly four keys', lockKeys.size === 4, String(lockKeys.size));
 
 // --- the emulator -----------------------------------------------------------
@@ -94,7 +94,7 @@ const volunteer = env.authenticatedContext('vol', { email: 'volunteer@example.co
 const now = '2026-09-27T12:00:00.000Z';
 
 // Exactly what recordCheck sends for the replayed 4109045 stub.
-const CHECK = { checkNumber: '4109045', checkDate: '2026-08-28', checkPaid: 2354.41, checkNote: '',
+const CHECK = { checkNumber: '4109045', checkDate: '2026-08-28', checkTotal: 3571.46, checkPaid: 2354.41, checkNote: '',
                 checkReceivedAt: now, checkReceivedBy: 'treasurer@lionssports.club' };
 const LINES = { checkAdjustments: [
                     { check: '4109045', date: '2026-08-28', amount: -450, note: 'BR-1', own: false }],
@@ -111,6 +111,8 @@ await expect('treasurer can add an extra line',
     updateDoc(doc(crystal, 'Work-Shifts', 'dci1'), LINES), 'allow');
 await expect('treasurer can correct a recorded amount',
     updateDoc(doc(crystal, 'Work-Shifts', 'dci1'), { checkPaid: 2354.4, checkNote: 'typo fixed' }), 'allow');
+await expect('treasurer can correct the amount of the check',
+    updateDoc(doc(crystal, 'Work-Shifts', 'dci1'), { checkTotal: 3571.4 }), 'allow');
 {
     // One check, two events, one batch, the way the dialog commits it.
     await seed();

@@ -3039,9 +3039,13 @@
            that number is on the paper in her hand.
 
            ONE CHECK PAYING SEVERAL EVENTS is the same check number on each.
-           The events stay separate; the number connects them, and the page
-           adds their amounts so the total can be tied to the face of the
-           check.
+           The events stay separate; the number connects them. Jason,
+           2026-10-01: the treasurer types the amount printed on the check
+           beside its date, each event she ticks fills in with what Sodexo owes
+           for it, and she changes that only where the stub differs. The check
+           cannot be recorded until what she has entered comes to the amount
+           of the check exactly, so a short event shows up as money left over
+           before it can be saved, not after.
 
            A LINE THAT IS NOT AN EVENT'S OWN MONEY, a deduction for something
            else or a later make-good, is an adjustment recorded against the
@@ -3061,6 +3065,8 @@
 
                checkNumber       string   connects the events on one check
                checkDate         YYYY-MM-DD
+               checkTotal        number   the amount printed on the check,
+                                          the same on every event it paid
                checkPaid         number   what the stub shows for THIS event
                checkNote         string   why a difference, when there is one
                checkReceivedAt   ISO      set once, never overwritten

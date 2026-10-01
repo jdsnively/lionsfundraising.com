@@ -324,52 +324,87 @@ for (const { page, file } of PAGES) {
     eq(page, 'a blank amount is not a number', Number.isNaN(d.typedMoney('')), true);
     eq(page, 'text is not a number', Number.isNaN(d.typedMoney('abc')), true);
     eq(page, 'a stub amount reads as typed', d.typedMoney('2354.41'), 2354.41);
+    eq(page, 'what Sodexo owes for DCI Day 1, as the box fills in', d.billedFor(e1).toFixed(2), '2354.41');
     eq(page, 'a deduction keeps its sign', d.typedMoney('-450'), -450);
 
+    // Jason, 2026-10-01: she types the amount printed on the check, every
+    // ticked event fills in with what Sodexo owes, and the check records only
+    // when what is entered comes to the amount of the check exactly.
     const replay = d.checkDraftSummary('4109045', '2026-08-28', '',
         [{ shift: e1, typed: '2354.41' }, { shift: e2, typed: '2634.18' }],
         [{ amount: '-967.13', about: 'dci3', note: 'duplicate' },
-         { amount: '-450', about: 'none', note: 'BR-1' }]);
+         { amount: '-450', about: 'none', note: 'BR-1' }], '3571.46', 0);
     eq(page, 'the replayed stub saves', replay.problem, '');
     eq(page, 'the replayed stub totals the face of the check', cents(replay.total), 3571.46);
+    eq(page, 'the replayed stub leaves nothing remaining', replay.remaining, 0);
+    eq(page, 'the amount of the check comes back as a number', replay.checkTotal, 3571.46);
     eq(page, 'neither paid event differs', replay.differs.length, 0);
 
     eq(page, 'a check number is required',
-        d.checkDraftSummary('', '2026-08-28', '', [{ shift: e1, typed: '1' }], []).problem,
+        d.checkDraftSummary('', '2026-08-28', '', [{ shift: e1, typed: '1' }], [], '1', 0).problem,
         'Enter the check number printed on the check.');
     eq(page, 'a check date is required',
-        d.checkDraftSummary('1', '8/28', '', [{ shift: e1, typed: '1' }], []).problem,
+        d.checkDraftSummary('1', '8/28', '', [{ shift: e1, typed: '1' }], [], '1', 0).problem,
         'Enter the date printed on the check.');
+    eq(page, 'THE AMOUNT OF THE CHECK IS REQUIRED',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }], [], '', 0).problem,
+        'Enter the amount printed on the check.');
+    ok(page, 'a zero check is refused',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }], [], '0', 0).problem
+            === 'Enter the amount printed on the check.');
     ok(page, 'something has to be on the check',
-        d.checkDraftSummary('1', '2026-08-28', '', [], []).problem.indexOf('Tick the events') === 0);
-    eq(page, 'THE AMOUNT BOX MUST BE FILLED',
-        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '' }], []).problem,
+        d.checkDraftSummary('1', '2026-08-28', '', [], [], '5', 0).problem.indexOf('Tick the events') === 0);
+    eq(page, 'an emptied amount box is still refused',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '' }], [], '2354.41', 0).problem,
         'Type the amount the stub shows for DCI - Day 1.');
     ok(page, 'a zero amount is refused',
-        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '0' }], []).problem !== '');
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '0' }], [], '2354.41', 0).problem !== '');
 
-    const shortNoNote = d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '1574.62' }], []);
-    ok(page, 'a short event needs a note', shortNoNote.problem.indexOf(MINUS + '$779.79') !== -1,
-        shortNoNote.problem);
+    // The prefilled amounts accepted as they are, on a check that is short:
+    // the money left over is what stops it, before anyone has to spot it.
+    const accepted = d.checkDraftSummary('4109045', '2026-08-28', '',
+        [{ shift: e1, typed: d.billedFor(e1).toFixed(2) }, { shift: e2, typed: d.billedFor(e2).toFixed(2) }],
+        [], '3571.46', 0);
+    ok(page, 'A SHORT CHECK WITH THE AMOUNTS LEFT AS FILLED IN DOES NOT SAVE',
+        accepted.problem.indexOf('more than the check') !== -1, accepted.problem);
+    eq(page, 'and it says by how much', cents(accepted.remaining), -1417.13);
+    const leftOver = d.checkDraftSummary('1', '2026-08-28', '',
+        [{ shift: e1, typed: '2354.41' }], [], '4988.59', 0);
+    ok(page, 'a check with money not accounted for does not save',
+        leftOver.problem.indexOf('$2634.18 of the check is not accounted for') === 0, leftOver.problem);
+    eq(page, 'a cent of float noise is not a difference',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '1574.62' }, { shift: e2, typed: '779.79' }],
+            [], '2354.41', 0).remaining, 0);
+
+    const shortNoNote = d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '1574.62' }], [], '1574.62', 0);
+    ok(page, 'a short event needs a note, once the check reconciles',
+        shortNoNote.problem.indexOf(MINUS + '$779.79') !== -1, shortNoNote.problem);
     eq(page, 'the short event is listed as differing', shortNoNote.differs.length, 1);
     eq(page, 'a short event with a note saves',
-        d.checkDraftSummary('1', '2026-08-28', 'one stand only', [{ shift: e1, typed: '1574.62' }], []).problem, '');
+        d.checkDraftSummary('1', '2026-08-28', 'one stand only', [{ shift: e1, typed: '1574.62' }], [],
+            '1574.62', 0).problem, '');
+
+    // Correcting a check that already carries lines: they stay, and count.
+    const corrected = d.checkDraftSummary('4109045', '2026-08-28', '',
+        [{ shift: e1, typed: '2354.41' }, { shift: e2, typed: '2634.18' }], [], '3571.46', -1417.13);
+    eq(page, 'lines already recorded on the check count toward it', corrected.problem, '');
+    eq(page, 'and leave nothing remaining', corrected.remaining, 0);
 
     ok(page, 'an extra line needs an amount',
         d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
-            [{ amount: '', about: 'dci3', note: 'x' }]).problem.indexOf('amount of each extra line') !== -1);
+            [{ amount: '', about: 'dci3', note: 'x' }], '2354.41', 0).problem.indexOf('amount of each extra line') !== -1);
     ok(page, 'an extra line needs to say what it is about',
         d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
-            [{ amount: '-5', about: '', note: 'x' }]).problem.indexOf('which event') !== -1);
+            [{ amount: '-5', about: '', note: 'x' }], '2349.41', 0).problem.indexOf('which event') !== -1);
     ok(page, 'an extra line needs a note',
         d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
-            [{ amount: '-5', about: 'dci3', note: ' ' }]).problem.indexOf('Write what each extra line is') === 0);
+            [{ amount: '-5', about: 'dci3', note: ' ' }], '2349.41', 0).problem.indexOf('Write what each extra line is') === 0);
     ok(page, 'a not-ours line needs an event on the same check',
         d.checkDraftSummary('1', '2026-08-28', '', [],
-            [{ amount: '-450', about: 'none', note: 'x' }]).problem.indexOf('not one of our events') !== -1);
+            [{ amount: '-450', about: 'none', note: 'x' }], '450', 0).problem.indexOf('not one of our events') !== -1);
     eq(page, 'a make-good alone, about one of our events, saves',
         d.checkDraftSummary('4112001', '2026-10-15', '', [],
-            [{ amount: '967.13', about: e3.id, note: 'reissued' }]).problem, '');
+            [{ amount: '967.13', about: e3.id, note: 'reissued' }], '967.13', 0).problem, '');
 }
 
 // The two copies must not merely both work. They must be the same code.
