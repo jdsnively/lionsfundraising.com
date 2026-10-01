@@ -87,7 +87,7 @@ jobs:
       #   check   the formula still does what it did          (regression)
       #   pages   payouts and treasurer still agree           (the two copies)
       #   adr     the formula does what ADR-005 says           (specification)
-      #   checks  the check-received chain still sees April    (the $1,417.13)
+      #   checks  each event stands alone, and the $1,417.13 is still seen
       #
       # adr was failing from 2026-09-02 until the shirt split was corrected on
       # 2026-09-16. It passes now, and it is a gate now, so it stays passing.
@@ -103,8 +103,39 @@ jobs:
       - name: Check-received chain, both pages
         run: node _tools/payout/checks.mjs
 
+  # THE RULES GATE. Every gate above tests arithmetic, and on 2026-09-26 all of
+  # them were green while the treasurer could not save a thing (M-30), because
+  # the Firestore rules decide permission and nothing tested them. This signs in
+  # to the Firestore emulator AS THE TREASURER, reads the keys her buttons write
+  # out of the shipped page, and fails if the rules in firebase/firestore.rules
+  # would deny any of them. It does not deploy the rules; that is still done by
+  # hand from the committed file.
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install the emulator tooling, pinned
+        working-directory: _tools/rules
+        run: npm install --no-save --no-audit --no-fund firebase-tools@15.31.0 @firebase/rules-unit-testing@5.0.2 firebase@12.19.0
+
+      - name: Firestore rules, as the treasurer
+        working-directory: _tools/rules
+        run: >
+          npx firebase emulators:exec --only firestore --project demo-lions
+          "node rules-test.mjs ../../firebase/firestore.rules ../../public_html/treasurer/index.html"
+
   deploy:
-    needs: checks
+    needs: [checks, rules]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
