@@ -519,7 +519,7 @@
             letter-spacing: 0.05em;
         }
 
-        /* CHECK RECEIVED. Same three badges on both pages, so one check reads
+        /* CHECK RECEIVED. The same badges on both pages, so one event reads
            the same way wherever it is seen. */
         .shift-badges {
             display: flex;
@@ -540,9 +540,11 @@
             cursor: help;
         }
 
+        /* #92400e, not #b45309: the lighter brown measured 4.35:1 on this
+           wash at 0.72rem, under AA (A-5, 2026-09-27). This is 6.1:1. */
         .check-awaiting {
             background: rgba(245, 158, 11, 0.12);
-            color: #b45309;
+            color: #92400e;
             border: 1px solid #f59e0b;
         }
 
@@ -560,6 +562,15 @@
             border: 1px solid #dc2626;
         }
 
+        /* Paid MORE than Sodexo owed for the event. Not a loss, and not green
+           either: Sodexo has clawed back an overpayment before, which is how
+           the April 2026 shortfall began. */
+        .check-over {
+            background: rgba(245, 158, 11, 0.12);
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
         .stale-receivable {
             background: rgba(239, 68, 68, 0.08);
             border: 1px solid #dc2626;
@@ -572,14 +583,21 @@
             line-height: 1.5;
         }
 
+        /* The tiles are blue. #b91c1c on that blue measured 1.08:1 on
+           2026-09-27 (A-5), so the alarm figure was all but invisible. This
+           pale red measures 4.8:1 and still reads as a warning beside white.
+           nowrap: the minus sign is a line break opportunity, and a short
+           figure wrapped as a lone minus above the amount. */
         .stat-alarm {
-            color: #b91c1c;
+            color: #fecaca;
+            white-space: nowrap;
         }
 
-        /* The one dialog she uses. Three fields off the stub, then the events. */
+        /* The one dialog she uses. Two fields off the check, then the events
+           and the amount the stub shows for each. */
         .check-form {
             display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr;
+            grid-template-columns: 1.2fr 1fr;
             gap: var(--space-3);
             margin-bottom: var(--space-3);
         }
@@ -610,17 +628,78 @@
             gap: var(--space-3);
             padding: var(--space-2) var(--space-3);
             border-bottom: 1px solid var(--tr-gray-200, #e5e7eb);
-            cursor: pointer;
         }
 
         .check-event:last-child { border-bottom: none; }
         .check-event:hover { background: rgba(59, 130, 246, 0.05); }
-        .check-event input { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
-        .check-event.is-fixed { background: #f9fafb; cursor: default; }
+        .check-event input[type="checkbox"] { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+        .check-event.is-fixed { background: #f9fafb; }
+
+        .check-event-pick {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+
+        .check-event.is-fixed .check-event-pick { cursor: default; }
+
+        .check-event-paid {
+            width: 8.5rem;
+            flex-shrink: 0;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* The dialog's own fields sit outside .form-group, so they take its
+           look here rather than the browser's. 1rem keeps iOS from zooming. */
+        .check-event-paid,
+        .check-adjust input,
+        .check-adjust select,
+        .check-gap-box input {
+            padding: var(--space-2) var(--space-3);
+            border: var(--border-medium);
+            border-radius: var(--radius-md);
+            background: var(--tr-surface);
+            color: var(--tr-gray-700);
+            font-size: 1rem;
+            font-family: var(--tr-font-body);
+            min-height: 44px;
+        }
+
+        .check-event-paid:focus,
+        .check-adjust input:focus,
+        .check-adjust select:focus,
+        .check-gap-box input:focus {
+            outline: none;
+            border-color: var(--tr-blue);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .check-event-paid:disabled { background: #f3f4f6; }
 
         .check-event-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
         .check-event-meta { font-size: 0.78rem; color: var(--tr-gray-700); font-weight: 400; }
-        .check-event-amount { font-variant-numeric: tabular-nums; font-weight: 700; }
+        .check-adjust-help {
+            margin: 0 0 var(--space-2);
+            font-size: 0.85rem;
+            color: var(--tr-gray-700);
+        }
+
+        .check-adjust {
+            display: grid;
+            grid-template-columns: 7rem 1fr 1.2fr auto;
+            gap: var(--space-2);
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        @media (max-width: 560px) {
+            .check-adjust { grid-template-columns: 1fr; }
+            .check-event-paid { width: 6.5rem; }
+        }
 
         /* A closed season's event is a debt, not a queue entry. */
         .check-event-old .check-event-meta { color: #b91c1c; font-weight: 600; }
@@ -638,6 +717,8 @@
 
         .check-tally .t-label { color: var(--tr-gray-700); }
         .check-tally .t-value { text-align: right; font-weight: 700; }
+        .check-tally .t-value.is-off { color: #b91c1c; }
+        .check-tally .t-sub { font-size: 0.78rem; font-weight: 400; }
         .check-tally .t-gap { border-top: 1px solid var(--tr-gray-300, #d1d5db); padding-top: var(--space-2); }
         .check-tally .t-gap.is-off { color: #b91c1c; }
         .check-tally .t-gap.is-level { color: #065f46; }
@@ -1400,11 +1481,11 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="totalAwaitingCheck">$0.00</div>
-                    <div class="stat-label">Awaiting Sodexo</div>
+                    <div class="stat-label" id="awaitingCheckLabel">Awaiting Sodexo</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="totalCheckShortfall">$0.00</div>
-                    <div class="stat-label">Short Paid</div>
+                    <div class="stat-label" id="checkShortfallLabel">Short Paid</div>
                 </div>
             </div>
 
@@ -1421,7 +1502,7 @@
                         <option value="processed">Processed &amp; Locked</option>
                         <option value="awaiting-check">Awaiting Check</option>
                         <option value="check-in">Check Received</option>
-                        <option value="check-short">Check Short</option>
+                        <option value="check-short">Check Short or Over</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1478,11 +1559,12 @@
     </div>
 
     <div id="checkModal" class="dialog hidden">
-        <div class="dialog-content" style="max-width: 46rem;">
+        <div class="dialog-content" style="max-width: 48rem;">
             <h3 class="dialog-title">Record a Sodexo Check</h3>
             <p style="margin-bottom: var(--space-4); color: var(--tr-gray-700);">
-                Type what is printed on the check, then tick every event on the stub.
-                One check can pay for several events.
+                Type the check number and date, tick each event on the stub, and type the
+                amount the stub shows for that event's date. If one check pays two events,
+                tick both here.
             </p>
             <div class="check-form">
                 <div class="form-group">
@@ -1495,23 +1577,22 @@
                     <label for="checkDateInput">Check date</label>
                     <input type="date" id="checkDateInput">
                 </div>
-                <div class="form-group">
-                    <label for="checkAmountInput">Check total</label>
-                    <input type="number" id="checkAmountInput" step="0.01" min="0" placeholder="0.00">
-                </div>
             </div>
             <div id="checkExistingNote" class="check-existing hidden"></div>
-            <div class="form-group" id="checkSettlesRow" style="margin-top: var(--space-3);">
-                <label for="checkSettlesInput">Does this check make good on an earlier short one?</label>
-                <select id="checkSettlesInput"></select>
-            </div>
-            <div class="check-events-head">Events awaiting payment, oldest first</div>
+            <div class="check-events-head">Events awaiting a check, oldest first</div>
             <div id="checkEventList" class="check-event-list"></div>
+            <div class="check-events-head">Anything else on this stub</div>
+            <p class="check-adjust-help">
+                A deduction or a make-good that is not an event's own amount. Record it against
+                the event it is about, with a minus sign for a deduction.
+            </p>
+            <div id="checkAdjustList" class="check-adjust-list"></div>
+            <button type="button" class="btn btn-secondary" id="checkAddAdjustBtn">Add a line</button>
             <div id="checkTally" class="check-tally"></div>
             <div id="checkGapBox" class="check-gap-box hidden">
                 <label for="checkNoteInput" id="checkGapLabel"></label>
                 <input type="text" id="checkNoteInput" maxlength="220"
-                       placeholder="e.g. Sodexo deducted $1,417.13 for check 4107543, which was never deposited">
+                       placeholder="e.g. Sodexo paid one stand only; asked for the second on 9/30">
             </div>
             <div class="dialog-buttons">
                 <button class="btn btn-secondary" id="checkCancelBtn">Cancel</button>
@@ -2441,8 +2522,9 @@
                 'totalAwaitingCheck', 'totalCheckShortfall',
                 'filterSeason', 'searchShifts', 'paymentStatus', 'clearFiltersBtn',
                 'recordCheckBtn', 'checkModal', 'checkNumberInput', 'checkDateInput',
-                'checkAmountInput', 'checkNoteInput', 'checkEventList', 'checkTally',
-                'checkCancelBtn', 'checkSaveBtn', 'checkSettlesInput', 'checkSettlesRow',
+                'checkNoteInput', 'checkEventList', 'checkTally', 'checkAdjustList',
+                'checkAddAdjustBtn', 'checkCancelBtn', 'checkSaveBtn',
+                'awaitingCheckLabel', 'checkShortfallLabel',
                 'refreshBtn', 'exportAllPayrollBtn', 'exportSummaryBtn', 'workerTotalsBtn',
                 'workerTotalsBody', 'shiftDetailsModal', 'modalTitle', 'modalSubtitle',
                 'modalInfoGrid', 'modalBreakdownGrid', 'modalBreakdownSummary', 'modalWorkerDetails'
@@ -2516,40 +2598,63 @@
         /* ------------------------------------------------------------------
            CHECK RECEIVED. Sodexo's money, and whether it actually arrived.
 
-           Crystal asked for it and Jason asked to see it here. Until now this
-           system could say what Sodexo OWED and never whether Sodexo PAID, and
-           the April 2026 shortfall is what that costs: a check arrived
-           $1,417.13 light, the club settled from the expected figure, and
-           volunteers were paid out of money that had not landed.
+           Until 2026-09-26 this system could say what Sodexo OWED and never
+           whether Sodexo PAID. This is where the treasurer records it, and
+           the payouts page shows the same thing read only.
 
-           THE CHECK IS THE THING. EVENTS BELONG TO IT. Sodexo sometimes pays
-           several events on one check and sometimes one, and a lump sum may
-           carry no per-event breakdown at all. So the treasurer records what is
-           printed on the paper in her hand, number, date and total, and ticks
-           the events on the stub. SHE IS NEVER ASKED FOR A PER EVENT AMOUNT:
-           she may not have one, and a field that is sometimes unavailable gets
-           filled with a guess.
+           EACH EVENT STANDS ALONE. Jason ruled 2026-09-27 (M-31), after using
+           the first version: the check received box on each event "only
+           pertains to that event." The first version made the CHECK the unit and
+           stamped one check's difference on every event it paid, so two May
+           events that were paid in full both read short because of an April
+           problem. Now the treasurer records, per event, the check number,
+           the check date and THE AMOUNT THE STUB SHOWS FOR THAT EVENT'S DATE.
+           Every Sodexo stub read so far lists its lines by service date, so
+           that number is on the paper in her hand.
 
-           That makes the reconciliation one subtraction, correct in both shapes
-           with no branching:
+           ONE CHECK PAYING SEVERAL EVENTS is the same check number on each.
+           The events stay separate; the number connects them, and the page
+           adds their amounts so the total can be tied to the face of the
+           check.
 
-               the check's face amount  -  the billed total of its events
+           A LINE THAT IS NOT AN EVENT'S OWN MONEY, a deduction for something
+           else or a later make-good, is an adjustment recorded against the
+           event it concerns, or marked not ours when it concerns none of our
+           events. It never nets silently against an event that was paid right.
 
-           One event on a check is a sum of one. Five is a sum of five.
+           TRACKING STARTS AT DCI DAY 1, 2026-08-06, AND RUNS FORWARD. Jason:
+           "leave historical in the past. start with DCI day 1 and move
+           forward." An event before CHECKS_FROM carries no check badge and
+           counts in no total. An event from CHECKS_FROM on stays owed until
+           its check is recorded, across a season boundary, because Sodexo has
+           paid two to three weeks late on every stub read so far.
 
-           It lives on the shift document, the same values repeated on every
-           event of a check. A new collection would need new Firestore rules and
-           rules are frozen pending X-53, and a dozen checks a season does not
-           justify a join. checkOf, checksIn and the batch writer are the only
-           code that touches these fields, so the duplication has one seam.
+           The fields live on the shift document. The treasurer writes exactly
+           these, and the Work-Shifts block of firestore.rules whitelists
+           exactly these for her beside the four lock keys (M-30, Option B):
 
-           RECORDING A CHECK CHANGES NO SETTLEMENT. It is additive metadata, so
-           it is safe on a previous season's events, and that matters: the
-           events still unpaid are the April ones, and they are why this exists.
+               checkNumber       string   connects the events on one check
+               checkDate         YYYY-MM-DD
+               checkPaid         number   what the stub shows for THIS event
+               checkNote         string   why a difference, when there is one
+               checkReceivedAt   ISO      set once, never overwritten
+               checkReceivedBy   email
+               checkAdjustments  array    { check, date, amount, note, own }
+               checkAdjustedAt   ISO      when the latest line was added
+               checkAdjustedBy   email
+
+           ADD A KEY AND THE RULES CHANGE IN THE SAME COMMIT, or the
+           treasurer's save is denied while an administrator's succeeds,
+           because isTreasurer() is true for an administrator too.
+
+           RECORDING A CHECK CHANGES NO SETTLEMENT. It is additive metadata.
            ------------------------------------------------------------------ */
 
         /** Half a cent. Below this a difference is float noise, not money. */
         const CHECK_CENT = 0.005;
+
+        /** DCI Day 1. The first event whose Sodexo check is tracked. */
+        const CHECKS_FROM = '2026-08-06';
 
         /** What Sodexo owes for a shift, both stands. Billed, not received. */
         function billedFor(shift) {
@@ -2557,86 +2662,111 @@
                 + ((shift && shift.secondarySodexoPayout) || 0);
         }
 
-        /** The check a shift sits on, or null while it is still awaiting one. */
+        /** True when an event's check is tracked at all: on or after
+            CHECKS_FROM, with a Sodexo amount to be paid. */
+        function tracksCheck(shift) {
+            return !!shift && String(shift.eventDate || '') >= CHECKS_FROM && billedFor(shift) > 0;
+        }
+
+        /** The check an event sits on, or null while it is still awaiting one. */
         function checkOf(shift) {
             const number = String((shift && shift.checkNumber) || '').trim();
             if (!number) return null;
             return {
                 number: number,
                 date: String((shift && shift.checkDate) || ''),
-                amount: Number((shift && shift.checkAmount) || 0),
+                paid: Number((shift && shift.checkPaid) || 0),
                 note: String((shift && shift.checkNote) || '')
             };
         }
 
-        /** True when a shift is one a check could still be recorded against. */
+        /** True when a tracked event has no check recorded against it yet. */
         function awaitsCheck(shift) {
-            return !checkOf(shift) && billedFor(shift) > 0;
+            return tracksCheck(shift) && !checkOf(shift);
         }
 
-        /** Later checks that made good on a short one. Never one field: Sodexo
-            has settled in instalments before, and a single field would have the
-            second one quietly overwrite the first. */
-        function settlementsOn(shift) {
-            const raw = (shift && shift.gapSettlements) || [];
+        /** Lines recorded against an event that are not its own payment: a
+            deduction for something else, or a later make-good. A list, never
+            one field: Sodexo has settled in instalments, and one field would
+            have the second quietly overwrite the first. own is false for a
+            line that concerns none of our events and is only kept here. */
+        function adjustmentsOn(shift) {
+            const raw = (shift && shift.checkAdjustments) || [];
             if (!Array.isArray(raw)) return [];
-            return raw.filter(s => s && s.check).map(s => ({
-                check: String(s.check),
-                date: String(s.date || ''),
-                amount: Number(s.amount || 0),
-                note: String(s.note || '')
+            return raw.filter(a => a && String(a.check || '').trim()).map(a => ({
+                check: String(a.check).trim(),
+                date: String(a.date || ''),
+                amount: Number(a.amount || 0),
+                note: String(a.note || ''),
+                own: a.own !== false
             }));
         }
 
         /**
-         * Every check carried by a set of shifts, keyed by number, each with its
-         * face amount, the billed total of its events, the gap between them, and
-         * what any later check has since made good.
+         * One event, on its own. Null when its check is not tracked.
          *
-         * PASS EVERY SHIFT, NEVER A FILTERED LIST. A filter that hides one event
-         * of a three event check drops its billed total, and the check then
-         * reads short when nothing is wrong. The gap belongs to the check, so it
-         * is computed from every event carrying the number.
+         *     billed    what Sodexo owes for it
+         *     paid      what its check shows for its date, null while awaiting
+         *     adjusted  its own adjustments, deductions negative
+         *     gap       paid + adjusted - billed, null while awaiting
+         *     status    awaiting | paid | short | over
          *
-         *     gap          the check against what it should have been
-         *     settled      what later checks have paid toward that gap
-         *     outstanding  what the club is still out of pocket
+         * An own adjustment recorded before the event's check arrives waits
+         * in adjusted; the event reads awaiting until the check is recorded.
+         */
+        function eventCheck(shift) {
+            if (!tracksCheck(shift)) return null;
+            const billed = billedFor(shift);
+            const check = checkOf(shift);
+            const adjusted = adjustmentsOn(shift).filter(a => a.own)
+                .reduce((sum, a) => sum + a.amount, 0);
+            if (!check) {
+                return { billed: billed, check: null, paid: null, adjusted: adjusted,
+                         gap: null, status: 'awaiting' };
+            }
+            const gap = check.paid + adjusted - billed;
+            const status = Math.abs(gap) < CHECK_CENT ? 'paid' : (gap < 0 ? 'short' : 'over');
+            return { billed: billed, check: check, paid: check.paid, adjusted: adjusted,
+                     gap: gap, status: status };
+        }
+
+        /**
+         * Every check, keyed by number: the events it paid, what it paid for
+         * each, and every extra line it carried, whichever event that line
+         * sits on. total is what the face of the check should read.
          *
-         * OUTSTANDING IS THE ONE THAT MATTERS. gap is history and never changes;
-         * outstanding is money, and it is what goes red and what gets totalled.
+         * PASS EVERY SHIFT, NEVER A FILTERED LIST. A filter that hides one
+         * event of a check drops that event's amount, and the total then
+         * fails to match a check that is fine. (R-74, which in the first
+         * version flipped a shortfall into an overpayment.)
          */
         function checksIn(shifts) {
             const byNumber = new Map();
+            const rowFor = (number, date) => {
+                let row = byNumber.get(number);
+                if (!row) {
+                    row = { number: number, date: date, shiftIds: [], paid: 0,
+                            adjustments: [], total: 0 };
+                    byNumber.set(number, row);
+                }
+                if (!row.date) row.date = date;
+                return row;
+            };
             (shifts || []).forEach(shift => {
                 const check = checkOf(shift);
-                if (!check) return;
-                let row = byNumber.get(check.number);
-                if (!row) {
-                    row = {
-                        number: check.number, date: check.date, amount: check.amount,
-                        note: check.note, billed: 0, events: 0, shiftIds: [],
-                        settlements: settlementsOn(shift)
-                    };
-                    byNumber.set(check.number, row);
+                if (check) {
+                    const row = rowFor(check.number, check.date);
+                    row.shiftIds.push(shift.id);
+                    row.paid += check.paid;
                 }
-                row.billed += billedFor(shift);
-                row.events += 1;
-                row.shiftIds.push(shift.id);
+                adjustmentsOn(shift).forEach(a => {
+                    rowFor(a.check, a.date).adjustments.push(Object.assign({ shiftId: shift.id }, a));
+                });
             });
             byNumber.forEach(row => {
-                row.gap = row.amount - row.billed;
-                row.settled = row.settlements.reduce((sum, s) => sum + s.amount, 0);
-                row.outstanding = row.gap + row.settled;
+                row.total = row.paid + row.adjustments.reduce((sum, a) => sum + a.amount, 0);
             });
             return byNumber;
-        }
-
-        /** Checks the club is still short on, worst first. What the dialog offers
-            as something a new check might be making good. */
-        function unsettledChecks(checks) {
-            return Array.from(checks.values())
-                .filter(row => Math.abs(row.outstanding) >= CHECK_CENT)
-                .sort((a, b) => a.outstanding - b.outstanding);
         }
 
         /** 'YYYY-MM-DD' to 'M/D'. Read as text: new Date on a bare date string
@@ -2658,57 +2788,75 @@
             return (amount < 0 ? '\u2212' : '+') + '$' + Math.abs(amount).toFixed(2);
         }
 
+        /** A tile label with its event count, so the number beside it says
+            how many events it is made of. */
+        function tileLabel(base, count) {
+            if (!count) return base;
+            return base + ', ' + count + (count === 1 ? ' event' : ' events');
+        }
+
         /**
          * The check badge for a card. Identical wording on both pages, so the
-         * treasurer page and the payouts page cannot describe one check two
-         * different ways, which is the disagreement 2026-09-16 spent itself
-         * removing. Pass the map from checksIn(allShifts).
+         * treasurer page and the payouts page cannot describe one event two
+         * different ways. Pass the map from checksIn(allShifts); it is only
+         * used to name the other events a check paid and the check's total.
+         *
+         *     awaiting check              amber, tracked and not yet paid
+         *     check 1234 . 8/28           green, paid what Sodexo owed
+         *     check 1234 . 8/28 . settled green, was off and has been put right
+         *     check 1234 . 8/28 . -$X     red, this event is short
+         *     check 1234 . 8/28 . +$X     amber, paid more than owed; Sodexo
+         *                                 has clawed back an overpayment before
          */
         function checkBadgeHtml(shift, checks) {
-            const check = checkOf(shift);
-            if (!check) {
-                if (!awaitsCheck(shift)) return '';
-                return '<div class="check-badge check-awaiting" title="No Sodexo check has been '
-                    + 'recorded against this event yet.">awaiting check</div>';
+            const state = eventCheck(shift);
+            if (!state) return '';
+            if (state.status === 'awaiting') {
+                return '<div class="check-badge check-awaiting" title="'
+                    + escapeText('Sodexo owes $' + state.billed.toFixed(2)
+                        + ' for this event and no check has been recorded against it yet.')
+                    + '">awaiting check</div>';
             }
-            const row = checks.get(check.number);
-            const gap = row ? row.gap : 0;
-            const outstanding = row ? row.outstanding : 0;
-            const events = row ? row.events : 1;
+            const check = state.check;
+            const row = checks ? checks.get(check.number) : null;
+            const own = adjustmentsOn(shift).filter(a => a.own);
+            const parts = ['Sodexo owed $' + state.billed.toFixed(2) + '. Check ' + check.number
+                + ' paid $' + state.paid.toFixed(2) + ' for this event.'];
+            own.forEach(a => {
+                parts.push('Check ' + a.check + (a.amount < 0 ? ' took back $' : ' added $')
+                    + Math.abs(a.amount).toFixed(2) + (a.note ? ' (' + a.note + ')' : '') + '.');
+            });
+            if (check.note) parts.push(check.note);
+            if (row && row.shiftIds.length > 1) {
+                const others = row.shiftIds.length - 1;
+                parts.push('The same check paid ' + others + (others === 1 ? ' other event' : ' other events')
+                    + '; its lines total $' + row.total.toFixed(2) + '.');
+            }
+            if (row) {
+                row.adjustments.filter(a => !a.own).forEach(a => {
+                    parts.push('It also carried $' + Math.abs(a.amount).toFixed(2)
+                        + (a.amount < 0 ? ' taken for' : ' returned for')
+                        + ' something that is not one of our events'
+                        + (a.note ? ' (' + a.note + ')' : '') + '.');
+                });
+            }
+            const title = escapeText(parts.join(' '));
             const label = 'check ' + escapeText(check.number)
                 + (check.date ? ' &middot; ' + shortCheckDate(check.date) : '');
-            if (Math.abs(gap) < CHECK_CENT) {
-                return '<div class="check-badge check-in" title="'
-                    + escapeText('Received $' + check.amount.toFixed(2) + ', matching what Sodexo owed'
-                        + (events > 1 ? ' across ' + events + ' events' : '') + '.')
-                    + '">' + label + '</div>';
+            if (state.status === 'paid') {
+                return '<div class="check-badge check-in" title="' + title + '">' + label
+                    + (own.length ? ' &middot; settled' : '') + '</div>';
             }
-            const history = 'Check ' + check.number + ' paid $' + check.amount.toFixed(2)
-                + ' against $' + (row ? row.billed : 0).toFixed(2) + ' billed across '
-                + events + (events === 1 ? ' event. ' : ' events. ')
-                + (check.note || 'No explanation was recorded.');
-            /* A short check that has since been made good goes green, but it
-               keeps saying so. The shortfall happened, and the record of how it
-               was put right is the thing worth having next time. */
-            if (Math.abs(outstanding) < CHECK_CENT) {
-                const by = (row ? row.settlements : []).map(s => s.check).join(' and ');
-                return '<div class="check-badge check-in" title="'
-                    + escapeText(history + ' Made good by check ' + by + '.') + '">'
-                    + label + ' &middot; settled</div>';
-            }
-            const detail = history
-                + (row && row.settled ? ' $' + row.settled.toFixed(2) + ' has since been recovered.' : '');
-            return '<div class="check-badge check-short" title="' + escapeText(detail) + '">'
-                + label + ' &middot; ' + signedMoney(outstanding) + '</div>';
+            return '<div class="check-badge ' + (state.status === 'short' ? 'check-short' : 'check-over')
+                + '" title="' + title + '">' + label + ' &middot; ' + signedMoney(state.gap) + '</div>';
         }
 
         /**
          * The banner for money Sodexo still owes from a season that has closed.
          *
-         * A current season event awaiting its check is ordinary. One from a
-         * closed season is a debt, and until now no line on either page said
-         * so: the April 2026 events sat unpaid for five months while every
-         * headline number on both pages reported them as revenue.
+         * Only tracked events count, so nothing before DCI Day 1 can appear
+         * here. It is empty until an event from 2026-08-06 on is still unpaid
+         * when its season closes, and then it is the one line that says so.
          */
         function staleReceivableHtml(shifts) {
             const current = currentSeasonKey();
@@ -2724,53 +2872,68 @@
                 + (oldest ? ', the oldest ' + escapeText(formatDate(oldest)) : '') + '.</div>';
         }
 
-        /** Billed total of every filtered event with no check recorded yet. */
-        function awaitingTotal(shifts) {
-            return (shifts || []).filter(awaitsCheck).reduce((sum, s) => sum + billedFor(s), 0);
+        /** The tracked events in a set still awaiting a check, and their worth. */
+        function awaitingSummary(shifts) {
+            const waiting = (shifts || []).filter(awaitsCheck);
+            return {
+                count: waiting.length,
+                amount: waiting.reduce((sum, s) => sum + billedFor(s), 0)
+            };
         }
 
         /**
-         * The money still missing from checks that touch the filtered set,
-         * counted once per check however many of its events are on screen.
-         * Negative when Sodexo underpaid, which is the direction that has
-         * actually happened. Reads outstanding, so recovering a shortfall
-         * takes it off this total and a partial recovery leaves the rest.
+         * What Sodexo still owes on checks already received, for a set of
+         * events. amount is negative when the club is owed.
+         *
+         * Each short event counts on its own, and count is short EVENTS, so
+         * the tile's "N events" means events. An overpaid event does not
+         * offset another event's shortfall, because each event stands alone
+         * and an overpayment is exactly what Sodexo has clawed back before.
+         * Lines that are not ours are netted together and add to amount only
+         * when the net is money taken; they are not an event.
          */
-        function shortfallTotal(shifts, checks) {
-            const seen = new Set();
-            let total = 0;
+        function shortfallSummary(shifts) {
+            let count = 0;
+            let amount = 0;
+            let notOurs = 0;
             (shifts || []).forEach(shift => {
-                const check = checkOf(shift);
-                if (!check || seen.has(check.number)) return;
-                seen.add(check.number);
-                const row = checks.get(check.number);
-                if (row && Math.abs(row.outstanding) >= CHECK_CENT) total += row.outstanding;
+                const state = eventCheck(shift);
+                if (state && state.status === 'short') {
+                    count += 1;
+                    amount += state.gap;
+                }
+                adjustmentsOn(shift).filter(a => !a.own).forEach(a => { notOurs += a.amount; });
             });
-            return total;
+            if (notOurs <= -CHECK_CENT) amount += notOurs;
+            return { count: count, amount: amount };
         }
 
         /* ------------------------------------------------------------------
            RECORDING A CHECK, from the treasurer's side.
 
-           ONE DIALOG, NOT ONE PER EVENT. Jason: "I want to make sure it is as
-           easy as possible for Crystal and not add more on her plate." A check
-           covering three events used to mean three dialogs; she works the check
-           instead, so it is one dialog and three ticks.
+           ONE DIALOG PER CHECK. She types the check number and date once,
+           ticks each event the stub lists, and types beside it the amount the
+           stub shows for that event's date. A check paying two events is one
+           dialog, two ticks and two amounts, and each event keeps its own.
 
-           The reason that is better than merely shorter: THE DIFFERENCE IS
-           COMPUTED IN FRONT OF HER, BEFORE SHE CAN SAVE. On the 05/22 check it
-           reads minus $1,417.13. She never has to know to go looking for a
-           clawback line, because the subtraction finds it and will not let the
-           check be filed until she has written down what it was.
+           THE AMOUNT BOX STARTS EMPTY AND MUST BE FILLED. Prefilling it with
+           what Sodexo owes would let a short check be accepted with a click,
+           which is the one thing this exists to prevent.
 
-           The events awaiting money are listed OLDEST FIRST and are not bound
-           to a season, which is deliberate. The events still unpaid are the
-           April ones. They will sit at the top of this list, in red, every time
-           she records a check, until Sodexo settles them.
+           Each event's difference is shown against it as she types, and every
+           line is added up so she can tie the total to the face of the check.
+           A line on the stub that is not an event's own amount, a deduction or
+           a make-good, goes under "Anything else on this stub", against the
+           event it concerns, or as not one of our events.
+
+           The list is every tracked event still awaiting a check, oldest
+           first, not bound to a season, so an event from a closed season that
+           is still unpaid stays at the top until its check arrives. Nothing
+           before DCI Day 1 is ever listed.
            ------------------------------------------------------------------ */
 
-        /** Which events she has ticked, and the card she opened from, if any. */
-        let checkDraft = { ticked: new Set(), openedFrom: null };
+        /** The dialog's state: events ticked, amounts typed, extra lines. */
+        let checkDraft = { ticked: new Set(), amounts: new Map(), adjustments: [], openedFrom: null };
 
         /** Events a check could still be recorded against, oldest first. */
         function checkCandidates() {
@@ -2789,43 +2952,110 @@
             });
         }
 
+        /** Events an extra line can be recorded against: every tracked one. */
+        function adjustmentTargets() {
+            return allShifts.filter(tracksCheck)
+                .slice()
+                .sort((a, b) => String(a.eventDate || '').localeCompare(String(b.eventDate || '')));
+        }
+
+        /** A typed money value to the cent, or NaN when blank or not a number. */
+        function typedMoney(value) {
+            const text = String(value === null || value === undefined ? '' : value).trim();
+            if (!text) return NaN;
+            const n = Number(text);
+            return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+        }
+
+        /**
+         * What the dialog would record, worked out without touching the page,
+         * so the save guard can be tested on its own.
+         *
+         *   events       [{ shift, typed }]            the events on this check
+         *   adjustments  [{ amount, about, note }]     about is a shift id or 'none'
+         *
+         * Returns { lines, adjustments, total, differs, problem }. problem is
+         * the first thing that stops a save, or '' when it can be saved.
+         */
+        function checkDraftSummary(number, date, note, events, adjustments) {
+            const lines = (events || []).map(e => {
+                const billed = billedFor(e.shift);
+                const paid = typedMoney(e.typed);
+                return { shift: e.shift, billed: billed, paid: paid,
+                         diff: Number.isFinite(paid) ? paid - billed : NaN };
+            });
+            const extras = (adjustments || []).map(a => ({
+                amount: typedMoney(a.amount),
+                about: String(a.about || ''),
+                note: String(a.note || '').trim()
+            }));
+            const total = lines.reduce((sum, l) => sum + (Number.isFinite(l.paid) ? l.paid : 0), 0)
+                + extras.reduce((sum, a) => sum + (Number.isFinite(a.amount) ? a.amount : 0), 0);
+            const differs = lines.filter(l => Number.isFinite(l.diff) && Math.abs(l.diff) >= CHECK_CENT);
+            const name = (shift) => String((shift && shift.eventName) || 'this event');
+
+            let problem = '';
+            const blank = lines.find(l => !(l.paid > 0));
+            if (!String(number || '').trim()) {
+                problem = 'Enter the check number printed on the check.';
+            } else if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
+                problem = 'Enter the date printed on the check.';
+            } else if (lines.length === 0 && extras.length === 0) {
+                problem = 'Tick the events this check pays for, or add the line it carries '
+                    + 'under Anything else on this stub.';
+            } else if (blank) {
+                problem = 'Type the amount the stub shows for ' + name(blank.shift) + '.';
+            } else if (extras.some(a => !Number.isFinite(a.amount) || Math.abs(a.amount) < CHECK_CENT)) {
+                problem = 'Type the amount of each extra line, with a minus sign for a deduction.';
+            } else if (extras.some(a => !a.about)) {
+                problem = 'Say which event each extra line is about, or mark it not one of our events.';
+            } else if (extras.some(a => !a.note)) {
+                problem = 'Write what each extra line is.';
+            } else if (extras.some(a => a.about === 'none') && lines.length === 0) {
+                problem = 'A line that is not one of our events has to be recorded with the events '
+                    + 'the same check paid. Tick them.';
+            } else if (differs.length > 0 && !String(note || '').trim()) {
+                const first = differs[0];
+                problem = name(first.shift) + ' is ' + signedMoney(first.diff)
+                    + ' against what Sodexo owes. Write what the difference is before recording it.';
+            }
+            return { lines: lines, adjustments: extras, total: total, differs: differs, problem: problem };
+        }
+
+        /** The summary for what is on screen right now. */
+        function currentCheckSummary() {
+            const value = (id) => String((document.getElementById(id) || {}).value || '').trim();
+            const number = value('checkNumberInput');
+            const fixed = checkAlreadyOn(number);
+            const ticked = allShifts.filter(s => checkDraft.ticked.has(s.id) && !fixed.includes(s));
+            const events = fixed.concat(ticked).map(s => ({ shift: s, typed: checkDraft.amounts.get(s.id) }));
+            return checkDraftSummary(number, value('checkDateInput'), value('checkNoteInput'),
+                events, checkDraft.adjustments);
+        }
+
         window.openCheckModal = function(shiftId) {
             if (!TREASURER_PORTAL_ADDRESSES.includes(currentAddress())) {
                 showError('Only the treasurer and administrators can record a check.');
                 return;
             }
-            checkDraft = { ticked: new Set(), openedFrom: shiftId || null };
+            checkDraft = { ticked: new Set(), amounts: new Map(), adjustments: [], openedFrom: shiftId || null };
             if (shiftId) {
                 const shift = allShifts.find(s => s.id === shiftId);
                 /* Opened from a card, so that event is already ticked. She came
                    in saying "this one was paid"; she should not have to say it
-                   again in here. */
+                   again in here. Its amount box is still empty. */
                 if (shift && awaitsCheck(shift)) checkDraft.ticked.add(shiftId);
             }
-            const allChecks = checksIn(allShifts);
-            const numbers = Array.from(allChecks.keys()).sort();
+            const numbers = Array.from(checksIn(allShifts).keys()).sort();
             const list = document.getElementById('checkNumberList');
             if (list) {
                 list.innerHTML = numbers.map(n => '<option value="' + escapeText(n) + '"></option>').join('');
             }
-            /* A check that makes good on an earlier short one pays no event, so
-               without this it would have nothing to attach to and the red badge
-               could only ever be cleared by destroying the record of it. */
-            const owed = unsettledChecks(allChecks);
-            const settles = document.getElementById('checkSettlesInput');
-            const settlesRow = document.getElementById('checkSettlesRow');
-            if (settles) {
-                settles.innerHTML = '<option value="">Nothing, this is ordinary payment</option>'
-                    + owed.map(row => '<option value="' + escapeText(row.number) + '">Check '
-                        + escapeText(row.number) + ', still short ' + signedMoney(row.outstanding)
-                        + '</option>').join('');
-                settles.value = '';
-            }
-            if (settlesRow) settlesRow.classList.toggle('hidden', owed.length === 0);
-            ['checkNumberInput', 'checkDateInput', 'checkAmountInput', 'checkNoteInput'].forEach(id => {
+            ['checkNumberInput', 'checkDateInput', 'checkNoteInput'].forEach(id => {
                 const field = document.getElementById(id);
                 if (field) field.value = '';
             });
+            renderCheckAdjustments();
             renderCheckList();
             const modal = document.getElementById('checkModal');
             if (modal) modal.classList.remove('hidden');
@@ -2836,14 +3066,14 @@
         function closeCheckModal() {
             const modal = document.getElementById('checkModal');
             if (modal) modal.classList.add('hidden');
-            checkDraft = { ticked: new Set(), openedFrom: null };
+            checkDraft = { ticked: new Set(), amounts: new Map(), adjustments: [], openedFrom: null };
         }
 
         /**
-         * Draws the event rows. Called on open and whenever the check number
-         * changes, because the number decides which events are already fixed to
-         * this check. Scroll position is kept so a keystroke does not jump her
-         * back to the top of a long list.
+         * Draws the event rows. Called on open, when the check number changes
+         * (the number decides which events are already on this check) and when
+         * a box is ticked. Scroll position is kept so a keystroke does not jump
+         * her back to the top of a long list.
          */
         function renderCheckList() {
             const holder = document.getElementById('checkEventList');
@@ -2852,50 +3082,62 @@
             const number = String((document.getElementById('checkNumberInput') || {}).value || '').trim();
             const fixed = checkAlreadyOn(number);
             const current = currentSeasonKey();
+            /* A number already on events brings their recorded amounts with
+               it, so correcting a typo is editing, not typing it all again. */
+            fixed.forEach(s => {
+                if (!checkDraft.amounts.has(s.id)) checkDraft.amounts.set(s.id, checkOf(s).paid.toFixed(2));
+            });
 
             const row = (shift, isFixed) => {
                 const season = seasonOf(shift.eventDate);
                 const stale = season !== current;
                 const stand = shift.primaryStand || shift.standNumber || '?';
+                const on = isFixed || checkDraft.ticked.has(shift.id);
+                const eventName = escapeText(shift.eventName || 'Unnamed Event');
+                const typed = checkDraft.amounts.get(shift.id);
                 const meta = [
                     shortCheckDate(shift.eventDate) || formatDate(shift.eventDate),
                     'stand ' + stand,
+                    'owed $' + billedFor(shift).toFixed(2),
                     stale ? season : '',
                     isFixed ? 'already on this check' : ''
                 ].filter(Boolean).join(' &middot; ');
-                return '<label class="check-event' + (isFixed ? ' is-fixed' : '')
+                return '<div class="check-event' + (isFixed ? ' is-fixed' : '')
                     + (stale ? ' check-event-old' : '') + '">'
+                    + '<label class="check-event-pick">'
                     + '<input type="checkbox" data-shift="' + escapeText(shift.id) + '"'
-                    + (isFixed ? ' checked disabled' : (checkDraft.ticked.has(shift.id) ? ' checked' : ''))
-                    + '><span class="check-event-name">' + escapeText(shift.eventName || 'Unnamed Event')
-                    + '<br><span class="check-event-meta">' + meta + '</span></span>'
-                    + '<span class="check-event-amount">$' + billedFor(shift).toFixed(2) + '</span></label>';
+                    + (isFixed ? ' checked disabled' : (on ? ' checked' : '')) + '>'
+                    + '<span class="check-event-name">' + eventName
+                    + '<br><span class="check-event-meta">' + meta + '</span></span></label>'
+                    + '<input type="number" class="check-event-paid" step="0.01" min="0"'
+                    + ' data-paid="' + escapeText(shift.id) + '" placeholder="on the stub"'
+                    + ' aria-label="Amount the stub shows for ' + eventName + '"'
+                    + (typed !== undefined ? ' value="' + escapeText(typed) + '"' : '')
+                    + (on ? '' : ' disabled') + '></div>';
             };
 
             const candidates = checkCandidates();
             const html = fixed.map(s => row(s, true)).join('') + candidates.map(s => row(s, false)).join('');
             holder.innerHTML = html || '<div style="padding: var(--space-4); text-align: center; '
-                + 'color: var(--tr-gray-700);">Every event with a Sodexo amount already has a check '
-                + 'recorded against it.</div>';
+                + 'color: var(--tr-gray-700);">Every event from DCI Day 1 on with a Sodexo amount already '
+                + 'has a check recorded against it.</div>';
             holder.scrollTop = scrolled;
 
             const notice = document.getElementById('checkExistingNote');
             if (notice) {
                 if (fixed.length > 0) {
                     const existing = checkOf(fixed[0]);
-                    /* Prefilled, not locked. A typo in the total has to be
-                       correctable, and correcting it here rewrites the value on
-                       every event of the check in one batch, which is the only
-                       way the repeated fields cannot drift apart. */
+                    /* Prefilled, not locked. A typo has to be correctable, and
+                       correcting it here rewrites the value on every event of
+                       the check in one batch. */
                     const dateField = document.getElementById('checkDateInput');
-                    const amountField = document.getElementById('checkAmountInput');
                     const noteField = document.getElementById('checkNoteInput');
                     if (dateField && !dateField.value) dateField.value = existing.date;
-                    if (amountField && !amountField.value) amountField.value = existing.amount.toFixed(2);
                     if (noteField && !noteField.value) noteField.value = existing.note;
                     notice.innerHTML = 'Check ' + escapeText(existing.number) + ' is already recorded on '
                         + fixed.length + (fixed.length === 1 ? ' event' : ' events')
-                        + '. Anything you change here updates all of them.';
+                        + '. Anything you change here updates ' + (fixed.length === 1 ? 'it' : 'all of them')
+                        + '. Lines already added under Anything else stay as they are.';
                     notice.classList.remove('hidden');
                 } else {
                     notice.classList.add('hidden');
@@ -2904,70 +3146,79 @@
             renderCheckTally();
         }
 
-        /** The subtraction, live. This is the part that catches a short check. */
+        /** Draws the extra lines. Only on open, add and remove, so typing in
+            one never loses the cursor. */
+        function renderCheckAdjustments() {
+            const holder = document.getElementById('checkAdjustList');
+            if (!holder) return;
+            const targets = adjustmentTargets();
+            holder.innerHTML = checkDraft.adjustments.map((a, i) => {
+                const options = '<option value="">Which event is it about?</option>'
+                    + targets.map(s => '<option value="' + escapeText(s.id) + '"'
+                        + (a.about === s.id ? ' selected' : '') + '>'
+                        + escapeText((s.eventName || 'Unnamed Event') + ', '
+                            + (shortCheckDate(s.eventDate) || s.eventDate || '')) + '</option>').join('')
+                    + '<option value="none"' + (a.about === 'none' ? ' selected' : '')
+                    + '>Not one of our events</option>';
+                return '<div class="check-adjust" data-index="' + i + '">'
+                    + '<input type="number" step="0.01" data-field="amount" placeholder="-450.00"'
+                    + ' aria-label="Amount, with a minus sign for a deduction"'
+                    + ' value="' + escapeText(a.amount) + '">'
+                    + '<select data-field="about" aria-label="What the line is about">' + options + '</select>'
+                    + '<input type="text" data-field="note" maxlength="220" placeholder="What the line is"'
+                    + ' aria-label="What the line is" value="' + escapeText(a.note) + '">'
+                    + '<button type="button" class="btn btn-secondary" data-remove="' + i + '">Remove</button>'
+                    + '</div>';
+            }).join('');
+            renderCheckTally();
+        }
+
+        function addCheckAdjustment() {
+            checkDraft.adjustments.push({ amount: '', about: '', note: '' });
+            renderCheckAdjustments();
+            const holder = document.getElementById('checkAdjustList');
+            const last = holder ? holder.querySelector('.check-adjust:last-child input') : null;
+            if (last) last.focus();
+        }
+
+        /** Every line, live, and the total to hold against the check. */
         function renderCheckTally() {
             const tally = document.getElementById('checkTally');
             if (!tally) return;
-            const number = String((document.getElementById('checkNumberInput') || {}).value || '').trim();
-            const amount = Number((document.getElementById('checkAmountInput') || {}).value || 0) || 0;
-            const fixed = checkAlreadyOn(number);
-            const ticked = allShifts.filter(s => checkDraft.ticked.has(s.id));
-            const onCheck = fixed.concat(ticked);
-            const billed = onCheck.reduce((sum, s) => sum + billedFor(s), 0);
-            const gap = amount - billed;
-            const level = Math.abs(gap) < CHECK_CENT;
-            const target = checkSettlementTarget();
-
-            let rows =
-                '<div class="t-label">' + onCheck.length
-                    + (onCheck.length === 1 ? ' event on this check' : ' events on this check')
-                    + '</div><div class="t-value">$' + billed.toFixed(2) + '</div>';
-
-            if (target) {
-                /* Whatever this check carries beyond its own events is what it
-                   recovers. Nobody has to work out the split: the subtraction
-                   already knows it. */
-                const recovers = amount - billed;
-                const left = target.outstanding + recovers;
-                const settled = Math.abs(left) < CHECK_CENT;
-                rows += '<div class="t-label">Recovers on check ' + escapeText(target.number)
-                        + '</div><div class="t-value' + (recovers <= 0 ? ' is-off' : '') + '">$'
-                        + recovers.toFixed(2) + '</div>'
-                    + '<div class="t-label">Check total</div>'
-                        + '<div class="t-value">$' + amount.toFixed(2) + '</div>'
-                    + '<div class="t-label t-gap ' + (settled ? 'is-level' : 'is-off')
-                        + '">Still short on ' + escapeText(target.number) + '</div>'
-                    + '<div class="t-value t-gap ' + (settled ? 'is-level' : 'is-off') + '">'
-                        + (settled ? '$0.00' : signedMoney(left)) + '</div>';
-            } else {
-                rows += '<div class="t-label">Check total</div>'
-                        + '<div class="t-value">$' + amount.toFixed(2) + '</div>'
-                    + '<div class="t-label t-gap ' + (level ? 'is-level' : 'is-off') + '">Difference</div>'
-                    + '<div class="t-value t-gap ' + (level ? 'is-level' : 'is-off') + '">'
-                        + (level ? '$0.00' : signedMoney(gap)) + '</div>';
-            }
+            const summary = currentCheckSummary();
+            const targets = new Map(adjustmentTargets().map(s => [s.id, s]));
+            let rows = '';
+            summary.lines.forEach(l => {
+                const typed = Number.isFinite(l.paid);
+                const off = typed && Math.abs(l.diff) >= CHECK_CENT;
+                rows += '<div class="t-label">' + escapeText(l.shift.eventName || 'Unnamed Event')
+                        + ' <span class="t-sub">owed $' + l.billed.toFixed(2) + '</span></div>'
+                    + '<div class="t-value' + (off ? ' is-off' : '') + '">'
+                        + (typed ? '$' + l.paid.toFixed(2) + (off ? ' (' + signedMoney(l.diff) + ')' : '')
+                            : 'amount?') + '</div>';
+            });
+            summary.adjustments.forEach(a => {
+                const target = targets.get(a.about);
+                const about = a.about === 'none' ? 'not one of our events'
+                    : (target ? (target.eventName || 'Unnamed Event') : 'which event?');
+                rows += '<div class="t-label">Extra line <span class="t-sub">' + escapeText(about) + '</span></div>'
+                    + '<div class="t-value">' + (Number.isFinite(a.amount) ? signedMoney(a.amount) : 'amount?')
+                    + '</div>';
+            });
+            rows += '<div class="t-label t-gap">Check total. This should match the check.</div>'
+                + '<div class="t-value t-gap">$' + summary.total.toFixed(2) + '</div>';
             tally.innerHTML = rows;
 
             const box = document.getElementById('checkGapBox');
             const label = document.getElementById('checkGapLabel');
-            /* Not asked for when she has said what the difference is by naming
-               the check this one makes good on. */
-            const show = !target && onCheck.length > 0 && amount > 0 && !level;
+            const show = summary.differs.length > 0;
             if (box) box.classList.toggle('hidden', !show);
             if (label && show) {
-                label.textContent = gap < 0
-                    ? 'This check is $' + Math.abs(gap).toFixed(2) + ' less than the events on it. '
-                      + 'What does the difference account for?'
-                    : 'This check is $' + gap.toFixed(2) + ' more than the events on it. '
-                      + 'What does the difference account for?';
+                label.textContent = summary.differs.map(l => (l.shift.eventName || 'Unnamed Event')
+                    + (l.diff < 0 ? ' is $' + Math.abs(l.diff).toFixed(2) + ' short'
+                        : ' is $' + l.diff.toFixed(2) + ' over'))
+                    .join('; ') + '. What does the difference account for?';
             }
-        }
-
-        /** The earlier short check this one is making good on, or null. */
-        function checkSettlementTarget() {
-            const wanted = String((document.getElementById('checkSettlesInput') || {}).value || '').trim();
-            if (!wanted) return null;
-            return checksIn(allShifts).get(wanted) || null;
         }
 
         window.recordCheck = async function() {
@@ -2975,96 +3226,74 @@
                 showError('Only the treasurer and administrators can record a check.');
                 return;
             }
-            const number = String((document.getElementById('checkNumberInput') || {}).value || '').trim();
-            const date = String((document.getElementById('checkDateInput') || {}).value || '').trim();
-            const amount = Number((document.getElementById('checkAmountInput') || {}).value || 0) || 0;
-            const note = String((document.getElementById('checkNoteInput') || {}).value || '').trim();
+            const summary = currentCheckSummary();
+            if (summary.problem) { showError(summary.problem); return; }
+            const value = (id) => String((document.getElementById(id) || {}).value || '').trim();
+            const number = value('checkNumberInput');
+            const date = value('checkDateInput');
+            const note = value('checkNoteInput');
 
-            if (!number) { showError('Enter the check number printed on the check.'); return; }
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { showError('Enter the date printed on the check.'); return; }
-            if (amount <= 0) { showError('Enter the check total.'); return; }
-
-            const fixed = checkAlreadyOn(number);
-            const ticked = allShifts.filter(s => checkDraft.ticked.has(s.id));
-            const onCheck = fixed.concat(ticked);
-            const target = checkSettlementTarget();
-            if (onCheck.length === 0 && !target) {
-                showError('Tick the events this check pays for, or say which earlier '
-                    + 'short check it makes good on.');
-                return;
-            }
-
-            const billed = onCheck.reduce((sum, s) => sum + billedFor(s), 0);
-            const gap = amount - billed;
-            if (target && gap <= 0) {
-                showError('A check that makes good on check ' + target.number + ' has to be worth '
-                    + 'more than the events ticked on it. Nothing is left over to recover.');
-                return;
-            }
-            /* THE GAP IS WHY THIS EXISTS. A check that does not match its events
-               is either a short payment or a deduction, and both are money. It
-               does not get filed as though nothing happened. */
-            if (!target && Math.abs(gap) >= CHECK_CENT && !note) {
-                showError('This check differs from the events on it by ' + signedMoney(gap)
-                    + '. Write down what the difference is before recording it.');
-                return;
-            }
+            /* One set of fields per document, so an event that is both paid by
+               this check and the subject of one of its extra lines is written
+               once, not twice. */
+            const now = new Date().toISOString();
+            const updates = new Map();
+            const put = (id, fields) => updates.set(id, Object.assign(updates.get(id) || {}, fields));
+            summary.lines.forEach(l => {
+                const fields = { checkNumber: number, checkDate: date, checkPaid: l.paid, checkNote: note };
+                /* Kept from the first time it was recorded. The write is the
+                   record of when she saw the check, and a later correction is
+                   not a second arrival. */
+                if (!l.shift.checkReceivedAt) {
+                    fields.checkReceivedAt = now;
+                    fields.checkReceivedBy = currentUser.email;
+                }
+                put(l.shift.id, fields);
+            });
+            /* Appended, never replaced. A line that is not ours is kept on the
+               first event this check paid, marked so it counts against none. */
+            const added = new Map();
+            summary.adjustments.forEach(a => {
+                const own = a.about !== 'none';
+                const id = own ? a.about : summary.lines[0].shift.id;
+                const list = added.get(id) || [];
+                list.push({ check: number, date: date, amount: a.amount, note: a.note, own: own });
+                added.set(id, list);
+            });
+            added.forEach((entries, id) => {
+                const shift = allShifts.find(s => s.id === id);
+                put(id, {
+                    checkAdjustments: adjustmentsOn(shift).concat(entries),
+                    checkAdjustedAt: now,
+                    checkAdjustedBy: currentUser.email
+                });
+            });
 
             try {
                 const batch = writeBatch(db);
-                const now = new Date().toISOString();
-                onCheck.forEach(shift => {
-                    const fields = {
-                        checkNumber: number,
-                        checkDate: date,
-                        checkAmount: amount,
-                        checkNote: note
-                    };
-                    /* Kept from the first time it was recorded. The write is the
-                       record of when she saw the check, and a later correction
-                       to the total is not a second arrival. */
-                    if (!shift.checkReceivedAt) {
-                        fields.checkReceivedAt = now;
-                        fields.checkReceivedBy = currentUser.email;
-                    }
-                    batch.update(doc(db, 'Work-Shifts', shift.id), fields);
-                });
-                if (target) {
-                    /* Appended, never replaced. Sodexo has settled in instalments
-                       before, and each instalment is its own check with its own
-                       date. The list is what makes a partial recovery leave the
-                       rest still flagged. */
-                    const entry = { check: number, date: date, amount: gap, note: note };
-                    allShifts.filter(s => {
-                        const c = checkOf(s);
-                        return c && c.number === target.number;
-                    }).forEach(shift => {
-                        batch.update(doc(db, 'Work-Shifts', shift.id), {
-                            gapSettlements: settlementsOn(shift).concat([entry]),
-                            gapSettledAt: now,
-                            gapSettledBy: currentUser.email
-                        });
-                    });
-                }
+                updates.forEach((fields, id) => batch.update(doc(db, 'Work-Shifts', id), fields));
                 await batch.commit();
                 closeCheckModal();
                 await loadFinalizedShifts();
-                const left = target ? target.outstanding + gap : 0;
+                const shortOnes = summary.differs.filter(l => l.diff < 0).length;
                 showNotification('Check ' + number + ' recorded'
-                    + (onCheck.length ? ' against ' + onCheck.length
-                        + (onCheck.length === 1 ? ' event' : ' events') : '')
-                    + (target ? ', recovering $' + gap.toFixed(2) + ' on check ' + target.number
-                        + (Math.abs(left) < CHECK_CENT ? ', which is now settled.'
-                            : ', which is still short ' + signedMoney(left) + '.') : '.')
-                    + (!target && Math.abs(gap) >= CHECK_CENT ? ' Its ' + signedMoney(gap)
-                        + ' difference stays flagged until it is recovered.' : ''), 'success');
+                    + (summary.lines.length ? ' against ' + summary.lines.length
+                        + (summary.lines.length === 1 ? ' event' : ' events') : '')
+                    + (shortOnes ? '. ' + shortOnes + (shortOnes === 1 ? ' event reads' : ' events read')
+                        + ' short until Sodexo makes it good.' : '.'), 'success');
             } catch (error) {
                 console.error('Error recording check:', error);
-                showError('Failed to record the check. Please try again.');
+                if (error && error.code === 'permission-denied') {
+                    showError('This account does not have permission to record a check. Email '
+                        + 'fundraising@lionssports.club with the address you signed in with.', true);
+                } else {
+                    showError('Failed to record the check. Please try again.');
+                }
             }
         };
 
-        /** Takes one event back off a check. Administrator only, like Reopen. */
+        /** Takes one event back off its check, with any extra lines that same
+            check put on it. Administrator only, like Reopen. */
         window.clearCheckOn = async function(shiftId) {
             if (!TREASURER_ADMIN_ADDRESSES.includes(currentAddress())) {
                 showError('Only an administrator can take an event back off a check.');
@@ -3075,16 +3304,18 @@
             const check = checkOf(shift);
             if (!check) { showError('This event is not on a check.'); return; }
             if (!confirm('Take "' + (shift.eventName || 'this shift') + '" back off check '
-                + check.number + '?\n\nIt returns to awaiting a check. Nothing about the '
-                + 'settlement changes.')) return;
+                + check.number + '?\n\nIt returns to awaiting a check, and any extra line check '
+                + check.number + ' put on it is removed. Nothing about the settlement changes.')) return;
+            const keep = adjustmentsOn(shift).filter(a => a.check !== check.number);
             try {
                 await updateDoc(doc(db, 'Work-Shifts', shiftId), {
                     checkNumber: deleteField(),
                     checkDate: deleteField(),
-                    checkAmount: deleteField(),
+                    checkPaid: deleteField(),
                     checkNote: deleteField(),
                     checkReceivedAt: deleteField(),
-                    checkReceivedBy: deleteField()
+                    checkReceivedBy: deleteField(),
+                    checkAdjustments: keep.length ? keep : deleteField()
                 });
                 await loadFinalizedShifts();
                 showNotification('Taken off check ' + check.number + '.', 'success');
@@ -3482,20 +3713,26 @@
             if (elements.totalCoordinatorRevenue) elements.totalCoordinatorRevenue.textContent = '$' + stats.totalCoordinatorRevenue.toFixed(2);
             if (elements.totalSodexoReceived) elements.totalSodexoReceived.textContent = '$' + stats.totalSodexoReceived.toFixed(2);
             if (elements.totalNetPayroll) elements.totalNetPayroll.textContent = '$' + stats.totalNetPayroll.toFixed(2);
-            /* Both follow the filter like their neighbours, but the gap behind
-               Short Paid is computed from every event on each check, so a
-               filtered out sibling cannot make a sound check read short. */
-            const checks = checksIn(allShifts);
-            const awaiting = awaitingTotal(filteredShifts);
-            const shortfall = shortfallTotal(filteredShifts, checks);
+            /* Both follow the filter like their neighbours, and both count
+               only events from DCI Day 1 on. Each event stands alone, so an
+               event filtered out takes only its own money with it. */
+            const awaiting = awaitingSummary(filteredShifts);
+            const shortfall = shortfallSummary(filteredShifts);
             if (elements.totalAwaitingCheck) {
-                elements.totalAwaitingCheck.textContent = '$' + awaiting.toFixed(2);
-                elements.totalAwaitingCheck.classList.toggle('stat-alarm', awaiting > 0);
+                elements.totalAwaitingCheck.textContent = '$' + awaiting.amount.toFixed(2);
+                elements.totalAwaitingCheck.classList.toggle('stat-alarm', awaiting.amount > 0);
+            }
+            if (elements.awaitingCheckLabel) {
+                elements.awaitingCheckLabel.textContent = tileLabel('Awaiting Sodexo', awaiting.count);
             }
             if (elements.totalCheckShortfall) {
-                elements.totalCheckShortfall.textContent = Math.abs(shortfall) < CHECK_CENT
-                    ? '$0.00' : signedMoney(shortfall);
-                elements.totalCheckShortfall.classList.toggle('stat-alarm', Math.abs(shortfall) >= CHECK_CENT);
+                elements.totalCheckShortfall.textContent = Math.abs(shortfall.amount) < CHECK_CENT
+                    ? '$0.00' : signedMoney(shortfall.amount);
+                elements.totalCheckShortfall.classList.toggle('stat-alarm',
+                    Math.abs(shortfall.amount) >= CHECK_CENT);
+            }
+            if (elements.checkShortfallLabel) {
+                elements.checkShortfallLabel.textContent = tileLabel('Short Paid', shortfall.count);
             }
         });
     }
@@ -3557,19 +3794,22 @@
                 }
                 console.log('Locking shift in Firebase:', shiftId);
                 const shiftRef = doc(db, 'Work-Shifts', shiftId);
-                /* FOUR KEYS, AND ONLY THESE FOUR. firestore.rules line 126
-                   reads:
+                /* FOUR KEYS, AND ONLY THESE FOUR. The Work-Shifts block of
+                   firestore.rules lets the treasurer change the four lock keys
+                   and the nine check keys listed above CHECK_CENT, and nothing
+                   else:
 
-                     allow update: if isTreasurer() && changedKeys()
-                         .hasOnly(['isLocked','lockedBy','lockedDate','lockReason']);
+                     allow update: if isTreasurer() && changedKeys().hasOnly([
+                         'isLocked', 'lockedBy', 'lockedDate', 'lockReason', ...check keys ]);
 
-                   A fifth key fails hasOnly and the whole write is denied. This
-                   function used to add paymentStatus: 'processed', which meant
-                   the treasurer's ONE button returned permission-denied for
-                   her while working fine for an administrator, because
+                   Any other key fails hasOnly and the whole write is denied.
+                   This function once added paymentStatus: 'processed', which
+                   meant the treasurer's one button returned permission-denied
+                   for her while working fine for an administrator, because
                    isTreasurer() returns true for isSystemAdmin() too. It was
-                   live from 2026-09-26 until now. DO NOT ADD A KEY HERE without
-                   widening the rule first, and test as Crystal, not as Jason. */
+                   live for 25 minutes on 2026-09-27 (M-30). DO NOT ADD A KEY
+                   HERE without widening the rule in the same commit, and test
+                   as Crystal, not as Jason. */
                 await updateDoc(shiftRef, {
                     isLocked: true,
                     lockedBy: currentUser.email,
@@ -3848,8 +4088,7 @@
                 alert('No finalized shifts to export.');
                 return;
             }
-            const headers = ['Event Name', 'Date', 'Primary Stand', 'Calculation Mode', 'Total Sodexo', 'Workers', 'Total Hours', 'Total Payroll', 'Lions Revenue', 'Status', 'Check Number', 'Check Date', 'Check Total', 'Check Gap', 'Check Note'];
-            const exportChecks = checksIn(allShifts);
+            const headers = ['Event Name', 'Date', 'Primary Stand', 'Calculation Mode', 'Total Sodexo', 'Workers', 'Total Hours', 'Total Payroll', 'Lions Revenue', 'Status', 'Check Number', 'Check Date', 'Paid On Check', 'Extra Lines', 'Check Difference', 'Check Note'];
             const csvRows = [headers.join(',')];
             allShifts.forEach(shift => {
                 const primaryPayout = shift.primarySodexoPayout || shift.sodexoPayout || 0;
@@ -3864,15 +4103,20 @@
                     calculations.totalHours.toFixed(2), `$${calculations.totalWorkerPayouts.toFixed(2)}`,
                     `$${calculations.lionsFinalTotal.toFixed(2)}`, `"${shift.isLocked ? 'processed-locked' : 'ready'}"`,
                     ...(() => {
-                        const rowCheck = checkOf(shift);
-                        if (!rowCheck) return ['""', '""', '""', '""', '"awaiting check"'];
-                        const group = exportChecks.get(rowCheck.number);
-                        const gap = group ? group.gap : 0;
+                        /* Each event on its own figures, the same ones its badge
+                           shows. Nothing before DCI Day 1 is tracked. */
+                        const state = eventCheck(shift);
+                        if (!state) {
+                            return ['""', '""', '""', '""', '""',
+                                billedFor(shift) > 0 ? '"before check tracking"' : '""'];
+                        }
+                        if (!state.check) return ['""', '""', '""', '""', '""', '"awaiting check"'];
                         return [
-                            `"${rowCheck.number}"`, `"${rowCheck.date}"`,
-                            `$${rowCheck.amount.toFixed(2)}`,
-                            `$${gap.toFixed(2)}`,
-                            `"${rowCheck.note.replace(/"/g, "'")}"`
+                            `"${state.check.number}"`, `"${state.check.date}"`,
+                            `$${state.paid.toFixed(2)}`,
+                            `$${state.adjusted.toFixed(2)}`,
+                            `$${state.gap.toFixed(2)}`,
+                            `"${state.check.note.replace(/"/g, "'")}"`
                         ];
                     })()
                 ];
@@ -4048,12 +4292,13 @@
                    went unnoticed in April. */
                 if (statusValue === 'awaiting-check' && !awaitsCheck(shift)) return false;
                 if (statusValue === 'check-in' || statusValue === 'check-short') {
-                    const shiftCheck = checkOf(shift);
-                    if (!shiftCheck) return false;
-                    const row = checksIn(allShifts).get(shiftCheck.number);
-                    const isShort = !!row && Math.abs(row.gap) >= CHECK_CENT;
-                    if (statusValue === 'check-short' && !isShort) return false;
-                    if (statusValue === 'check-in' && isShort) return false;
+                    /* Each event on its own figure. A sibling on the same check
+                       that is short does not pull a paid event into this list. */
+                    const state = eventCheck(shift);
+                    if (!state || !state.check) return false;
+                    const differs = state.status === 'short' || state.status === 'over';
+                    if (statusValue === 'check-short' && !differs) return false;
+                    if (statusValue === 'check-in' && differs) return false;
                 }
                 return true;
             });
@@ -4119,19 +4364,53 @@
             if (elements.recordCheckBtn) elements.recordCheckBtn.addEventListener('click', () => openCheckModal(null));
             if (elements.checkCancelBtn) elements.checkCancelBtn.addEventListener('click', closeCheckModal);
             if (elements.checkSaveBtn) elements.checkSaveBtn.addEventListener('click', recordCheck);
-            /* The number decides which events are already fixed to this check, so
-               it redraws the list. The total only moves the subtraction. */
+            /* The number decides which events are already on this check, so it
+               redraws the list. */
             if (elements.checkNumberInput) elements.checkNumberInput.addEventListener('input', renderCheckList);
-            if (elements.checkAmountInput) elements.checkAmountInput.addEventListener('input', renderCheckTally);
-            if (elements.checkSettlesInput) elements.checkSettlesInput.addEventListener('change', renderCheckTally);
             if (elements.checkEventList) {
+                /* Ticking redraws, so the amount box beside it opens, and the
+                   cursor goes straight into it. */
                 elements.checkEventList.addEventListener('change', event => {
                     const box = event.target;
                     if (!box || box.type !== 'checkbox' || box.disabled) return;
                     const id = box.getAttribute('data-shift');
                     if (!id) return;
                     if (box.checked) checkDraft.ticked.add(id); else checkDraft.ticked.delete(id);
+                    renderCheckList();
+                    if (box.checked) {
+                        const amount = Array.from(elements.checkEventList.querySelectorAll('input[data-paid]'))
+                            .find(input => input.getAttribute('data-paid') === id);
+                        if (amount) amount.focus();
+                    }
+                });
+                /* Typing an amount only moves the tally, so the cursor stays. */
+                elements.checkEventList.addEventListener('input', event => {
+                    const field = event.target;
+                    const id = field && field.getAttribute ? field.getAttribute('data-paid') : null;
+                    if (!id) return;
+                    checkDraft.amounts.set(id, field.value);
                     renderCheckTally();
+                });
+            }
+            if (elements.checkAddAdjustBtn) elements.checkAddAdjustBtn.addEventListener('click', addCheckAdjustment);
+            if (elements.checkAdjustList) {
+                const keep = event => {
+                    const field = event.target;
+                    const name = field && field.getAttribute ? field.getAttribute('data-field') : null;
+                    const line = field && field.closest ? field.closest('.check-adjust') : null;
+                    if (!name || !line) return;
+                    const entry = checkDraft.adjustments[Number(line.getAttribute('data-index'))];
+                    if (!entry) return;
+                    entry[name] = field.value;
+                    renderCheckTally();
+                };
+                elements.checkAdjustList.addEventListener('input', keep);
+                elements.checkAdjustList.addEventListener('change', keep);
+                elements.checkAdjustList.addEventListener('click', event => {
+                    const button = event.target && event.target.closest ? event.target.closest('[data-remove]') : null;
+                    if (!button) return;
+                    checkDraft.adjustments.splice(Number(button.getAttribute('data-remove')), 1);
+                    renderCheckAdjustments();
                 });
             }
             if (elements.exportAllPayrollBtn) elements.exportAllPayrollBtn.addEventListener('click', exportAllPayroll);

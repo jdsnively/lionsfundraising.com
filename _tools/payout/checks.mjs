@@ -1,12 +1,22 @@
-// The check-received chain, tested against what actually happened in April 2026.
+// The check-received chain, one event at a time.
 //
 //   node _tools/payout/checks.mjs
 //
 // Every case runs against BOTH pages, with the functions sliced out of the
-// shipped HTML. The headline case is the real remittance: check 4109045, face
-// value $3,571.46, paying two events worth $4,988.59 because Sodexo deducted
-// $1,417.13 for a check the club never deposited. If this suite ever stops
-// reporting minus $1,417.13, the page has stopped being able to see it.
+// shipped HTML, and the dialog's save guard runs against the treasurer page.
+//
+// M-31, ruled by Jason 2026-09-27: each event stands alone. The treasurer
+// records, per event, the check number, the check date and the amount the stub
+// shows for that event's date. Tracking starts at DCI Day 1, 2026-08-06.
+//
+// The headline case replays the real remittance of 2026-05-22 as if it had
+// arrived this season. Check 4109045, face value $3,571.46, paid two events in
+// full ($2,354.41 and $2,634.18) and took back $967.13 (a duplicate of an
+// earlier event) and $450.00 (a line that was never ours). As first built, both
+// paid events read minus $1,417.13. Now they read paid, the event the $967.13
+// is about reads short, the $450 is counted as not ours, and the club is still
+// shown $1,417.13 short in total. If this suite stops reporting both halves of
+// that, the page has lost one of them.
 
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -21,19 +31,32 @@ const PAGES = [
 ];
 
 const NAMES = [
-    'billedFor', 'checkOf', 'awaitsCheck', 'settlementsOn', 'checksIn',
-    'unsettledChecks', 'shortCheckDate', 'escapeText', 'signedMoney',
-    'checkBadgeHtml', 'staleReceivableHtml', 'awaitingTotal', 'shortfallTotal'
+    'billedFor', 'tracksCheck', 'checkOf', 'awaitsCheck', 'adjustmentsOn',
+    'eventCheck', 'checksIn', 'shortCheckDate', 'escapeText', 'signedMoney',
+    'tileLabel', 'checkBadgeHtml', 'staleReceivableHtml', 'awaitingSummary',
+    'shortfallSummary'
 ];
 
-// staleReceivableHtml is the only one that reaches out of the block, and the
-// season constant is already proved identical across the pages by the "pages"
-// gate, so it is stubbed rather than extracted.
+// The dialog's arithmetic and save guard. Treasurer only: payouts is read only.
+const DRAFT_NAMES = ['billedFor', 'signedMoney', 'typedMoney', 'checkDraftSummary'];
+
+// staleReceivableHtml reaches out of the block for the season. The season
+// constant is proved identical across the pages by the "pages" gate, so it is
+// stubbed, and the current season is a variable so a rollover can be tested.
+let CURRENT = '2026-2027';
 const STUBS = {
-    currentSeasonKey: () => '2026-2027',
-    seasonOf: (date) => (String(date || '') >= '2026-08-06' ? '2026-2027' : '2025-2026'),
+    currentSeasonKey: () => CURRENT,
+    seasonOf: (date) => {
+        const d = String(date || '');
+        if (d >= '2027-08-05') return '2027-2028';
+        if (d >= '2026-08-06') return '2026-2027';
+        return '2025-2026';
+    },
     formatDate: (date) => String(date || '')
 };
+
+const MINUS = String.fromCharCode(0x2212);
+const cents = (n) => Math.round(n * 100) / 100;
 
 let failures = 0;
 let assertions = 0;
@@ -60,187 +83,300 @@ function ok(page, label, condition, detail) {
 }
 
 // ---------------------------------------------------------------------------
-// The events. Amounts and dates are the real ones off the remittance stubs.
+// The events. Amounts are the real ones off the remittance stubs. The first
+// three are the real May and April events, before tracking; the rest replay
+// the same money on this season's dates.
 // ---------------------------------------------------------------------------
-const CHECK_4109045 = { checkNumber: '4109045', checkDate: '2026-05-22', checkAmount: 3571.46,
-                        checkNote: 'Sodexo deducted $1,417.13 for check 4107543, never deposited' };
+const NOT_OURS = { check: '4109045', date: '2026-08-28', amount: -450,
+                   note: 'BR-1 on check 4107543, never ours', own: false };
+const DUPLICATE = { check: '4109045', date: '2026-08-28', amount: -967.13,
+                    note: 'reverses a duplicate on check 4107543, never deposited', own: true };
 
-function april() {
+function season() {
     return [
-        // 05/08, stand pair CN23 + CN34
-        Object.assign({ id: 'may08', eventName: 'Bruno Mars', eventDate: '2026-05-08',
-                        primarySodexoPayout: 1574.62, secondarySodexoPayout: 779.79 }, CHECK_4109045),
-        // 05/09, stand pair CN23 + CN33
-        Object.assign({ id: 'may09', eventName: 'Colts Preseason', eventDate: '2026-05-09',
-                        primarySodexoPayout: 1882.64, secondarySodexoPayout: 751.54 }, CHECK_4109045),
-        // 04/03, paid in full on its own check
-        { id: 'apr03', eventName: 'DCI Prelims', eventDate: '2026-04-03',
-          primarySodexoPayout: 967.13, secondarySodexoPayout: 0,
-          checkNumber: '4107824', checkDate: '2026-04-24', checkAmount: 967.13, checkNote: '' },
-        // still owed, and from a season that has closed
-        { id: 'apr04', eventName: 'DCI Finals', eventDate: '2026-04-04',
+        // --- before DCI Day 1: history, never tracked ----------------------
+        { id: 'may08', eventName: 'May 8', eventDate: '2026-05-08',
+          primarySodexoPayout: 1574.62, secondarySodexoPayout: 779.79 },
+        { id: 'apr04', eventName: 'April 4', eventDate: '2026-04-04',
           primarySodexoPayout: 2776.84, secondarySodexoPayout: 974.63 },
-        // this season, awaiting its check, which is ordinary
-        { id: 'sep18', eventName: 'Christel House', eventDate: '2026-09-18',
+        { id: 'aug05', eventName: 'The day before DCI', eventDate: '2026-08-05',
+          primarySodexoPayout: 500, secondarySodexoPayout: 0 },
+
+        // --- DCI Day 1 on: tracked ------------------------------------------
+        // Paid in full by 4109045, the first of its two events. It also holds
+        // the not-ours line, because that is where the page keeps one.
+        { id: 'dci1', eventName: 'DCI - Day 1', eventDate: '2026-08-06',
+          primarySodexoPayout: 1574.62, secondarySodexoPayout: 779.79,
+          checkNumber: '4109045', checkDate: '2026-08-28', checkPaid: 2354.41,
+          checkNote: '', checkAdjustments: [NOT_OURS] },
+        // Paid in full by the same check.
+        { id: 'dci2', eventName: 'DCI - Day 2', eventDate: '2026-08-07',
+          primarySodexoPayout: 1882.64, secondarySodexoPayout: 751.54,
+          checkNumber: '4109045', checkDate: '2026-08-28', checkPaid: 2634.18, checkNote: '' },
+        // Paid in full on its own check, then 4109045 took $967.13 back.
+        { id: 'dci3', eventName: 'DCI - Day 3', eventDate: '2026-08-08',
+          primarySodexoPayout: 967.13, secondarySodexoPayout: 0,
+          checkNumber: '4107824', checkDate: '2026-08-21', checkPaid: 967.13, checkNote: '',
+          checkAdjustments: [DUPLICATE] },
+        // Awaiting its check, which is ordinary.
+        { id: 'aug22', eventName: 'Colts vs. Falcons', eventDate: '2026-08-22',
           primarySodexoPayout: 1200.00, secondarySodexoPayout: 0 },
-        // finalized with no Sodexo amount yet: awaiting Sodexo, not awaiting a check
+        { id: 'aug29', eventName: 'Colts vs. Lions', eventDate: '2026-08-29',
+          primarySodexoPayout: 800.00, secondarySodexoPayout: 300.00 },
+        // Finalized with no Sodexo amount yet: awaiting Sodexo, not a check.
         { id: 'sep26', eventName: 'Columbus', eventDate: '2026-09-26',
           primarySodexoPayout: 0, secondarySodexoPayout: 0 }
     ];
 }
 
+const byId = (list, id) => list.find(s => s.id === id);
+
 for (const { page, file } of PAGES) {
     const loaded = await loadNamed(file, NAMES, Object.keys(STUBS));
     const fn = loaded.load(STUBS);
-    const shifts = april();
+    CURRENT = '2026-2027';
+    const shifts = season();
     const checks = fn.checksIn(shifts);
 
     console.log('=== ' + page + ' ===');
 
-    // --- the real shortfall ------------------------------------------------
-    const short = checks.get('4109045');
-    eq(page, 'check 4109045 face value', short.amount, 3571.46);
-    eq(page, 'check 4109045 billed across its events', short.billed, 4988.59);
-    eq(page, 'check 4109045 gap', Math.round(short.gap * 100) / 100, -1417.13);
-    eq(page, 'check 4109045 event count', short.events, 2);
+    eq(page, 'tracking starts at DCI Day 1', loaded.from, "const CHECKS_FROM = '2026-08-06';");
 
-    const paid = checks.get('4107824');
-    eq(page, 'check 4107824 reconciles', Math.round(paid.gap * 100) / 100, 0);
-    eq(page, 'check 4107824 event count', paid.events, 1);
-    eq(page, 'two distinct checks recorded', checks.size, 2);
+    // --- history stays in the past ------------------------------------------
+    for (const id of ['may08', 'apr04', 'aug05']) {
+        const s = byId(shifts, id);
+        ok(page, id + ' is not tracked', !fn.tracksCheck(s));
+        ok(page, id + ' does not await a check', !fn.awaitsCheck(s));
+        eq(page, id + ' has no check state', fn.eventCheck(s), null);
+        eq(page, id + ' carries no badge', fn.checkBadgeHtml(s, checks), '');
+    }
+    ok(page, 'DCI Day 1 itself is tracked', fn.tracksCheck(byId(shifts, 'dci1')));
 
-    // --- THE TRAP. One event of the short check hidden by a filter. --------
-    // Naive code would subtract the visible billed total from the face value
-    // and report plus $1,217.05, turning a shortfall into an overpayment.
-    const onlyMay08 = shifts.filter(s => s.id === 'may08');
-    eq(page, 'shortfall survives a filter hiding a sibling event',
-        Math.round(fn.shortfallTotal(onlyMay08, checks) * 100) / 100, -1417.13);
-    eq(page, 'shortfall counted once when both siblings are visible',
-        Math.round(fn.shortfallTotal(shifts, checks) * 100) / 100, -1417.13);
-    eq(page, 'a reconciled check contributes nothing to the shortfall',
-        Math.round(fn.shortfallTotal([shifts[2]], checks) * 100) / 100, 0);
+    // --- THE M-31 POINT: each event stands alone ----------------------------
+    const d1 = fn.eventCheck(byId(shifts, 'dci1'));
+    const d2 = fn.eventCheck(byId(shifts, 'dci2'));
+    const d3 = fn.eventCheck(byId(shifts, 'dci3'));
+    eq(page, 'DCI Day 1 is paid, not painted by its check', d1.status, 'paid');
+    eq(page, 'DCI Day 2 is paid, not painted by its check', d2.status, 'paid');
+    eq(page, 'DCI Day 1 difference is zero', cents(d1.gap), 0);
+    eq(page, 'the not-ours line does not touch DCI Day 1', cents(d1.adjusted), 0);
+    eq(page, 'DCI Day 3 reads short by the line about it', d3.status, 'short');
+    eq(page, 'DCI Day 3 is short $967.13', cents(d3.gap), -967.13);
+    eq(page, 'DCI Day 3 paid its own check in full', d3.paid, 967.13);
 
-    // --- what is still owed ------------------------------------------------
-    eq(page, 'billedFor sums both stands', fn.billedFor(shifts[0]), 2354.41);
-    eq(page, 'awaiting total is the unpaid events only',
-        Math.round(fn.awaitingTotal(shifts) * 100) / 100, 4951.47);
-    ok(page, 'an event with a check does not await one', !fn.awaitsCheck(shifts[0]));
-    ok(page, 'an unpaid event awaits one', fn.awaitsCheck(shifts[3]));
+    // --- the check connects its events, and ties to the face value ----------
+    const row = checks.get('4109045');
+    eq(page, 'check 4109045 paid two events', row.shiftIds.length, 2);
+    eq(page, 'check 4109045 event amounts', cents(row.paid), 4988.59);
+    eq(page, 'check 4109045 carried two extra lines', row.adjustments.length, 2);
+    eq(page, 'check 4109045 total is the real face value', cents(row.total), 3571.46);
+    eq(page, 'check 4107824 total', cents(checks.get('4107824').total), 967.13);
+    eq(page, 'two checks recorded', checks.size, 2);
+    ok(page, 'a filtered list cannot tie out a check, which is why every shift is passed',
+        cents(fn.checksIn([byId(shifts, 'dci1')]).get('4109045').total) !== 3571.46);
+
+    // --- still $1,417.13 short in total, from the right places --------------
+    const short = fn.shortfallSummary(shifts);
+    eq(page, 'the club is still short $1,417.13', cents(short.amount), -1417.13);
+    eq(page, 'one EVENT short: DCI Day 3. The not-ours line is money, not an event', short.count, 1);
+    eq(page, 'the not-ours line alone is money taken, and no event',
+        JSON.stringify(fn.shortfallSummary([byId(shifts, 'dci1')])), JSON.stringify({ count: 0, amount: -450 }));
+    eq(page, 'a paid event alone contributes nothing',
+        cents(fn.shortfallSummary([byId(shifts, 'dci2')]).amount), 0);
+    eq(page, 'the short event alone carries its own shortfall',
+        cents(fn.shortfallSummary([byId(shifts, 'dci3')]).amount), -967.13);
+    eq(page, 'history contributes nothing',
+        cents(fn.shortfallSummary(shifts.filter(s => s.eventDate < '2026-08-06')).amount), 0);
+
+    // --- what is still owed -------------------------------------------------
+    const waiting = fn.awaitingSummary(shifts);
+    eq(page, 'two events await a check', waiting.count, 2);
+    eq(page, 'awaiting is this season\'s unpaid events only', cents(waiting.amount), 2300);
     ok(page, 'an event with no Sodexo amount awaits Sodexo, not a check',
-        !fn.awaitsCheck(shifts[5]));
+        !fn.awaitsCheck(byId(shifts, 'sep26')));
+    eq(page, 'no badge before Sodexo has billed', fn.checkBadgeHtml(byId(shifts, 'sep26'), checks), '');
+    eq(page, 'billedFor sums both stands', fn.billedFor(byId(shifts, 'dci1')), 2354.41);
 
-    // --- the closed season banner -----------------------------------------
+    // --- the tile labels ----------------------------------------------------
+    eq(page, 'no events, no count', fn.tileLabel('Awaiting Sodexo', 0), 'Awaiting Sodexo');
+    eq(page, 'one event', fn.tileLabel('Short Paid', 1), 'Short Paid, 1 event');
+    eq(page, 'several events', fn.tileLabel('Awaiting Sodexo', 3), 'Awaiting Sodexo, 3 events');
+
+    // --- the badges ---------------------------------------------------------
+    const b1 = fn.checkBadgeHtml(byId(shifts, 'dci1'), checks);
+    ok(page, 'paid badge is green', b1.indexOf('check-in') !== -1, b1);
+    ok(page, 'paid badge carries no difference', b1.indexOf(MINUS) === -1, b1);
+    ok(page, 'paid badge names its check', b1.indexOf('check 4109045') !== -1, b1);
+    ok(page, 'paid badge dates it 8/28', b1.indexOf('8/28') !== -1, b1);
+    ok(page, 'paid badge names the other event on the check', b1.indexOf('1 other event') !== -1, b1);
+    ok(page, 'paid badge gives the check total', b1.indexOf('3571.46') !== -1, b1);
+    ok(page, 'paid badge mentions the not-ours line', b1.indexOf('not one of our events') !== -1, b1);
+
+    const b3 = fn.checkBadgeHtml(byId(shifts, 'dci3'), checks);
+    ok(page, 'short badge is red', b3.indexOf('check-short') !== -1, b3);
+    ok(page, 'short badge carries its own gap with a real minus',
+        b3.indexOf(MINUS + '$967.13') !== -1, b3);
+    ok(page, 'short badge names its own check, not the one that took it back',
+        b3.indexOf('check 4107824') !== -1, b3);
+    ok(page, 'short badge says which check took it back', b3.indexOf('4109045 took back $967.13') !== -1, b3);
+
+    ok(page, 'awaiting badge', fn.checkBadgeHtml(byId(shifts, 'aug22'), checks)
+        .indexOf('check-awaiting') !== -1);
+
+    // --- overpaid: amber, not green, not counted as owed --------------------
+    const over = { id: 'over', eventName: 'Over', eventDate: '2026-09-05',
+                   primarySodexoPayout: 1000, checkNumber: '5000', checkDate: '2026-09-20', checkPaid: 1010 };
+    eq(page, 'an overpaid event reads over', fn.eventCheck(over).status, 'over');
+    ok(page, 'an overpaid badge is amber', fn.checkBadgeHtml(over, fn.checksIn([over]))
+        .indexOf('check-over') !== -1);
+    ok(page, 'an overpaid badge shows +$10.00', fn.checkBadgeHtml(over, fn.checksIn([over]))
+        .indexOf('+$10.00') !== -1);
+    eq(page, 'an overpayment does not offset another event\'s shortfall',
+        cents(fn.shortfallSummary([over, byId(shifts, 'dci3')]).amount), -967.13);
+    eq(page, 'half a cent is noise, not money', fn.eventCheck(Object.assign({}, over,
+        { checkPaid: 1000.004 })).status, 'paid');
+
+    // --- MAKING IT GOOD -----------------------------------------------------
+    const RETURNED = { check: '4112001', date: '2026-10-15', amount: 967.13, note: 'reissued', own: true };
+    const RETURNED_450 = { check: '4112001', date: '2026-10-15', amount: 450, note: 'BR-1 returned', own: false };
+    const good = season().map(s => {
+        if (s.id === 'dci3') return Object.assign({}, s, { checkAdjustments: [DUPLICATE, RETURNED] });
+        if (s.id === 'aug22') return Object.assign({}, s, { checkNumber: '4112001', checkDate: '2026-10-15',
+            checkPaid: 1200, checkAdjustments: [RETURNED_450] });
+        return s;
+    });
+    const goodChecks = fn.checksIn(good);
+    eq(page, 'a made-good event reads paid', fn.eventCheck(byId(good, 'dci3')).status, 'paid');
+    const settledBadge = fn.checkBadgeHtml(byId(good, 'dci3'), goodChecks);
+    ok(page, 'a made-good event is green', settledBadge.indexOf('check-in') !== -1, settledBadge);
+    ok(page, 'a made-good event still says it was put right', settledBadge.indexOf('settled') !== -1,
+        settledBadge);
+    ok(page, 'a made-good event names the check that put it right',
+        settledBadge.indexOf('4112001 added $967.13') !== -1, settledBadge);
+    eq(page, 'nothing short once both are returned', cents(fn.shortfallSummary(good).amount), 0);
+    eq(page, 'no items short once both are returned', fn.shortfallSummary(good).count, 0);
+    eq(page, 'the make-good check ties out', cents(goodChecks.get('4112001').total), 2617.13);
+
+    // A PARTIAL make-good leaves the rest flagged.
+    const part = season().map(s => (s.id === 'dci3' ? Object.assign({}, s, { checkAdjustments: [DUPLICATE,
+        { check: '4112001', date: '2026-10-15', amount: 500, note: 'part', own: true }] }) : s));
+    eq(page, 'a partial make-good leaves the rest short',
+        cents(fn.eventCheck(byId(part, 'dci3')).gap), -467.13);
+    ok(page, 'a partially made-good event stays red',
+        fn.checkBadgeHtml(byId(part, 'dci3'), fn.checksIn(part)).indexOf('check-short') !== -1);
+
+    // --- a season rollover does not hide what is still owed -----------------
+    eq(page, 'no banner while the season is open', fn.staleReceivableHtml(shifts), '');
+    CURRENT = '2027-2028';
     const banner = fn.staleReceivableHtml(shifts);
-    ok(page, 'banner fires for a closed season debt', banner.indexOf('3751.47') !== -1, banner);
-    ok(page, 'banner names the season', banner.indexOf('2025-2026') !== -1, banner);
-    ok(page, 'banner ignores this season\'s ordinary wait',
-        banner.indexOf('4951.47') === -1, banner);
-    eq(page, 'no banner when nothing old is owed', fn.staleReceivableHtml([shifts[4]]), '');
+    ok(page, 'banner fires for last season\'s unpaid events', banner.indexOf('2300.00') !== -1, banner);
+    ok(page, 'banner names the season', banner.indexOf('2026-2027') !== -1, banner);
+    ok(page, 'banner never reaches before DCI Day 1', banner.indexOf('2025-2026') === -1, banner);
+    ok(page, 'the owed events still await after the rollover', fn.awaitsCheck(byId(shifts, 'aug22')));
+    CURRENT = '2026-2027';
 
-    // --- the badges --------------------------------------------------------
-    const shortBadge = fn.checkBadgeHtml(shifts[0], checks);
-    ok(page, 'short check badge is red', shortBadge.indexOf('check-short') !== -1, shortBadge);
-    ok(page, 'short check badge carries the gap',
-        shortBadge.indexOf('1417.13') !== -1, shortBadge);
-    ok(page, 'short check badge uses a real minus sign',
-        shortBadge.indexOf('\u2212$1417.13') !== -1, shortBadge);
-    ok(page, 'short check badge names the check', shortBadge.indexOf('4109045') !== -1, shortBadge);
-    ok(page, 'short check badge dates it 5/22', shortBadge.indexOf('5/22') !== -1, shortBadge);
+    // --- data that is not what we expect ------------------------------------
+    eq(page, 'no adjustments is an empty list', fn.adjustmentsOn({}).length, 0);
+    eq(page, 'a line that names no check is discarded',
+        fn.adjustmentsOn({ checkAdjustments: [{ amount: 50 }] }).length, 0);
+    eq(page, 'an adjustments field that is not a list is ignored',
+        fn.adjustmentsOn({ checkAdjustments: 'nope' }).length, 0);
+    eq(page, 'a line with no amount counts as zero',
+        fn.adjustmentsOn({ checkAdjustments: [{ check: 'x' }] })[0].amount, 0);
+    eq(page, 'a line is ours unless it says otherwise',
+        fn.adjustmentsOn({ checkAdjustments: [{ check: 'x', amount: 1 }] })[0].own, true);
+    eq(page, 'a not-ours line stays not ours',
+        fn.adjustmentsOn({ checkAdjustments: [{ check: 'x', amount: 1, own: false }] })[0].own, false);
+    eq(page, 'a blank check number is no check', fn.checkOf({ checkNumber: '   ' }), null);
+    eq(page, 'the old pooled field is not read', fn.checkOf({ checkNumber: '1', checkAmount: 3571.46 }).paid, 0);
+    eq(page, 'an event with no date is not tracked', fn.tracksCheck({ primarySodexoPayout: 5 }), false);
 
-    const inBadge = fn.checkBadgeHtml(shifts[2], checks);
-    ok(page, 'reconciled check badge is green', inBadge.indexOf('check-in') !== -1, inBadge);
-    ok(page, 'reconciled check badge shows no difference',
-        inBadge.indexOf('\u2212') === -1, inBadge);
-
-    ok(page, 'unpaid event badge says awaiting check',
-        fn.checkBadgeHtml(shifts[3], checks).indexOf('check-awaiting') !== -1);
-    eq(page, 'no badge at all before Sodexo has billed',
-        fn.checkBadgeHtml(shifts[5], checks), '');
-
-    // --- the small things that bite ---------------------------------------
+    // --- the small things that bite -----------------------------------------
     eq(page, 'check date does not slide a day west', fn.shortCheckDate('2026-05-22'), '5/22');
     eq(page, 'check date on the first of a month', fn.shortCheckDate('2026-01-01'), '1/1');
     eq(page, 'a missing check date prints nothing', fn.shortCheckDate(''), '');
     eq(page, 'a typed check number cannot carry markup',
         fn.escapeText('4109045"><script>x</script>'),
         '4109045&quot;&gt;&lt;script&gt;x&lt;/script&gt;');
-    eq(page, 'a shortfall reads as negative', fn.signedMoney(-1417.13), '\u2212$1417.13');
+    eq(page, 'a shortfall reads as negative', fn.signedMoney(-1417.13), MINUS + '$1417.13');
     eq(page, 'an overpayment reads as positive', fn.signedMoney(450), '+$450.00');
 
-    // --- RECOVERING A SHORTFALL -------------------------------------------
-    // When Sodexo eventually makes good, the make-up check pays no event of its
-    // own. Without somewhere to put it the red badge could only ever be cleared
-    // by deleting the record of the shortfall, which is the worst outcome
-    // available. A settlement is recorded against the short check instead.
-    const RECOVERY = { check: '4112001', date: '2026-06-15', amount: 1417.13, note: 'reissued' };
-
-    const settledShifts = april().map(s => (s.checkNumber === '4109045'
-        ? Object.assign({}, s, { gapSettlements: [RECOVERY] }) : s));
-    const settledChecks = fn.checksIn(settledShifts);
-    const settled = settledChecks.get('4109045');
-    eq(page, 'the gap itself is history and does not move',
-        Math.round(settled.gap * 100) / 100, -1417.13);
-    eq(page, 'a full recovery is recorded', Math.round(settled.settled * 100) / 100, 1417.13);
-    eq(page, 'nothing is outstanding once it is recovered',
-        Math.round(settled.outstanding * 100) / 100, 0);
-    eq(page, 'a recovered check leaves the shortfall total',
-        Math.round(fn.shortfallTotal(settledShifts, settledChecks) * 100) / 100, 0);
-    const settledBadge = fn.checkBadgeHtml(settledShifts[0], settledChecks);
-    ok(page, 'a recovered check goes green', settledBadge.indexOf('check-in') !== -1, settledBadge);
-    ok(page, 'a recovered check still says it was short',
-        settledBadge.indexOf('settled') !== -1, settledBadge);
-    ok(page, 'a recovered check names the check that made it good',
-        settledBadge.indexOf('4112001') !== -1, settledBadge);
-    eq(page, 'nothing is left unsettled', fn.unsettledChecks(settledChecks).length, 0);
-
-    // A PARTIAL recovery must leave the rest flagged. This is the case a single
-    // settlement field would have got wrong by overwriting.
-    const partShifts = april().map(s => (s.checkNumber === '4109045'
-        ? Object.assign({}, s, { gapSettlements: [{ check: '4112001', date: '2026-06-15', amount: 1000 }] })
-        : s));
-    const partChecks = fn.checksIn(partShifts);
-    eq(page, 'a partial recovery leaves the rest outstanding',
-        Math.round(partChecks.get('4109045').outstanding * 100) / 100, -417.13);
-    eq(page, 'a partial recovery still shows in the shortfall total',
-        Math.round(fn.shortfallTotal(partShifts, partChecks) * 100) / 100, -417.13);
-    ok(page, 'a partially recovered check stays red',
-        fn.checkBadgeHtml(partShifts[0], partChecks).indexOf('check-short') !== -1);
-    ok(page, 'a partially recovered check shows what is left',
-        fn.checkBadgeHtml(partShifts[0], partChecks).indexOf('417.13') !== -1);
-    eq(page, 'a partially recovered check is still offered for settling',
-        fn.unsettledChecks(partChecks).length, 1);
-
-    // Two instalments, which is how the April money would actually come back.
-    const twoShifts = april().map(s => (s.checkNumber === '4109045'
-        ? Object.assign({}, s, { gapSettlements: [
-            { check: '4112001', date: '2026-06-15', amount: 1000 },
-            { check: '4113550', date: '2026-07-02', amount: 417.13 }] })
-        : s));
-    eq(page, 'two instalments add up to a settled check',
-        Math.round(fn.checksIn(twoShifts).get('4109045').outstanding * 100) / 100, 0);
-
-    // --- settlement data that is not what we expect ------------------------
-    eq(page, 'no settlements is an empty list', fn.settlementsOn({}).length, 0);
-    eq(page, 'a settlement that names no check is discarded',
-        fn.settlementsOn({ gapSettlements: [{ amount: 50 }] }).length, 0);
-    eq(page, 'a settlement field that is not a list is ignored',
-        fn.settlementsOn({ gapSettlements: 'nope' }).length, 0);
-    eq(page, 'a settlement with no amount counts as zero',
-        fn.settlementsOn({ gapSettlements: [{ check: 'x' }] })[0].amount, 0);
-
-    // --- an empty page -----------------------------------------------------
-    eq(page, 'no shifts, nothing awaited', fn.awaitingTotal([]), 0);
-    eq(page, 'no shifts, no shortfall', fn.shortfallTotal([], fn.checksIn([])), 0);
+    // --- an empty page -------------------------------------------------------
+    eq(page, 'no shifts, nothing awaited', fn.awaitingSummary([]).count, 0);
+    eq(page, 'no shifts, no shortfall', fn.shortfallSummary([]).amount, 0);
     eq(page, 'no shifts, no checks', fn.checksIn([]).size, 0);
-    eq(page, 'a blank check number is no check', fn.checkOf({ checkNumber: '   ' }), null);
-    eq(page, 'no checks, nothing unsettled', fn.unsettledChecks(fn.checksIn([])).length, 0);
+}
+
+// ---------------------------------------------------------------------------
+// The dialog's save guard, treasurer page only.
+// ---------------------------------------------------------------------------
+{
+    const page = 'treasurer';
+    const file = PAGES[1].file;
+    const d = (await loadNamed(file, DRAFT_NAMES)).load();
+    const shifts = season();
+    const e1 = byId(shifts, 'dci1');
+    const e2 = byId(shifts, 'dci2');
+    const e3 = byId(shifts, 'dci3');
+
+    console.log('=== treasurer dialog ===');
+
+    eq(page, 'a blank amount is not a number', Number.isNaN(d.typedMoney('')), true);
+    eq(page, 'text is not a number', Number.isNaN(d.typedMoney('abc')), true);
+    eq(page, 'a stub amount reads as typed', d.typedMoney('2354.41'), 2354.41);
+    eq(page, 'a deduction keeps its sign', d.typedMoney('-450'), -450);
+
+    const replay = d.checkDraftSummary('4109045', '2026-08-28', '',
+        [{ shift: e1, typed: '2354.41' }, { shift: e2, typed: '2634.18' }],
+        [{ amount: '-967.13', about: 'dci3', note: 'duplicate' },
+         { amount: '-450', about: 'none', note: 'BR-1' }]);
+    eq(page, 'the replayed stub saves', replay.problem, '');
+    eq(page, 'the replayed stub totals the face of the check', cents(replay.total), 3571.46);
+    eq(page, 'neither paid event differs', replay.differs.length, 0);
+
+    eq(page, 'a check number is required',
+        d.checkDraftSummary('', '2026-08-28', '', [{ shift: e1, typed: '1' }], []).problem,
+        'Enter the check number printed on the check.');
+    eq(page, 'a check date is required',
+        d.checkDraftSummary('1', '8/28', '', [{ shift: e1, typed: '1' }], []).problem,
+        'Enter the date printed on the check.');
+    ok(page, 'something has to be on the check',
+        d.checkDraftSummary('1', '2026-08-28', '', [], []).problem.indexOf('Tick the events') === 0);
+    eq(page, 'THE AMOUNT BOX MUST BE FILLED',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '' }], []).problem,
+        'Type the amount the stub shows for DCI - Day 1.');
+    ok(page, 'a zero amount is refused',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '0' }], []).problem !== '');
+
+    const shortNoNote = d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '1574.62' }], []);
+    ok(page, 'a short event needs a note', shortNoNote.problem.indexOf(MINUS + '$779.79') !== -1,
+        shortNoNote.problem);
+    eq(page, 'the short event is listed as differing', shortNoNote.differs.length, 1);
+    eq(page, 'a short event with a note saves',
+        d.checkDraftSummary('1', '2026-08-28', 'one stand only', [{ shift: e1, typed: '1574.62' }], []).problem, '');
+
+    ok(page, 'an extra line needs an amount',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
+            [{ amount: '', about: 'dci3', note: 'x' }]).problem.indexOf('amount of each extra line') !== -1);
+    ok(page, 'an extra line needs to say what it is about',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
+            [{ amount: '-5', about: '', note: 'x' }]).problem.indexOf('which event') !== -1);
+    ok(page, 'an extra line needs a note',
+        d.checkDraftSummary('1', '2026-08-28', '', [{ shift: e1, typed: '2354.41' }],
+            [{ amount: '-5', about: 'dci3', note: ' ' }]).problem.indexOf('Write what each extra line is') === 0);
+    ok(page, 'a not-ours line needs an event on the same check',
+        d.checkDraftSummary('1', '2026-08-28', '', [],
+            [{ amount: '-450', about: 'none', note: 'x' }]).problem.indexOf('not one of our events') !== -1);
+    eq(page, 'a make-good alone, about one of our events, saves',
+        d.checkDraftSummary('4112001', '2026-10-15', '', [],
+            [{ amount: '967.13', about: e3.id, note: 'reissued' }]).problem, '');
 }
 
 // The two copies must not merely both work. They must be the same code.
 const sources = [];
 for (const { file } of PAGES) {
     const loaded = await loadNamed(file, NAMES, Object.keys(STUBS));
-    sources.push(NAMES.map((n) => loaded.sources[n]).join('\n'));
+    sources.push(loaded.from + '\n' + NAMES.map((n) => loaded.sources[n]).join('\n'));
 }
 assertions++;
 if (sources[0] !== sources[1]) {

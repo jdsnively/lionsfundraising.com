@@ -120,9 +120,20 @@ service cloud.firestore {
       allow read, write: if isSystemAdmin();
       allow read: if isTreasurer();
 
-      // The treasurer's only mutation is the review lock.
+      // The treasurer's mutations: the review lock, and recording a Sodexo
+      // check against an event (M-30 Option B, M-31, 2026-09-27). Still a
+      // whitelist, so she cannot change a settlement, an hour, a worker row or
+      // a Sodexo amount. The page writes exactly these keys and no others;
+      // add one there and it must be added here in the same commit, because
+      // isTreasurer() is true for an administrator and only the treasurer's
+      // own login would find the gap.
       allow update: if isTreasurer()
-                    && changedKeys().hasOnly(['isLocked', 'lockedBy', 'lockedDate', 'lockReason']);
+                    && changedKeys().hasOnly([
+                         'isLocked', 'lockedBy', 'lockedDate', 'lockReason',
+                         'checkNumber', 'checkDate', 'checkPaid', 'checkNote',
+                         'checkReceivedAt', 'checkReceivedBy',
+                         'checkAdjustments', 'checkAdjustedAt', 'checkAdjustedBy'
+                       ]);
 
       // Backstop for the payouts interface, which currently renders a delete
       // control on locked shifts.

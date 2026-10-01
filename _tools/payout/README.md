@@ -32,13 +32,29 @@ than producing a plausible wrong answer.
 `check` and `adr` answer different questions and are separate on purpose.
 
 - `check` asks whether the formula still does what it did. It is the regression
-  gate, and it is green today.
+  gate.
 - `adr` asks whether the formula does what ADR-005 says it should. It is the
-  specification gate, and it is red today. That is the honest state of the code.
+  specification gate. It was red from 2026-09-02 until the shirt split was
+  corrected on 2026-09-16, and it has been green and a CI gate since.
 
 Do not run `pin` to make `check` pass. `pin` records a deliberate, reviewed
 change in behavior. If `check` goes red and you did not intend to change the
 formula, the change is the bug.
+
+## The check-received chain
+
+    node _tools/payout/checks.mjs       the Sodexo check code on both pages
+
+Same discipline: the functions are sliced out of both shipped pages, including
+the `CHECKS_FROM` date, and the last assertion requires the two copies to be
+byte identical. Each event stands alone (M-31, 2026-09-27), so the headline case
+replays the real 2026-05-22 remittance on this season's dates and requires both
+halves: the two events it paid in full read paid, and the club still reads
+$1,417.13 short.
+
+What none of this can see is permission. The Firestore rules decide whether the
+treasurer may save at all, and `_tools/rules/rules-test.mjs` tests that, signed
+in as her, in the emulator (M-30).
 
 ## The cases
 

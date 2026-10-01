@@ -159,6 +159,16 @@ function sliceCheckCent(source, file) {
     return hits[0].trim();
 }
 
+// DCI Day 1, the first event whose check is tracked. Sliced, not restated, so
+// the suite tests the date the page actually ships with.
+const CHECKS_FROM_PATTERN = /^[ \t]*const CHECKS_FROM = '\d{4}-\d{2}-\d{2}';[ \t]*(\/\/.*)?$/gm;
+
+function sliceChecksFrom(source, file) {
+    const hits = source.match(CHECKS_FROM_PATTERN);
+    if (!hits || hits.length !== 1) refuse('CHECKS_FROM', hits ? hits.length : 0, file);
+    return hits[0].trim();
+}
+
 // Pulls a named set of functions out of a page and returns them callable.
 // Anything the page would have supplied from its own scope is handed in as a
 // stub, so a function can be exercised without dragging the whole page in.
@@ -169,11 +179,13 @@ export async function loadNamed(file, names, stubNames = []) {
         parts[name] = sliceFunction(source, name, file);
     }
     const cent = sliceCheckCent(source, file);
+    const from = sliceChecksFrom(source, file);
 
     const built =
         '"use strict";\n' +
         (stubNames.length ? 'const { ' + stubNames.join(', ') + ' } = __stubs;\n' : '') +
         cent + '\n' +
+        from + '\n' +
         names.map((n) => parts[n]).join('\n\n') + '\n\n' +
         'return { ' + names.join(', ') + ' };\n';
 
@@ -188,6 +200,7 @@ export async function loadNamed(file, names, stubNames = []) {
     return {
         file,
         cent,
+        from,
         sources: parts,
         load(stubs = {}) { return factory(stubs); }
     };
