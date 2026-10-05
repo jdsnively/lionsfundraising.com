@@ -38,7 +38,7 @@ const NAMES = [
 ];
 
 // The dialog's arithmetic and save guard. Treasurer only: payouts is read only.
-const DRAFT_NAMES = ['billedFor', 'signedMoney', 'typedMoney', 'checkDraftSummary'];
+const DRAFT_NAMES = ['billedFor', 'signedMoney', 'typedMoney', 'localToday', 'checkDraftSummary'];
 
 // staleReceivableHtml reaches out of the block for the season. The season
 // constant is proved identical across the pages by the "pages" gate, so it is
@@ -404,7 +404,54 @@ for (const { page, file } of PAGES) {
             [{ amount: '-450', about: 'none', note: 'x' }], '450', 0).problem.indexOf('not one of our events') !== -1);
     eq(page, 'a make-good alone, about one of our events, saves',
         d.checkDraftSummary('4112001', '2026-10-15', '', [],
-            [{ amount: '967.13', about: e3.id, note: 'reissued' }], '967.13', 0).problem, '');
+            [{ amount: '967.13', about: e3.id, note: 'reissued' }], '967.13', 0, '2026-10-15').problem, '');
+
+    // Jason, 2026-10-04: a check cannot be recorded with a date that has not
+    // happened. Check 4113855 went in dated 2026-11-18 on 2026-10-04. Every
+    // call here passes its own "today", so none of this depends on the day
+    // the suite runs, except the last, which proves the real clock is used
+    // when nobody passes one.
+    const dated = (date, today) => d.checkDraftSummary('4113855', date, '',
+        [{ shift: e1, typed: '2354.41' }], [], '2354.41', 0, today).problem;
+    eq(page, 'a check dated six weeks ahead is refused', dated('2026-11-18', '2026-10-04'),
+        '11/18/2026 has not happened yet. Enter the date printed on the check.');
+    eq(page, 'a check dated tomorrow is refused', dated('2026-10-05', '2026-10-04'),
+        '10/5/2026 has not happened yet. Enter the date printed on the check.');
+    eq(page, 'a check dated today records', dated('2026-10-04', '2026-10-04'), '');
+    eq(page, 'a check dated yesterday records', dated('2026-10-03', '2026-10-04'), '');
+    eq(page, 'the first of next year is later than New Year\'s Eve',
+        dated('2027-01-01', '2026-12-31').indexOf('1/1/2027 has not happened yet') === 0, true);
+    eq(page, 'the date passed in decides, not the clock',
+        dated('2020-01-02', '2020-01-01'), '1/2/2020 has not happened yet. Enter the date printed on the check.');
+    eq(page, 'a date that is not a date still asks for the date',
+        dated('11/18', '2026-10-04'), 'Enter the date printed on the check.');
+    // 8:30 in the evening Eastern on the 4th is already the 5th in UTC. The
+    // clock is swapped for one where the two disagree, because on a build
+    // server they never do and a UTC date would pass unnoticed.
+    {
+        const RealDate = globalThis.Date;
+        let read = '';
+        let tomorrow = '';
+        try {
+            globalThis.Date = class {
+                getFullYear() { return 2026; }
+                getMonth() { return 9; }
+                getDate() { return 4; }
+                toISOString() { return '2026-10-05T00:30:00.000Z'; }
+            };
+            read = d.localToday();
+            tomorrow = d.checkDraftSummary('4113855', '2026-10-05', '',
+                [{ shift: e1, typed: '2354.41' }], [], '2354.41', 0).problem;
+        } finally {
+            globalThis.Date = RealDate;
+        }
+        eq(page, 'today is this computer\'s date, not the UTC one', read, '2026-10-04');
+        eq(page, 'in the evening, tomorrow is still tomorrow', tomorrow,
+            '10/5/2026 has not happened yet. Enter the date printed on the check.');
+    }
+    ok(page, 'with no date passed, the real clock still refuses the future',
+        d.checkDraftSummary('4113855', '2999-01-01', '', [{ shift: e1, typed: '2354.41' }], [],
+            '2354.41', 0).problem.indexOf('1/1/2999 has not happened yet') === 0);
 }
 
 // The two copies must not merely both work. They must be the same code.

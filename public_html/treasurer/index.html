@@ -750,6 +750,20 @@
             color: #1e3a8a;
         }
 
+        /* Why Record Check refused, shown inside the dialog. See
+           showCheckProblem for why it cannot go to the page's error strip. */
+        .check-problem {
+            margin-top: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            background: #fef2f2;
+            border: 1px solid #b91c1c;
+            border-left-width: 4px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #7f1d1d;
+        }
+
         .status-finalized {
             background: #d1fae5;
             color: #065f46;
@@ -1599,6 +1613,7 @@
                 <input type="text" id="checkNoteInput" maxlength="220"
                        placeholder="e.g. Sodexo paid one stand only; asked for the second on 9/30">
             </div>
+            <div id="checkProblem" class="check-problem hidden" role="alert"></div>
             <div class="dialog-buttons">
                 <button class="btn btn-secondary" id="checkCancelBtn">Cancel</button>
                 <button class="btn btn-lock" id="checkSaveBtn">Record Check</button>
@@ -2978,6 +2993,16 @@
             return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
         }
 
+        /** Today as YYYY-MM-DD on this computer's clock, not in UTC. A UTC
+            date rolls over at eight in the evening Eastern, which would let a
+            check be dated tomorrow every night. */
+        function localToday() {
+            const d = new Date();
+            return d.getFullYear() + '-'
+                + String(d.getMonth() + 1).padStart(2, '0') + '-'
+                + String(d.getDate()).padStart(2, '0');
+        }
+
         /**
          * What the dialog would record, worked out without touching the page,
          * so the save guard can be tested on its own.
@@ -2987,6 +3012,10 @@
          *   checkTotal   what she typed as the amount printed on the check
          *   recorded     the sum of lines this check number already put on
          *                events, which stay as they are and still count
+         *   today        YYYY-MM-DD, the latest date a check can carry. Left
+         *                out, it is this computer's date, so the guard cannot
+         *                be skipped by forgetting to pass it. Tests pass their
+         *                own so they do not depend on the day they run.
          *
          * Returns { lines, adjustments, total, checkTotal, remaining, differs,
          * problem }. total is what has been entered against the check, and
@@ -2994,7 +3023,7 @@
          * agree. problem is the first thing that stops a save, or '' when it
          * can be saved. Jason, 2026-10-01: it has to reconcile every time.
          */
-        function checkDraftSummary(number, date, note, events, adjustments, checkTotal, recorded) {
+        function checkDraftSummary(number, date, note, events, adjustments, checkTotal, recorded, today) {
             const lines = (events || []).map(e => {
                 const billed = billedFor(e.shift);
                 const paid = typedMoney(e.typed);
@@ -3013,6 +3042,7 @@
             const remaining = Number.isFinite(face) ? Math.round((face - total) * 100) / 100 : NaN;
             const differs = lines.filter(l => Number.isFinite(l.diff) && Math.abs(l.diff) >= CHECK_CENT);
             const name = (shift) => String((shift && shift.eventName) || 'this event');
+            const latest = /^\d{4}-\d{2}-\d{2}$/.test(String(today || '')) ? String(today) : localToday();
 
             let problem = '';
             const blank = lines.find(l => !(l.paid > 0));
@@ -3020,6 +3050,15 @@
                 problem = 'Enter the check number printed on the check.';
             } else if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
                 problem = 'Enter the date printed on the check.';
+            } else if (String(date) > latest) {
+                /* A check cannot be in hand before its own date. Jason,
+                   2026-10-04, after one was recorded dated six weeks ahead by a
+                   slip of the month: "Unless Crystal is a time traveler she
+                   can't future deposit a check". Both sides are YYYY-MM-DD, so
+                   comparing them as text compares them as dates. */
+                const parts = String(date).split('-');
+                problem = Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0]
+                    + ' has not happened yet. Enter the date printed on the check.';
             } else if (!(face > 0)) {
                 problem = 'Enter the amount printed on the check.';
             } else if (lines.length === 0 && extras.length === 0) {
@@ -3103,6 +3142,12 @@
                 const field = document.getElementById(id);
                 if (field) field.value = '';
             });
+            /* The picker stops at today too. checkDraftSummary is what
+               refuses a later date; this only spares her finding out at the
+               end. */
+            const dateInput = document.getElementById('checkDateInput');
+            if (dateInput) dateInput.max = localToday();
+            showCheckProblem('');
             renderCheckAdjustments();
             renderCheckList();
             const modal = document.getElementById('checkModal');
@@ -3115,6 +3160,27 @@
             const modal = document.getElementById('checkModal');
             if (modal) modal.classList.add('hidden');
             checkDraft = { ticked: new Set(), amounts: new Map(), adjustments: [], openedFrom: null };
+            showCheckProblem('');
+        }
+
+        /* A REFUSAL IS SHOWN INSIDE THE DIALOG, WHERE SHE IS LOOKING.
+
+           showError prepends its strip to the page, which is behind this
+           dialog and, once the page has scrolled, above the fold. Measured
+           2026-10-04 with the dialog open: the strip sat 590 pixels above the
+           window with the dialog on top of it. So every refusal Record Check
+           gave, a check that does not reconcile, a difference with no note, a
+           date in the future, looked like a button that did nothing, and was
+           gone ten seconds later.
+
+           An empty message clears the box. It is cleared whenever she changes
+           anything, so it never describes a problem she has already fixed. */
+        function showCheckProblem(message) {
+            const box = document.getElementById('checkProblem');
+            if (!box) return;
+            box.textContent = message || '';
+            box.classList.toggle('hidden', !message);
+            if (message && box.scrollIntoView) box.scrollIntoView({ block: 'nearest' });
         }
 
         /**
@@ -3241,6 +3307,9 @@
         function renderCheckTally() {
             const tally = document.getElementById('checkTally');
             if (!tally) return;
+            /* Every tick, amount and extra line redraws the tally, so this is
+               where a refusal she has started to answer is taken down. */
+            showCheckProblem('');
             const summary = currentCheckSummary();
             const targets = new Map(adjustmentTargets().map(s => [s.id, s]));
             /* Starts from the amount of the check and works down to what is
@@ -3299,7 +3368,7 @@
                 return;
             }
             const summary = currentCheckSummary();
-            if (summary.problem) { showError(summary.problem); return; }
+            if (summary.problem) { showCheckProblem(summary.problem); return; }
             const value = (id) => String((document.getElementById(id) || {}).value || '').trim();
             const number = value('checkNumberInput');
             const date = value('checkDateInput');
@@ -3356,11 +3425,13 @@
                         + ' short until Sodexo makes it good.' : '.'), 'success');
             } catch (error) {
                 console.error('Error recording check:', error);
+                /* The dialog is still open when a save fails, so these go in
+                   it too. */
                 if (error && error.code === 'permission-denied') {
-                    showError('This account does not have permission to record a check. Email '
-                        + 'fundraising@lionssports.club with the address you signed in with.', true);
+                    showCheckProblem('This account does not have permission to record a check. Email '
+                        + 'fundraising@lionssports.club with the address you signed in with.');
                 } else {
-                    showError('Failed to record the check. Please try again.');
+                    showCheckProblem('Failed to record the check. Please try again.');
                 }
             }
         };
@@ -4442,6 +4513,12 @@
                redraws the list. */
             if (elements.checkNumberInput) elements.checkNumberInput.addEventListener('input', renderCheckList);
             if (elements.checkTotalInput) elements.checkTotalInput.addEventListener('input', renderCheckTally);
+            /* The date and the note redraw nothing, so they clear a refusal
+               themselves. */
+            ['checkDateInput', 'checkNoteInput'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.addEventListener('input', () => showCheckProblem(''));
+            });
             if (elements.checkEventList) {
                 /* Ticking redraws, so the amount box beside it opens, and the
                    cursor goes straight into it. */
