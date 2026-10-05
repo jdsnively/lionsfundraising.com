@@ -449,6 +449,32 @@ for (const { page, file } of PAGES) {
         eq(page, 'in the evening, tomorrow is still tomorrow', tomorrow,
             '10/5/2026 has not happened yet. Enter the date printed on the check.');
     }
+    // Jason, 2026-10-05: a check cannot be dated before an event it pays.
+    // DCI Day 1 took place on 2026-08-06 and DCI Day 2 on 2026-08-07.
+    const paying = (date, events) => d.checkDraftSummary('4112718', date, '',
+        events.map(shift => ({ shift, typed: d.billedFor(shift).toFixed(2) })), [],
+        events.reduce((sum, shift) => sum + d.billedFor(shift), 0).toFixed(2), 0, '2026-10-05').problem;
+    eq(page, 'a check dated before the event it pays is refused', paying('2026-08-05', [e1]),
+        '8/5/2026 is before DCI - Day 1 took place on 8/6/2026. Correct the check date, or untick '
+        + 'the event if this check does not pay for it.');
+    eq(page, 'a check dated on the day of the event records', paying('2026-08-06', [e1]), '');
+    eq(page, 'a check dated the day after the event records', paying('2026-08-07', [e1]), '');
+    // Dated before both, so both offend and the choice between them is real.
+    ok(page, 'of two events it is dated before, the later one is the one named',
+        paying('2026-08-05', [e1, e2]).indexOf('8/5/2026 is before DCI - Day 2 took place on 8/7/2026.') === 0);
+    ok(page, 'and it is named whichever order they were ticked in',
+        paying('2026-08-05', [e2, e1]).indexOf('8/5/2026 is before DCI - Day 2 took place on 8/7/2026.') === 0);
+    ok(page, 'dated between two events, only the later one offends',
+        paying('2026-08-06', [e1, e2]).indexOf('8/6/2026 is before DCI - Day 2 took place on 8/7/2026.') === 0);
+    eq(page, 'a check dated after both events records', paying('2026-08-21', [e1, e2]), '');
+    eq(page, 'an event with no date does not block its check',
+        paying('2026-08-21', [Object.assign({}, e1, { eventDate: '' })]), '');
+    eq(page, 'a month slip into last year is caught by the event, not the clock',
+        paying('2025-08-21', [e1]).indexOf('8/21/2025 is before DCI - Day 1 took place on 8/6/2026.') === 0, true);
+    ok(page, 'a date in the future is still reported as the future',
+        d.checkDraftSummary('4112718', '2026-10-06', '', [{ shift: e1, typed: '2354.41' }], [], '2354.41', 0,
+            '2026-10-05').problem.indexOf('10/6/2026 has not happened yet') === 0);
+
     ok(page, 'with no date passed, the real clock still refuses the future',
         d.checkDraftSummary('4113855', '2999-01-01', '', [{ shift: e1, typed: '2354.41' }], [],
             '2354.41', 0).problem.indexOf('1/1/2999 has not happened yet') === 0);

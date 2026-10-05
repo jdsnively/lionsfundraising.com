@@ -3022,6 +3022,10 @@
          * remaining is the check less that, so it reads $0.00 when the two
          * agree. problem is the first thing that stops a save, or '' when it
          * can be saved. Jason, 2026-10-01: it has to reconcile every time.
+         *
+         * Two checks on the date, both from slips that were or could be made
+         * (Jason, 2026-10-04 and 2026-10-05): it cannot be later than today,
+         * and it cannot be earlier than an event the check pays.
          */
         function checkDraftSummary(number, date, note, events, adjustments, checkTotal, recorded, today) {
             const lines = (events || []).map(e => {
@@ -3042,13 +3046,26 @@
             const remaining = Number.isFinite(face) ? Math.round((face - total) * 100) / 100 : NaN;
             const differs = lines.filter(l => Number.isFinite(l.diff) && Math.abs(l.diff) >= CHECK_CENT);
             const name = (shift) => String((shift && shift.eventName) || 'this event');
-            const latest = /^\d{4}-\d{2}-\d{2}$/.test(String(today || '')) ? String(today) : localToday();
+            const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+            const latest = isoDate.test(String(today || '')) ? String(today) : localToday();
+            const usDate = (iso) => {
+                const parts = String(iso).split('-');
+                return Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0];
+            };
+            /* The paid event that took place latest, when the check is dated
+               before it. Naming the latest means one correction of the date
+               clears every event on the check. An event with no usable date
+               is left out rather than guessed at. */
+            const early = !isoDate.test(String(date || '')) ? null : lines
+                .filter(l => isoDate.test(String((l.shift && l.shift.eventDate) || ''))
+                    && String(date) < String(l.shift.eventDate))
+                .sort((a, b) => String(b.shift.eventDate).localeCompare(String(a.shift.eventDate)))[0] || null;
 
             let problem = '';
             const blank = lines.find(l => !(l.paid > 0));
             if (!String(number || '').trim()) {
                 problem = 'Enter the check number printed on the check.';
-            } else if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
+            } else if (!isoDate.test(String(date || ''))) {
                 problem = 'Enter the date printed on the check.';
             } else if (String(date) > latest) {
                 /* A check cannot be in hand before its own date. Jason,
@@ -3056,9 +3073,15 @@
                    slip of the month: "Unless Crystal is a time traveler she
                    can't future deposit a check". Both sides are YYYY-MM-DD, so
                    comparing them as text compares them as dates. */
-                const parts = String(date).split('-');
-                problem = Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0]
-                    + ' has not happened yet. Enter the date printed on the check.';
+                problem = usDate(date) + ' has not happened yet. Enter the date printed on the check.';
+            } else if (early) {
+                /* Sodexo pays after an event, never ahead of it, so a check
+                   dated before an event it is ticked against is either a
+                   mistyped date or the wrong event ticked. The message offers
+                   both ways out. The event's own day is allowed. */
+                problem = usDate(date) + ' is before ' + name(early.shift) + ' took place on '
+                    + usDate(early.shift.eventDate) + '. Correct the check date, or untick the '
+                    + 'event if this check does not pay for it.';
             } else if (!(face > 0)) {
                 problem = 'Enter the amount printed on the check.';
             } else if (lines.length === 0 && extras.length === 0) {
@@ -3180,7 +3203,14 @@
             if (!box) return;
             box.textContent = message || '';
             box.classList.toggle('hidden', !message);
-            if (message && box.scrollIntoView) box.scrollIntoView({ block: 'nearest' });
+            if (!message) return;
+            /* The buttons sit directly under the box, so bringing them into
+               view brings the box with them. On a screen shorter than the
+               dialog she then sees the reason and Record Check together,
+               where scrolling to the box alone left the buttons cut off. */
+            const buttons = box.nextElementSibling;
+            const target = buttons && buttons.scrollIntoView ? buttons : box;
+            if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest' });
         }
 
         /**
