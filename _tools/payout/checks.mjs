@@ -4,7 +4,8 @@
 //
 // Every case runs against BOTH pages, with the functions sliced out of the
 // shipped HTML, the dialog's save guard runs against the treasurer page, and
-// the finalize date guard runs against the payouts page.
+// the finalize date guard and the shift form's write plan run against the
+// payouts page.
 //
 // M-31, ruled by Jason 2026-09-27: each event stands alone. The treasurer
 // records, per event, the check number, the check date and the amount the stub
@@ -19,6 +20,7 @@
 // shown $1,417.13 short in total. If this suite stops reporting both halves of
 // that, the page has lost one of them.
 
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { loadNamed } from './extract.mjs';
@@ -43,6 +45,9 @@ const DRAFT_NAMES = ['billedFor', 'signedMoney', 'typedMoney', 'localToday', 'ch
 
 // The finalize date guard. Payouts only: the treasurer page cannot finalize.
 const FINALIZE_NAMES = ['localToday', 'finalizeDateProblem', 'draftsByReadiness'];
+
+// How the shift form writes an event. Payouts only.
+const SAVE_NAMES = ['shiftWritePlan'];
 
 // staleReceivableHtml reaches out of the block for the season. The season
 // constant is proved identical across the pages by the "pages" gate, so it is
@@ -571,6 +576,130 @@ for (const { page, file } of PAGES) {
     eq(page, 'once its date arrives it is ready like any other',
         ids(f.draftsByReadiness(drafts, '2026-11-18').early), '');
     eq(page, 'no drafts is not an error', ids(f.draftsByReadiness([], TODAY).ready), '');
+}
+
+// ---------------------------------------------------------------------------
+// The shift form's write, payouts page only.
+//
+// Until 2026-10-05 the form replaced the whole record, which erased every field
+// it did not hold: the treasurer's check number, date, amounts and note, and
+// who created the event. An event reopened after its check was recorded lost
+// the check on the next save. These cases hold the form to the fields it owns.
+// ---------------------------------------------------------------------------
+{
+    const page = 'payouts';
+    const loaded = await loadNamed(PAGES[0].file, SAVE_NAMES);
+    const { shiftWritePlan } = loaded.load();
+    const CLEAR = { removes: 'the field' };
+
+    // What the treasurer may write, read from the published rules, so a key
+    // added there is covered here without anyone remembering to add it.
+    const rules = await readFile(join(REPO, 'firebase', 'firestore.rules'), 'utf8');
+    const listed = /match \/Work-Shifts\/\{document\}[\s\S]*?allow update: if isTreasurer\(\)[\s\S]*?hasOnly\(\[([\s\S]*?)\]\)/.exec(rules);
+    const TREASURER_KEYS = listed ? (listed[1].match(/'[^']+'/g) || []).map((k) => k.slice(1, -1)) : [];
+
+    console.log('=== payouts save ===');
+
+    ok(page, 'the treasurer\'s keys were read from the rules',
+        TREASURER_KEYS.length >= 14 && TREASURER_KEYS.includes('checkNumber') && TREASURER_KEYS.includes('isLocked'),
+        TREASURER_KEYS.length + ' keys');
+
+    const form = () => ({ eventDate: '2026-08-29', eventName: 'Colts vs. Lions', primaryStand: '132PB',
+        primaryCrNumber: 4411, primarySodexoPayout: 1242.56, secondaryStand: '133PB', secondaryCrNumber: 4412,
+        secondarySodexoPayout: 393.66, workers: [], notes: '', status: 'draft', separateStandsMode: false,
+        lowRateRuleApplied: false, updatedAt: '2026-10-05T12:00:00.000Z', updatedBy: 'a@b.c' });
+    const settled = () => Object.assign(form(), { status: 'finalized', finalizedAt: '2026-10-05T12:00:00.000Z',
+        finalizedBy: 'a@b.c', finalizedCalc: { formulaVersion: 'new' } });
+    // A record as it stands after a check was recorded and the event reopened.
+    const stored = (more) => {
+        const record = Object.assign(form(), { createdAt: '2026-08-30T14:00:00.000Z', createdBy: 'a@b.c',
+            finalizedAt: '2026-09-01T15:00:00.000Z', finalizedBy: 'a@b.c', finalizedCalc: { formulaVersion: 'old' },
+            reopenedAt: '2026-10-05T11:00:00.000Z', reopenedBy: 'a@b.c' });
+        TREASURER_KEYS.forEach((k) => { record[k] = 'hers'; });
+        record.isLocked = false;
+        return Object.assign(record, more || {});
+    };
+    const names = (plan) => Object.keys(plan.fields || {}).sort().join(' ');
+
+    // A new event.
+    const fresh = form();
+    const created = shiftWritePlan(null, fresh, false, false, CLEAR);
+    eq(page, 'a new event is written whole', created.op, 'set');
+    ok(page, 'with exactly what the form held', created.fields === fresh);
+    ok(page, 'a new event whose ID is already taken is not written over',
+        !!shiftWritePlan(stored(), form(), false, false, CLEAR).refuse
+        && shiftWritePlan(stored(), form(), false, false, CLEAR).op === undefined);
+
+    // An event that exists.
+    const draft = shiftWritePlan(stored(), form(), true, false, CLEAR);
+    eq(page, 'an event that exists is updated, never replaced', draft.op, 'update');
+    ok(page, 'SAVED AS A DRAFT, IT NAMES NONE OF THE TREASURER\'S FIELDS',
+        TREASURER_KEYS.every((k) => !(k in draft.fields)), names(draft));
+    ok(page, 'nor who created it, nor the record of a reopen',
+        ['createdAt', 'createdBy', 'reopenedAt', 'reopenedBy'].every((k) => !(k in draft.fields)), names(draft));
+    eq(page, 'a draft has its settlement removed',
+        [draft.fields.finalizedAt, draft.fields.finalizedBy, draft.fields.finalizedCalc].every((v) => v === CLEAR), true);
+    eq(page, 'and names nothing beyond the form and the settlement', names(draft),
+        Object.keys(form()).concat(['finalizedAt', 'finalizedBy', 'finalizedCalc']).sort().join(' '));
+
+    const again = shiftWritePlan(stored(), settled(), true, true, CLEAR);
+    eq(page, 'finalized again, it is still an update', again.op, 'update');
+    ok(page, 'FINALIZED AGAIN, IT NAMES NONE OF THE TREASURER\'S FIELDS',
+        TREASURER_KEYS.every((k) => !(k in again.fields)), names(again));
+    eq(page, 'and carries the fresh settlement, not a removal', again.fields.finalizedCalc.formulaVersion, 'new');
+    eq(page, 'and names nothing beyond what the form held', names(again), Object.keys(settled()).sort().join(' '));
+
+    const plain = shiftWritePlan(form(), form(), true, false, CLEAR);
+    eq(page, 'a draft that was never settled has nothing to remove', names(plain), Object.keys(form()).sort().join(' '));
+
+    // The field names from before the two-stand form.
+    const old = stored({ sodexoPayout: 900, crNumber: 4300, standNumber: '101A' });
+    const fromOld = shiftWritePlan(old, form(), true, false, CLEAR);
+    eq(page, 'the superseded field names are removed on a draft',
+        [fromOld.fields.sodexoPayout, fromOld.fields.crNumber, fromOld.fields.standNumber].every((v) => v === CLEAR), true);
+    const fromOldFinal = shiftWritePlan(old, settled(), true, true, CLEAR);
+    eq(page, 'and on a finalize',
+        [fromOldFinal.fields.sodexoPayout, fromOldFinal.fields.crNumber, fromOldFinal.fields.standNumber].every((v) => v === CLEAR), true);
+    ok(page, 'and are not named when the record never had them',
+        !('sodexoPayout' in draft.fields) && !('crNumber' in draft.fields) && !('standNumber' in draft.fields));
+
+    // Planning must not change what it was given.
+    const given = form();
+    shiftWritePlan(stored(), given, true, false, CLEAR);
+    eq(page, 'planning a write does not alter the form\'s own data', Object.keys(given).sort().join(' '),
+        Object.keys(form()).sort().join(' '));
+
+    // Refusals.
+    const gone = shiftWritePlan(null, form(), true, false, CLEAR);
+    ok(page, 'an event deleted while it was open is not brought back',
+        String(gone.refuse).indexOf('This event no longer exists.') === 0 && gone.op === undefined && gone.fields === undefined);
+    const locked = shiftWritePlan(stored({ isLocked: true }), form(), true, false, CLEAR);
+    ok(page, 'an event the treasurer locked while it was open is not written over',
+        String(locked.refuse).indexOf('The treasurer processed and locked this event while it was open here') === 0
+        && locked.op === undefined && locked.fields === undefined);
+    ok(page, 'nor finalized over',
+        !!shiftWritePlan(stored({ isLocked: true }), settled(), true, true, CLEAR).refuse);
+    eq(page, 'an event that is not locked is not refused', draft.refuse, undefined);
+
+    // The wiring, read from the text of the save itself. The function is async
+    // and reads the page, so it is cut out as text and never run.
+    const pageText = await readFile(PAGES[0].file, 'utf8');
+    const opens = 'async function saveShiftOnce(';
+    const at = pageText.indexOf(opens);
+    const closes = at === -1 ? -1 : pageText.indexOf('\n        }\n', at);
+    const save = closes === -1 ? '' : pageText.slice(at, closes);
+    ok(page, 'the save function was found, once',
+        at !== -1 && closes !== -1 && pageText.indexOf(opens, at + 1) === -1);
+    const literal = /const shiftData = \{([\s\S]*?)\n\s*\};/.exec(save);
+    const formKeys = (literal ? (literal[1].match(/^\s*(\w+)\s*:/gm) || []) : []).map((k) => k.replace(/[\s:]/g, ''))
+        .concat((save.match(/shiftData\.(\w+)\s*=(?!=)/g) || []).map((k) => k.replace(/^shiftData\.|\s*=$/g, '')));
+    ok(page, 'the fields the form builds were found', formKeys.length >= 15 && formKeys.includes('eventDate')
+        && formKeys.includes('finalizedCalc') && formKeys.includes('createdAt'), formKeys.join(' '));
+    eq(page, 'THE FORM BUILDS NONE OF THE TREASURER\'S FIELDS',
+        formKeys.filter((k) => TREASURER_KEYS.includes(k)).join(' '), '');
+    ok(page, 'the save writes through the plan, in a transaction',
+        /runTransaction\(/.test(save) && /shiftWritePlan\(/.test(save) && /tx\.update\(/.test(save));
+    ok(page, 'and no longer replaces a record outright', !/\bsetDoc\(/.test(save));
 }
 
 // The two copies must not merely both work. They must be the same code.

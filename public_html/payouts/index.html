@@ -2185,7 +2185,7 @@
         // ADR-005-payout-formula-canonical.md. Do not change it here.
         // ============================================================
         
-        import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc, query, orderBy, where, writeBatch } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, doc, getDocs, updateDoc, deleteDoc, deleteField, query, orderBy, where, writeBatch, runTransaction } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         const LOW_RATE_THRESHOLD = 20.00;
 
@@ -4159,6 +4159,51 @@
             }
         }
 
+        /* How a save from the shift form reaches the database.
+
+           The form used to replace the whole record with what it held. A
+           record that already exists carries fields this form never shows: the
+           treasurer's check number, date, amounts and note, the record of a
+           reopen, and who created the event. Replacing it erased all of them,
+           so an event reopened after its check was recorded lost the check on
+           the next save, draft or finalized. It also meant a form left open
+           while the treasurer locked the event saved straight over her lock.
+
+           An existing record is now changed field by field, so this form can
+           only touch what it names, and the write happens in a transaction
+           that reads the record first. `stored` is that read, null when there
+           is no record. `clear` is the value that removes a field; it is
+           passed in so the function can be run without Firestore.
+
+           Returns { refuse } with the reason, or { op, fields } for the
+           write. Two things are removed on purpose: the settlement, when an
+           event is saved back to a draft, and the three field names from
+           before the two-stand form, which the current names supersede and
+           which would otherwise resurface behind an amount cleared to zero. */
+        function shiftWritePlan(stored, shiftData, isEdit, andFinalize, clear) {
+            if (!isEdit) {
+                if (stored) {
+                    return { refuse: 'An event was saved under this ID a moment ago, so nothing '
+                        + 'was written. Press Save Shift again.' };
+                }
+                return { op: 'set', fields: shiftData };
+            }
+            if (!stored) {
+                return { refuse: 'This event no longer exists. It was deleted while it was open '
+                    + 'here, so nothing was saved.' };
+            }
+            if (stored.isLocked === true) {
+                return { refuse: 'The treasurer processed and locked this event while it was open '
+                    + 'here, so nothing was saved. Refresh the page. If the event has to change, '
+                    + 'reopen it on the treasurer page first.' };
+            }
+            const fields = Object.assign({}, shiftData);
+            const drop = ['sodexoPayout', 'crNumber', 'standNumber'];
+            if (!andFinalize) drop.push('finalizedAt', 'finalizedBy', 'finalizedCalc');
+            drop.forEach((name) => { if (name in stored) fields[name] = clear; });
+            return { op: 'update', fields: fields };
+        }
+
         async function saveShiftOnce(andFinalize = false) {
             if (!db) { showError('Database connection not available'); return; }
             
@@ -4228,9 +4273,9 @@
             
             if (!editingShiftId) { shiftData.createdAt = new Date().toISOString(); shiftData.createdBy = currentUser.email; }
             /* Finalizing settles the shift, so the computed result is stored
-               with it. setDoc replaces the document, so a finalized shift saved
-               back to draft correctly loses its frozen settlement, and a
-               finalized shift edited and refinalized gets a fresh one. */
+               with it. A finalized shift edited and refinalized gets a fresh
+               one here; a finalized shift saved back to draft has its frozen
+               settlement removed by shiftWritePlan. */
             if (andFinalize) {
                 shiftData.finalizedAt = new Date().toISOString();
                 shiftData.finalizedBy = currentUser.email;
@@ -4239,7 +4284,22 @@
             
             try {
                 const shiftId = editingShiftId || 'shift_' + Date.now();
-                await setDoc(doc(db, 'Work-Shifts', shiftId), shiftData);
+                const shiftRef = doc(db, 'Work-Shifts', shiftId);
+                const isEdit = !!editingShiftId;
+                /* Read and write together, so the decision is made on the
+                   record as it is now and not as it was when this page loaded.
+                   A transaction needs the network: with none, this fails and
+                   says so, where the old write would have queued silently. */
+                const refused = await runTransaction(db, async (tx) => {
+                    const snap = await tx.get(shiftRef);
+                    const plan = shiftWritePlan(snap.exists() ? snap.data() : null,
+                        shiftData, isEdit, andFinalize, deleteField());
+                    if (plan.refuse) return plan.refuse;
+                    if (plan.op === 'set') tx.set(shiftRef, plan.fields);
+                    else tx.update(shiftRef, plan.fields);
+                    return '';
+                });
+                if (refused) { showShiftProblem(refused); return; }
                 /* M-12. The shift is settled, so the volunteers it charged now
                    hold a shirt. After the write, not before: a failed save must
                    not credit a shirt nobody paid for. */
