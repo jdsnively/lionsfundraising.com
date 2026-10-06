@@ -1013,6 +1013,25 @@
             flex-wrap: wrap;
         }
 
+        .shift-problem {
+            margin-top: var(--space-6);
+            padding: var(--space-3) var(--space-4);
+            background: #fef2f2;
+            border: 1px solid #b91c1c;
+            border-left-width: 4px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            color: #7f1d1d;
+            text-align: center;
+        }
+
+        /* The margin keeps the buttons clear of the window's edge when a
+           refusal scrolls them into view. */
+        .shift-problem:not(.hidden) + .form-buttons {
+            margin-top: var(--space-3);
+            scroll-margin-bottom: var(--space-4);
+        }
+
         .calculations-section {
             background: var(--po-surface);
             border: var(--border-medium);
@@ -1949,6 +1968,8 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="shiftProblem" class="shift-problem hidden" role="alert"></div>
 
                 <div class="form-buttons">
                     <button class="btn btn-info" id="saveShiftBtn">Save Shift</button>
@@ -2968,6 +2989,26 @@
             document.querySelector('.main-container').prepend(errorDiv);
         }
 
+        /* A refusal from Save Shift or Finalize, shown beside the buttons that
+           were pressed. showError writes a strip at the top of the page, and the
+           shift form is some 2,300 pixels tall: measured on 2026-10-05, the
+           strip sat 2,600 pixels above the window, so a refused finalize looked
+           like a button that did nothing.
+
+           An empty message clears the box. It is cleared on every attempt and
+           whenever the form changes, so it never describes a problem already
+           fixed. */
+        function showShiftProblem(message) {
+            const box = document.getElementById('shiftProblem');
+            if (!box) return;
+            box.textContent = message || '';
+            box.classList.toggle('hidden', !message);
+            if (!message) return;
+            const buttons = box.nextElementSibling;
+            const target = buttons && buttons.scrollIntoView ? buttons : box;
+            if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest' });
+        }
+
         async function loadData() {
             if (!currentUser || !isAdmin || !db) return;
             try {
@@ -3571,6 +3612,7 @@
             calculationsPending = false;
             title.textContent = isEdit ? 'Edit Work Shift' : 'Create New Work Shift';
             form.classList.add('show');
+            showShiftProblem('');
             
             if (isEdit && shiftData) {
                 await populateFormWithData(shiftData);
@@ -4082,6 +4124,7 @@
         function cancelShiftForm() {
             const form = document.getElementById('shiftForm');
             if (form) form.classList.remove('show');
+            showShiftProblem('');
             editingShiftId = null;
             formStateReady = false;
             calculationsPending = false;
@@ -4119,13 +4162,14 @@
         async function saveShiftOnce(andFinalize = false) {
             if (!db) { showError('Database connection not available'); return; }
             
+            showShiftProblem('');
             const eventDate = document.getElementById('eventDate')?.value;
             const eventName = document.getElementById('eventName')?.value?.trim();
             const primaryStand = document.getElementById('primaryStand')?.value?.trim();
             const primarySodexoPayout = parseFloat(document.getElementById('primarySodexoPayout')?.value) || 0;
             
             if (!eventDate || !eventName || !primaryStand) {
-                showError('Please fill in Event Date, Event Name and Primary Stand.');
+                showShiftProblem('Please fill in Event Date, Event Name and Primary Stand.');
                 return;
             }
             const primaryCrNumber = document.getElementById('primaryCrNumber')?.value?.trim() || '';
@@ -4133,19 +4177,21 @@
             const secondaryPayoutForGate = parseFloat(document.getElementById('secondarySodexoPayout')?.value) || 0;
 
             if (andFinalize) {
+                const tooEarly = finalizeDateProblem(eventDate);
+                if (tooEarly) { showShiftProblem(tooEarly); return; }
                 const missing = [];
                 if (primarySodexoPayout <= 0) missing.push('Primary Sodexo Payment');
                 if (!primaryCrNumber) missing.push('Primary CR#');
                 if (secondaryPayoutForGate > 0 && !secondaryCrNumber) missing.push('Secondary CR#');
                 if (missing.length) {
-                    showError('Cannot finalize without: ' + missing.join(', ') + '. Save as a draft and finalize once Sodexo pays.');
+                    showShiftProblem('Cannot finalize without: ' + missing.join(', ') + '. Save as a draft and finalize once Sodexo pays.');
                     return;
                 }
             }
             
             const workers = collectWorkersFromForm();
             if (workers.length === 0) {
-                showError('Please add at least one worker with complete information');
+                showShiftProblem('Please add at least one worker with complete information');
                 return;
             }
             
@@ -4213,7 +4259,7 @@
                 await loadData();
                 cancelShiftForm();
             } catch (error) {
-                showError('Failed to save shift. Please try again.');
+                showShiftProblem('Failed to save shift. Please try again.');
             }
         }
 
@@ -4332,6 +4378,54 @@
             } catch (error) { showError('Failed to unlock shift. Please try again.'); }
         }
 
+        /** Today as YYYY-MM-DD on this computer's clock, not in UTC. A UTC
+            date rolls over at eight in the evening Eastern, which would let
+            tomorrow's event be finalized every night. */
+        function localToday() {
+            const d = new Date();
+            return d.getFullYear() + '-'
+                + String(d.getMonth() + 1).padStart(2, '0') + '-'
+                + String(d.getDate()).padStart(2, '0');
+        }
+
+        /* Jason, 2026-10-05. Finalizing settles an event and hands it to the
+           treasurer, and an event cannot be settled before it takes place. A
+           date after today on a finalize is a mistyped date, the same slip that
+           stored a check dated 11/18 on 2026-10-04. A draft may carry any date.
+
+           Returns the refusal, or '' when the date is no obstacle. A date it
+           cannot read is not its business: the form refuses a blank one and the
+           date control cannot produce any other shape. */
+        function finalizeDateProblem(eventDate, today) {
+            const iso = String(eventDate || '');
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+            if (iso <= (today || localToday())) return '';
+            const part = iso.split('-');
+            return Number(part[1]) + '/' + Number(part[2]) + '/' + part[0]
+                + ' has not happened yet, so this event cannot be finalized. '
+                + 'Correct the Event Date, or use Save Shift to keep it as a draft.';
+        }
+
+        /* The open drafts, sorted for Finalize All: ready to settle, still
+           waiting on Sodexo, or complete but dated after today.
+
+           A draft with no Sodexo payment is not incomplete by accident, it is
+           waiting on Sodexo. Finalizing it would send a zero payout to the
+           treasurer marked ready for processing. */
+        function draftsByReadiness(shifts, today) {
+            const sorted = { ready: [], waiting: [], early: [] };
+            (shifts || []).filter(s => s.status !== 'finalized' && !s.isLocked).forEach(s => {
+                const paid = (s.primarySodexoPayout || s.sodexoPayout || 0) + (s.secondarySodexoPayout || 0);
+                const complete = paid > 0
+                    && !!String(s.primaryCrNumber || s.crNumber || '').trim()
+                    && !((s.secondarySodexoPayout || 0) > 0 && !String(s.secondaryCrNumber || '').trim());
+                if (!complete) sorted.waiting.push(s);
+                else if (finalizeDateProblem(s.eventDate, today)) sorted.early.push(s);
+                else sorted.ready.push(s);
+            });
+            return sorted;
+        }
+
         function showFinalizeDialog() { document.getElementById('finalizeDialog')?.classList.remove('hidden'); }
 
         async function confirmFinalize() {
@@ -4340,27 +4434,24 @@
         }
 
         async function finalizeAllDrafts() {
-            const allDrafts = allShifts.filter(s => s.status !== 'finalized' && !s.isLocked);
-            /* A draft with no Sodexo payment is not incomplete by accident, it
-               is waiting on Sodexo. Finalizing it would send a zero payout to
-               the treasurer marked ready for processing. */
-            const draftShifts = allDrafts.filter(s => {
-                const paid = (s.primarySodexoPayout || s.sodexoPayout || 0) + (s.secondarySodexoPayout || 0);
-                if (paid <= 0) return false;
-                if (!String(s.primaryCrNumber || s.crNumber || '').trim()) return false;
-                if ((s.secondarySodexoPayout || 0) > 0 && !String(s.secondaryCrNumber || '').trim()) return false;
-                return true;
-            });
-            const waiting = allDrafts.length - draftShifts.length;
+            const sorted = draftsByReadiness(allShifts);
+            const draftShifts = sorted.ready;
+            const held = [];
+            if (sorted.waiting.length) {
+                held.push(sorted.waiting.length + ' draft(s) still awaiting a Sodexo payment or a CR number.');
+            }
+            if (sorted.early.length) {
+                held.push(sorted.early.length + ' draft(s) dated after today: '
+                    + sorted.early.map(s => (s.eventName || 'Unnamed Event') + ' (' + formatDate(s.eventDate) + ')').join(', ')
+                    + '. Correct the Event Date before finalizing.');
+            }
             if (draftShifts.length === 0) {
-                alert(waiting > 0
-                    ? 'No draft shifts are ready to finalize. ' + waiting + ' are still awaiting a Sodexo payment or a CR number.'
+                alert(held.length
+                    ? 'No draft shifts are ready to finalize.\n\n' + held.join('\n')
                     : 'No draft shifts to finalize.');
                 return;
             }
-            const note = waiting > 0
-                ? '\n\n' + waiting + ' other draft(s) will be skipped: still awaiting a Sodexo payment or a CR number.'
-                : '';
+            const note = held.length ? '\n\nNot included:\n' + held.join('\n') : '';
             if (!confirm('Finalize ' + draftShifts.length + ' draft shift(s)? This will make them visible to the treasurer.' + note)) return;
             
             try {
@@ -4873,6 +4964,7 @@
             document.getElementById('saveShiftBtn')?.addEventListener('click', () => saveShift(false));
             document.getElementById('finalizeShiftBtn')?.addEventListener('click', showFinalizeDialog);
             document.getElementById('cancelShiftBtn')?.addEventListener('click', cancelShiftForm);
+            document.getElementById('shiftForm')?.addEventListener('input', () => showShiftProblem(''));
             document.getElementById('confirmFinalizeBtn')?.addEventListener('click', confirmFinalize);
             document.getElementById('cancelFinalizeBtn')?.addEventListener('click', () => document.getElementById('finalizeDialog')?.classList.add('hidden'));
             document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmFirstDelete);

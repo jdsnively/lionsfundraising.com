@@ -3,7 +3,8 @@
 //   node _tools/payout/checks.mjs
 //
 // Every case runs against BOTH pages, with the functions sliced out of the
-// shipped HTML, and the dialog's save guard runs against the treasurer page.
+// shipped HTML, the dialog's save guard runs against the treasurer page, and
+// the finalize date guard runs against the payouts page.
 //
 // M-31, ruled by Jason 2026-09-27: each event stands alone. The treasurer
 // records, per event, the check number, the check date and the amount the stub
@@ -39,6 +40,9 @@ const NAMES = [
 
 // The dialog's arithmetic and save guard. Treasurer only: payouts is read only.
 const DRAFT_NAMES = ['billedFor', 'signedMoney', 'typedMoney', 'localToday', 'checkDraftSummary'];
+
+// The finalize date guard. Payouts only: the treasurer page cannot finalize.
+const FINALIZE_NAMES = ['localToday', 'finalizeDateProblem', 'draftsByReadiness'];
 
 // staleReceivableHtml reaches out of the block for the season. The season
 // constant is proved identical across the pages by the "pages" gate, so it is
@@ -478,6 +482,95 @@ for (const { page, file } of PAGES) {
     ok(page, 'with no date passed, the real clock still refuses the future',
         d.checkDraftSummary('4113855', '2999-01-01', '', [{ shift: e1, typed: '2354.41' }], [],
             '2354.41', 0).problem.indexOf('1/1/2999 has not happened yet') === 0);
+}
+
+// ---------------------------------------------------------------------------
+// The finalize date guard, payouts page only.
+// ---------------------------------------------------------------------------
+{
+    const page = 'payouts';
+    const f = (await loadNamed(PAGES[0].file, FINALIZE_NAMES)).load();
+    const TODAY = '2026-10-05';
+    const REFUSED = ' has not happened yet, so this event cannot be finalized. '
+        + 'Correct the Event Date, or use Save Shift to keep it as a draft.';
+
+    console.log('=== payouts finalize ===');
+
+    // Jason, 2026-10-05: an event cannot be finalized before it takes place.
+    eq(page, 'an event dated tomorrow cannot be finalized',
+        f.finalizeDateProblem('2026-10-06', TODAY), '10/6/2026' + REFUSED);
+    eq(page, 'an event dated today can be', f.finalizeDateProblem('2026-10-05', TODAY), '');
+    eq(page, 'an event dated yesterday can be', f.finalizeDateProblem('2026-10-04', TODAY), '');
+    eq(page, 'a month typed one too far is refused',
+        f.finalizeDateProblem('2026-11-18', TODAY), '11/18/2026' + REFUSED);
+    eq(page, 'a year typed one too far is refused',
+        f.finalizeDateProblem('2027-09-18', TODAY), '9/18/2027' + REFUSED);
+    eq(page, 'the first day of next year is after the last day of this one',
+        f.finalizeDateProblem('2027-01-01', '2026-12-31'), '1/1/2027' + REFUSED);
+    eq(page, 'a blank date is left to the form, which already refuses it', f.finalizeDateProblem('', TODAY), '');
+    eq(page, 'a date it cannot read is not called the future', f.finalizeDateProblem('9/18/2026', TODAY), '');
+    ok(page, 'with no date passed, the real clock still refuses the future',
+        f.finalizeDateProblem('2999-01-01').indexOf('1/1/2999 has not happened yet') === 0);
+    eq(page, 'and still passes the past', f.finalizeDateProblem('2026-08-06'), '');
+
+    // 8:30 in the evening Eastern on the 4th is already the 5th in UTC. Read
+    // in UTC, tomorrow's event could be finalized every night.
+    {
+        const RealDate = globalThis.Date;
+        let read = '';
+        let tonight = 'not run';
+        let tomorrow = '';
+        try {
+            globalThis.Date = class {
+                getFullYear() { return 2026; }
+                getMonth() { return 9; }
+                getDate() { return 4; }
+                toISOString() { return '2026-10-05T00:30:00.000Z'; }
+            };
+            read = f.localToday();
+            tonight = f.finalizeDateProblem('2026-10-04');
+            tomorrow = f.finalizeDateProblem('2026-10-05');
+        } finally {
+            globalThis.Date = RealDate;
+        }
+        eq(page, 'today is this computer\'s date, not the UTC one', read, '2026-10-04');
+        eq(page, 'in the evening, tonight\'s event can be finalized', tonight, '');
+        eq(page, 'in the evening, tomorrow\'s still cannot', tomorrow, '10/5/2026' + REFUSED);
+    }
+
+    // Finalize All works from this sort. Only "ready" is written.
+    const draft = (id, eventDate, more) => Object.assign({ id, status: 'draft', eventDate,
+        primarySodexoPayout: 1500, primaryCrNumber: 4411 }, more || {});
+    const drafts = [
+        draft('played', '2026-09-27'),
+        draft('today', '2026-10-05'),
+        draft('mistyped', '2026-11-18'),
+        draft('unpaid', '2026-09-30', { primarySodexoPayout: 0 }),
+        draft('upcoming', '2026-10-18', { primarySodexoPayout: 0, primaryCrNumber: null }),
+        draft('noCr', '2026-09-20', { primaryCrNumber: null }),
+        draft('noSecondCr', '2026-09-21', { secondarySodexoPayout: 300 }),
+        draft('twoStands', '2026-09-22', { secondarySodexoPayout: 300, secondaryCrNumber: 4412 }),
+        draft('legacy', '2026-08-06', { primarySodexoPayout: undefined, primaryCrNumber: undefined,
+            sodexoPayout: 900, crNumber: 4300 }),
+        draft('settled', '2026-11-18', { status: 'finalized' }),
+        draft('locked', '2026-09-13', { isLocked: true })
+    ];
+    const sorted = f.draftsByReadiness(drafts, TODAY);
+    const ids = (list) => list.map(s => s.id).join(' ');
+    eq(page, 'the drafts Finalize All will write', ids(sorted.ready), 'played today twoStands legacy');
+    eq(page, 'a complete draft dated after today is held back', ids(sorted.early), 'mistyped');
+    eq(page, 'drafts waiting on Sodexo are still only waiting, whatever their date',
+        ids(sorted.waiting), 'unpaid upcoming noCr noSecondCr');
+    ok(page, 'an event already finalized or locked is not a draft',
+        ids(sorted.ready.concat(sorted.early, sorted.waiting)).indexOf('settled') === -1
+        && ids(sorted.ready.concat(sorted.early, sorted.waiting)).indexOf('locked') === -1);
+    eq(page, 'every draft lands in exactly one pile',
+        sorted.ready.length + sorted.early.length + sorted.waiting.length, 9);
+    eq(page, 'the day after, the mistyped one is still held and nothing else moves',
+        ids(f.draftsByReadiness(drafts, '2026-10-06').early), 'mistyped');
+    eq(page, 'once its date arrives it is ready like any other',
+        ids(f.draftsByReadiness(drafts, '2026-11-18').early), '');
+    eq(page, 'no drafts is not an error', ids(f.draftsByReadiness([], TODAY).ready), '');
 }
 
 // The two copies must not merely both work. They must be the same code.
