@@ -518,6 +518,50 @@
             outline-offset: var(--lions-focus-offset);
         }
 
+        /* ---- Agreement modal --------------------------------------------
+           Added 2026-10-17. I Agree opens the Jotform agreement in place
+           rather than in a new tab. The form scrolls inside its own frame, so
+           the panel takes a fixed height and the frame fills what the header
+           leaves; a panel that grew with the form would put the close button
+           out of reach. On a phone the panel is the whole screen, because a
+           form with a margin of page around it is a form with less room to
+           type. The id selector outranks the 480px .modal-content rule at the
+           end of this block, which would otherwise put its padding back. */
+        #agreementModal .modal-content--form {
+            max-width: 760px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-4) var(--space-4) 0;
+            overflow: hidden;
+        }
+
+        #agreementModal .modal-header {
+            flex: 0 0 auto;
+            margin-bottom: 0;
+            padding-bottom: var(--space-3);
+        }
+
+        .agreement-frame {
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            border: 0;
+            background: var(--white);
+        }
+
+        @media (max-width: 640px) {
+            #agreementModal { padding: 0; }
+            #agreementModal .modal-content--form {
+                height: 100vh;
+                height: 100dvh;
+                max-height: none;
+                border: 0;
+                border-radius: 0;
+                padding: var(--space-3) var(--space-3) 0;
+            }
+        }
+
         .dress-code-item { margin-bottom: var(--space-6); text-align: center; }
 
         .dress-code-item h4 {
@@ -805,7 +849,7 @@
             <div class="container">
                 <h2 class="guide-cta-heading">Volunteer Agreement</h2>
                 <p class="guide-cta-sub">By signing, you confirm that you have read this entire page and will follow every rule on it and every instruction from Sodexo staff. Every volunteer signs before their next event, including returning volunteers. Volunteers under 18 sign with a parent or guardian. You and Jason each receive a signed copy by email.</p>
-                <a href="https://form.jotform.com/262894686055068" target="_blank" rel="noopener" class="agree-btn">I Agree</a>
+                <a href="https://form.jotform.com/262894686055068" target="_blank" rel="noopener" class="agree-btn" data-modal-open="agreementModal">I Agree</a>
                 <p class="agree-note">Opens the one-page agreement to sign with your name and email.</p>
             </div>
         </section>
@@ -933,6 +977,20 @@
     </div>
 </div>
 
+<!-- Added 2026-10-17. The signed agreement, on Jotform, framed in place. The
+     address sits in data-src until the first open, so a visitor who only reads
+     the guide never loads the form. Closing hides the panel and keeps the frame,
+     so a volunteer who closes it by accident finds their answers still there. -->
+<div id="agreementModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="agreementModalTitle" hidden>
+    <div class="modal-content modal-content--form">
+        <div class="modal-header">
+            <h3 class="modal-title" id="agreementModalTitle">Volunteer Agreement</h3>
+            <button type="button" class="close-btn" data-modal-close aria-label="Close">&times;</button>
+        </div>
+        <iframe class="agreement-frame" data-src="https://form.jotform.com/262894686055068" title="Lions Sports Club Volunteer Agreement"></iframe>
+    </div>
+</div>
+
 <script>
 /**
  * /LOS page behaviour.
@@ -961,6 +1019,10 @@
     function openModal(id) {
         var modal = document.getElementById(id);
         if (!modal) { return; }
+        var frame = modal.querySelector('iframe[data-src]');
+        if (frame && !frame.getAttribute('src')) {
+            frame.setAttribute('src', frame.getAttribute('data-src'));
+        }
         modal.removeAttribute('hidden');
         modal.classList.add('is-open');
         var close = modal.querySelector('[data-modal-close]');
@@ -980,6 +1042,9 @@
     document.addEventListener('click', function (e) {
         var opener = e.target.closest('[data-modal-open]');
         if (opener) {
+            // The agreement opener is a link, so that it still reaches the
+            // form with scripts off; with them on it opens in place instead.
+            e.preventDefault();
             openModal(opener.getAttribute('data-modal-open'));
             return;
         }
