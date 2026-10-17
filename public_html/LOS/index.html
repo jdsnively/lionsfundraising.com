@@ -273,6 +273,47 @@
             outline-offset: var(--lions-focus-offset);
         }
 
+        /* A numbered list inside a banner that runs on into prose, rather than
+           ending in the action row, needs the paragraph gap under it. */
+        .critical-steps--inline { margin-bottom: var(--space-6); }
+
+        /* ---- Agreement ------------------------------------------------------
+           Added 2026-10-17. I Agree is a link to the signed agreement on
+           Jotform, not a control that records anything on this page: the
+           signed form is the record, and a click here alone would leave none.
+           Lions Blue rather than Cross Red, because it is the action the page
+           asks for, not a warning. Sized from .critical-btn, with the
+           property's tap target as its minimum height. */
+        .agree-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--lions-tap-target);
+            min-width: 220px;
+            padding: var(--space-3) var(--space-8);
+            background: var(--blue-primary);
+            color: var(--white);
+            font-family: var(--font-heading);
+            font-size: 1.125rem;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            transition: background 0.2s;
+        }
+
+        .agree-btn:hover  { background: var(--blue-hover); color: var(--white); }
+        .agree-btn:active { background: var(--blue-active); }
+        .agree-btn:focus-visible {
+            outline: var(--lions-focus-ring);
+            outline-offset: var(--lions-focus-offset);
+        }
+
+        .agree-note {
+            font-family: var(--font-body);
+            font-size: 15px;
+            color: var(--gray-mid);
+            margin-top: var(--space-3);
+        }
+
         /* ---- Body copy ----------------------------------------------------- */
 
         .los main {
@@ -570,7 +611,36 @@
             <div class="container">
                 <div class="guide-eyebrow">Volunteer Guide</div>
                 <h1 class="guide-title">Lucas Oil Stadium Information</h1>
-                <p class="guide-lede">Essential guidelines for working fundraising events at LOS</p>
+                <p class="guide-lede">Essential guidelines for working fundraising events at LOS. Updated October 2026: read all of it and sign the agreement at the bottom before your next event.</p>
+            </div>
+        </section>
+
+        <!-- Added 2026-10-17. Sodexo's NPO manager wrote to every group on
+             2026-10-16 that volunteers are breaking the rules and that fines and
+             Do Not Return designations will now be enforced. This band puts the
+             three on-the-spot bans, the costs and the signed agreement ahead of
+             everything else, so a volunteer who reads only the top of the page
+             still meets them. The notice is attributed to Sodexo's NPO
+             management rather than to the person who sent it. -->
+        <section class="guide-band">
+            <div class="container">
+                <div class="guide-measure">
+                    <div class="critical-requirement-banner">
+                        <h2 class="critical-title">Read this first: Sodexo is enforcing every rule, starting now</h2>
+                        <p>Sodexo's NPO management has told every group that volunteers are breaking the rules and that it will no longer overlook it. Their leadership walked the stands and saw a volunteer eating meatballs out of a cup, and another eating popcorn with bare hands, wiping them on a shirt, then offering to serve. More than 30 groups are waiting for a place in this program. One volunteer's mistake can cost Lions ours.</p>
+                        <p><strong>Any of these gets you banned on the spot.</strong> Sodexo designates you Do Not Return, and you are not allowed back:</p>
+                        <ol class="critical-steps critical-steps--inline">
+                            <li>Eating anything inside the stand</li>
+                            <li>Taking anything out of the stadium that you were not given at check-in to keep, including food and giveaways</li>
+                            <li>Leaving through any exit other than <strong>Northwest Gate 5</strong></li>
+                        </ol>
+                        <p>Every dress code violation is a ticket and a <strong>$50 fine</strong>. Arrive without a clear bag or without ID and you are sent home, which leaves our stand short and can bring a staffing fine on the club.</p>
+                        <p><strong>Every volunteer, new or returning, signs the Lions volunteer agreement at the bottom of this page before their next event.</strong> No signature, no shift.</p>
+                        <div class="critical-action">
+                            <a href="#agreement" class="critical-btn">GO TO THE AGREEMENT</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -606,7 +676,7 @@
 
                     <section class="guide-section">
                         <h2 class="guide-section-title">What to Bring</h2>
-                        <p class="callout"><strong>Required documentation.</strong> Printed copies only; phone screens are not accepted.</p>
+                        <p class="callout"><strong>Bring a valid ID to every event.</strong> Without one you are denied entry and sent home. Documents must be printed copies; phone screens are not accepted.</p>
                         <ul class="requirements-list">
                             <li><strong>Valid state-issued picture ID</strong> (required for all volunteers)</li>
                             <li><strong>16-year-olds without state ID:</strong> school ID with a copy of their birth certificate</li>
@@ -614,22 +684,23 @@
                             <li><strong>Training certificate</strong> (if applicable), printed copy</li>
                         </ul>
 
-                        <p><strong>Bags:</strong> You may bring a small purse, clutch, or belt bag no larger than 4.5" x 6.5", or a clear stadium bag 12" x 6" x 12" or smaller. Non-compliant bags will require a trip back to your car.</p>
+                        <p><strong>Bags:</strong> The only bag allowed is a clear NFL stadium bag, 12" x 6" x 12" or smaller, and any food you bring from home goes in it. Arrive without one and you will not be let in; you will be sent home. Not having driven is not an exception, so leave every other bag at home.</p>
                     </section>
 
                     <section class="guide-section">
                         <h2 class="guide-section-title">What to Wear</h2>
-                        <p>You will be wearing your Lucas Oil Stadium shirt that was previously provided. If you do not have one yet, a shirt will be issued.</p>
+                        <p>Arrive dressed to this standard at every event. Sodexo checks every stand, and <strong>each violation is a ticket and a $50 fine</strong>.</p>
 
                         <ul class="requirements-list">
-                            <li><strong>Black pants.</strong> Comfortable and professional. No workout pants, yoga pants, leggings, or jeans.</li>
+                            <li><strong>Black pants.</strong> Black dress pants; black Dickies or cargo pants are also fine. No leggings, sweatpants, shorts, jeans, yoga pants, or athletic wear.</li>
                             <li><strong>Lucas Oil Stadium shirt.</strong> Previously provided; new volunteers will receive one.</li>
-                            <li><strong>All black shoes.</strong> Plain black athletic shoes.</li>
-                            <li><strong>Hat.</strong> Bring yours if you have one, otherwise one will be provided.</li>
-                            <li><strong>Apron.</strong> Provided. It must always be worn inside the booth and removed when leaving the stand.</li>
+                            <li><strong>Black shoes.</strong> Plain black shoes, or approved black shoe covers put on as soon as you arrive.</li>
+                            <li><strong>Hat or visor, bill facing forward at all times.</strong> Solid black with no logo, or one with the Lions logo. Sodexo Live hats and visors are not allowed and carry a $50 fine. Bring yours if you have one; otherwise one will be provided.</li>
+                            <li><strong>Full-body black apron.</strong> Worn at all times inside the stand and removed when you leave it. Waist aprons are not accepted, and the aprons Miss Judy handed out before may no longer be used. If you do not have one, tell Jason before the event.</li>
+                            <li><strong>Hair.</strong> If it reaches your shoulders, tie it back in a ponytail or otherwise secure it. A hairnet does not replace your hat.</li>
                         </ul>
 
-                        <p class="callout">Fines are assessed for being out of compliance. Leggings, jeans, and sweatpants are not acceptable and you will be sent home.</p>
+                        <p class="callout">Leggings, jeans, sweatpants, and shorts get you sent home.</p>
 
                         <div class="btn-row">
                             <button type="button" class="view-guide-btn" data-modal-open="womensModal">
@@ -673,24 +744,69 @@
                     </section>
 
                     <section class="guide-section">
-                        <h2 class="guide-section-title">Stadium Rules</h2>
-                        <p class="callout">Violations of these rules can result in Lions being terminated from fundraising at LOS. Follow all instructions carefully.</p>
+                        <h2 class="guide-section-title">Following Sodexo Staff</h2>
+                        <p class="callout">When any Sodexo employee, supervisor, or helper gives you an instruction, follow it right away and respectfully. No arguing and no back talk.</p>
+                        <p>If you think an instruction is wrong, follow it anyway and tell Jason afterward; he will take it up with Sodexo. How we respond in the stand is part of how Sodexo decides whether Lions keeps its place. Violations of any rule on this page can end Lions' fundraising at Lucas Oil Stadium.</p>
+                    </section>
 
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Food Safety</h2>
                         <ul class="requirements-list">
-                            <li>No going into the stadium area at any time</li>
-                            <li>Do not sit in the concourse during the event</li>
-                            <li>No photography or video recording</li>
-                            <li>Do not take any giveaways from tables. They are for paying guests only.</li>
-                            <li>No eating in the stand</li>
-                            <li>Drinks are allowed on the grease trap only, nowhere else in the stand</li>
-                            <li><strong>Everyone must be ID'd for alcohol purchases.</strong> No exceptions.</li>
-                            <li>Wear your PPE at all times and check temperatures of every batch</li>
+                            <li><strong>No eating inside the stand, ever.</strong> Sodexo designates anyone caught Do Not Return.</li>
+                            <li><strong>Never touch food with bare hands.</strong> Wear your gloves and PPE at all times, and never wipe your hands on your clothes.</li>
+                            <li>Check the temperature of every batch.</li>
+                            <li>Drinks are allowed on the grease trap only, nowhere else in the stand.</li>
+                            <li>Never take food from the stand without paying for it. Sodexo treats it as theft.</li>
                         </ul>
 
-                        <p><strong>Food:</strong> A meal is provided after check-in before your shift starts. You may bring your own snacks in your clear bag, and personal drinking containers are permitted.</p>
+                        <p><strong>Your meal:</strong> A meal is provided after check-in, before your shift starts, and food provided from Pantry 108 is allowed. Once Pantry 108 closes, any food you buy needs its receipt with you as proof of purchase. Food from home must be carried in your clear bag, and personal drinking containers are permitted.</p>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">During the Event</h2>
+                        <ul class="requirements-list">
+                            <li><strong>Stay at Stand 124 for the whole event.</strong> No wandering the stadium or visiting other levels or stands.</li>
+                            <li>Step away only for a short break, the restroom, a short smoking break, or to get a shirt from Miss Judy. <strong>15 minutes at most</strong>, then come straight back.</li>
+                            <li>No going into the stadium seating area at any time, and do not sit in the concourse during the event.</li>
+                            <li>No photography or video recording.</li>
+                            <li><strong>Everyone must be ID'd for alcohol purchases.</strong> No exceptions.</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">Leaving the Stadium</h2>
+                        <p class="callout">Leave only through <strong>Northwest Gate 5</strong>, where the Welcome Back meetings were held. Sodexo staff are stationed there, and leaving by any other exit means Do Not Return.</p>
+                        <ul class="requirements-list">
+                            <li>Take nothing out of the stadium except an item you were given at check-in to keep. No food and no giveaways.</li>
+                            <li>Do not take giveaways from the tables at all. They are for paying guests only.</li>
+                        </ul>
+                    </section>
+
+                    <section class="guide-section">
+                        <h2 class="guide-section-title">If a Rule Is Broken</h2>
+                        <p>Lions holds every volunteer to these rules because Sodexo holds the club to them.</p>
+                        <ul class="requirements-list">
+                            <li><strong>You repay any fine your actions cost the club</strong>, in full, before you work another event.</li>
+                            <li><strong>A second violation ends your eligibility</strong> to work Lions fundraising events.</li>
+                            <li><strong>A Do Not Return from Sodexo ends it immediately.</strong></li>
+                        </ul>
                     </section>
 
                 </div>
+            </div>
+        </section>
+
+        <!-- Added 2026-10-17. The agreement every volunteer signs before their
+             next event. The control opens the one-page form on Jotform, which
+             takes the volunteer's name, email and signature (and a parent's for
+             a volunteer under 18) and emails a signed copy to them and to Jason.
+             Built from .guide-cta, the page's existing closing band. -->
+        <section class="guide-cta" id="agreement">
+            <div class="container">
+                <h2 class="guide-cta-heading">Volunteer Agreement</h2>
+                <p class="guide-cta-sub">By signing, you confirm that you have read this entire page and will follow every rule on it and every instruction from Sodexo staff. Every volunteer signs before their next event, including returning volunteers. Volunteers under 18 sign with a parent or guardian. You and Jason each receive a signed copy by email.</p>
+                <a href="https://form.jotform.com/262894686055068" target="_blank" rel="noopener" class="agree-btn">I Agree</a>
+                <p class="agree-note">Opens the one-page agreement to sign with your name and email.</p>
             </div>
         </section>
 
